@@ -33,11 +33,10 @@ public class JoinService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
 
-    public MemberResponseDto signup(MemberRequestDto requestDto){
-        if(memberRepository.existsByEmail(requestDto.getEmail())){
-            throw new RuntimeException("이미 가입되어 있는 유저입니다");
-        }
-        Member member = requestDto.toMember(passwordEncoder);
+
+    public MemberResponseDto signup(Member member){
+
+        memberRepository.save(member);
         return MemberResponseDto.of(memberRepository.save(member));
     }
 
@@ -64,5 +63,12 @@ public class JoinService implements UserDetailsService {
                 member.getPassword(),
                 Collections.singleton(grantedAuthority)
         );
+    }
+
+    public boolean checkEmailUnique(String email){
+        return memberRepository.existsByEmail(email);
+    }
+    public boolean checkNicknameUnique(String nickname) {
+        return memberRepository.existsByNickname(nickname);
     }
 }

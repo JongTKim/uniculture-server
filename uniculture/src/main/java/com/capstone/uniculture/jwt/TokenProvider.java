@@ -36,15 +36,21 @@ public class TokenProvider {
 
     //토큰 생성 메소드
     public TokenDto generateTokenDto(Authentication authentication){
+
+        // 사용자가 가지고 있는 권한을 ,로 연결해줌
+        // 예를들면 member,admin 두가지 권한을 가지고있다면 authorities에는 "member,admin" 이렇게 들어감
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
         long now = (new Date()).getTime();
 
+        //토큰 만료시간 : 현재 시간 + 스태틱 변수(지금은 50시간으로 설정되어있음)
+        //만료된 토큰이라면 다시 로그인을 실행해야함
         Date tokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
 
         System.out.println(tokenExpiresIn);
 
+        //토큰빌더(여기에 secret 키값이 들어간다)
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, authorities)
@@ -52,6 +58,7 @@ public class TokenProvider {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
 
+        //토큰을 넣고 TokenDto 클래스의 builder를 사용하여 객체 생성
         return TokenDto.builder()
                 .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
@@ -61,6 +68,8 @@ public class TokenProvider {
 
     //토큰 받았을 때 토큰의 인증을 꺼내는 메소드
     public Authentication getAuthentication(String accessToken){
+
+        //만료된 토큰이라도 정보를 꺼내기 위해 parseClaims를 사용해 claims 객체로 만들어줌
         Claims claims = parseClaims(accessToken);
 
         if(claims.get(AUTHORITIES_KEY) == null){

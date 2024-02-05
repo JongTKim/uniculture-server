@@ -12,4 +12,6 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
 
     // Email 이 이미 존재하는지 판별 로직
     boolean existsByEmail(String email);
+
+    boolean existsByNickname(String nickname);
 }
