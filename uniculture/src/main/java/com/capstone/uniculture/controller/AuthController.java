@@ -44,6 +44,7 @@ public class AuthController {
         return ResponseEntity.ok(memberService.login(requestDto));
     }
 
+    // 회원 조회
 
     // 프로필 변경창 선택시 현재 프로필
 
@@ -55,16 +56,7 @@ public class AuthController {
     @PatchMapping("/myPage/password")
     public ResponseEntity updateUser(@RequestBody UpdateMemberDto updateMemberDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
-        // 비밀번호 변경 서비스
-        if(updateMemberDto.getExPassword() != null && updateMemberDto.getNewPassword() != null){
-            memberService.changePassword(memberId, updateMemberDto.getExPassword(), updateMemberDto.getNewPassword());
-        }
-        if(updateMemberDto.getNickname() != null){
-            memberService.changeNickname(memberId, updateMemberDto.getNickname());
-        }
-        return ResponseEntity.ok("수정이 완료되었습니다.");
-
-        // 닉네임 변경 서비스
+        return ResponseEntity.ok(memberService.UpdateUserProfile(memberId,updateMemberDto));
     }
 
 }
