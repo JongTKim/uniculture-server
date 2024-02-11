@@ -33,7 +33,6 @@ public class JoinService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
 
-
     public MemberResponseDto signup(Member member){
 
         memberRepository.save(member);
