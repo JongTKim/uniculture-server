@@ -13,15 +13,11 @@ import java.util.stream.Collectors;
 public class MyPageDto {
     private Long id;
     private String email;
+    private String profileUrl;
     private String nickname;
     private Integer age;
     private String gender;
-
-    private String profileUrl;
-    private List<String> myHobbyList;
     //private List<String> post;
-    private List<String> myLanguages;
-    private List<String> wantLanguages;
     private Integer friendNum;
 
     public MyPageDto(Member member) {
@@ -31,9 +27,6 @@ public class MyPageDto {
         this.age = member.getAge();
         this.gender = member.getGender().toString();
         this.profileUrl = member.getProfileUrl();
-        this.myHobbyList = member.getMyHobbyList().stream().map(myHobby -> myHobby.getHobbyName()).collect(Collectors.toList());
-        this.myLanguages = member.getMyLanguages().stream().map(myLanguage -> myLanguage.getLanguage()).collect(Collectors.toList());
-        this.wantLanguages = member.getWantLanguages().stream().map(wantLanguage -> wantLanguage.getLanguage()).collect(Collectors.toList());
         this.friendNum = member.getFriends().size();
     }
 }

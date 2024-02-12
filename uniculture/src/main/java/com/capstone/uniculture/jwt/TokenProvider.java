@@ -29,6 +29,9 @@ public class TokenProvider {
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;
     private final Key key;
 
+    @Value("${jwt.shortExpiration")
+    private int shortExpiration;
+
     public TokenProvider(@Value("${jwt.secret}") String secretKey){
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
@@ -64,6 +67,16 @@ public class TokenProvider {
                 .accessToken(accessToken)
                 .tokenExpiresIn(tokenExpiresIn.getTime())
                 .build();
+    }
+
+    public String generateShortTokenDto(){
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + shortExpiration * 1000);
+
+        return Jwts.builder()
+                .setExpiration(expiryDate)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
     }
 
     //토큰 받았을 때 토큰의 인증을 꺼내는 메소드

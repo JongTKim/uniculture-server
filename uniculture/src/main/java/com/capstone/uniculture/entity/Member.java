@@ -32,6 +32,8 @@ public class Member extends BaseEntity{
     @Column(nullable = false)
     private String password;
 
+    private String introduce;
+
     // 나이는 가입할때 받지 않을꺼임
     private Integer age;
 

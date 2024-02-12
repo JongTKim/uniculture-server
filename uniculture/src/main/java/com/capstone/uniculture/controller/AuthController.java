@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -44,6 +45,12 @@ public class AuthController {
         return ResponseEntity.ok(memberService.login(requestDto));
     }
 
+    // 로그아웃
+    @DeleteMapping("/logout")
+    public ResponseEntity logout(){
+        return ResponseEntity.ok(memberService.logout());
+    }
+
     // 회원 조회
 
     // 프로필 변경창 선택시 현재 프로필
@@ -54,9 +61,10 @@ public class AuthController {
 
     // 개인정보 변경 중 비밀번호 변경
     @PatchMapping("/myPage/password")
-    public ResponseEntity updateUser(@RequestBody UpdateMemberDto updateMemberDto){
+    public ResponseEntity updateUser(@RequestBody UpdateMemberDto updateMemberDto, @RequestPart MultipartFile profileImg){
         Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(memberService.UpdateUserProfile(memberId,updateMemberDto));
+        //return ResponseEntity.ok(memberService.UpdateUserProfile(memberId,updateMemberDto,profileImg));
+        return ResponseEntity.ok(null);
     }
 
 }
