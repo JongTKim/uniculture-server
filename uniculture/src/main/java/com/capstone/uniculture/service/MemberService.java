@@ -4,10 +4,9 @@ import com.capstone.uniculture.dto.*;
 import com.capstone.uniculture.entity.*;
 import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.repository.FileRepository;
+import com.capstone.uniculture.repository.FriendRequestRepository;
 import com.capstone.uniculture.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.processing.Find;
-import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -39,6 +38,8 @@ public class MemberService implements UserDetailsService {
     private final AuthenticationManagerBuilder managerBuilder;
     private final MemberRepository memberRepository;
     private final FileRepository fileRepository;
+
+    private final FriendRequestRepository friendRequestRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     @Value("${file.upload-dir}")
@@ -65,7 +66,7 @@ public class MemberService implements UserDetailsService {
     // 회원 조회
     public MyPageDto findUser(Long id){
         // 1. ID를 기반으로 DB 에서 Member 객체 생성
-        Member member = FindMember(id);
+        Member member = findMember(id);
         // 2. 리턴해줄 DTO 생성. 이 과정에서 프록시 -> 실객체 의 변환이 일어남
         // ** 이 부분도 따로 설정 필요
         return new MyPageDto(member);
@@ -73,14 +74,14 @@ public class MemberService implements UserDetailsService {
 
     // 회원 수정 中 프로필 수정 초기화면
     public UpdateProfileDto EditUserProfile(Long id){
-        Member member = FindMember(id);
+        Member member = findMember(id);
         return new UpdateProfileDto(member);
     }
 
 
     // 회원 수정 中 프로필 수정
     public String UpdateUserProfile(Long id, UpdateProfileDto updateProfileDto, MultipartFile profileImg) throws IOException {
-        Member member = FindMember(id);
+        Member member = findMember(id);
         // 1. 원래 내용 삭제
         member.getMyHobbyList().forEach(myHobbyService::delete);
         member.getMyLanguages().forEach(myLanguageService::delete);
@@ -126,7 +127,7 @@ public class MemberService implements UserDetailsService {
 
     // 회원 수정 中 개인정보 수정 초기화면
     public MyPageDto EditUserInformation(Long id){
-        Member member = FindMember(id);
+        Member member = findMember(id);
         return new MyPageDto(member);
     }
 
@@ -154,7 +155,29 @@ public class MemberService implements UserDetailsService {
 
     //---------- MEMBER CRUD CLEAR ----------//
 
-    private Member FindMember(Long id) {
+    //---------- FRIENDSHIP START ----------//
+
+    // 친구 요청 신청
+    public void friendRequest(Long id, String toNickname){
+        Member sender = findMember(id);
+        Member receiver = memberRepository.findByNickname(toNickname).get();
+        friendRequestRepository.save(new FriendRequest(sender, receiver, RequestStatus.PENDING));
+    }
+
+    // 친구 요청 수락
+    public void acceptFriendRequest(Long id, String toNickname) {
+        // 1. 친구를 찾아서
+        Member sender = findMember(id);
+        Member receiver = memberRepository.findByNickname(toNickname).get();
+        // 2. 서로 친구관계를 맺어주고
+        sender.addFriend(receiver);
+        receiver.addFriend(sender);
+        // 3. 친구 요청은 삭제시킨다 *** 미완성
+        FriendRequest friendRequest = friendRequestRepository.findById(receiver.getId()).get();
+        friendRequestRepository.delete(friendRequest);
+    }
+
+    private Member findMember(Long id) {
         return memberRepository.findById(id).orElseThrow(()->new IllegalArgumentException("찾는 사용자가 존재하지 않습니다."));
     }
 
@@ -211,6 +234,7 @@ public class MemberService implements UserDetailsService {
         memberRepository.findById(memberId).get().setNickname(nickname);
         return "수정이 완료되었습니다";
     }
+
 
 
 }

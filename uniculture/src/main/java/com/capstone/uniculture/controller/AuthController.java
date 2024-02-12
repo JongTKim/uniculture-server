@@ -20,9 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class AuthController {
     private final MemberService memberService;
-    private final AuthenticationManagerBuilder managerBuilder;
-    private final PasswordEncoder passwordEncoder;
-    private final TokenProvider tokenProvider;
+
 
     // 회원가입
     @PostMapping("/signup")
@@ -51,21 +49,6 @@ public class AuthController {
         return ResponseEntity.ok(memberService.logout());
     }
 
-    // 회원 조회
-
-    // 프로필 변경창 선택시 현재 프로필
-
-    // 프로필 변경
-
-    // 개인정보 변경창 선택시 현재 개인정보
-
-    // 개인정보 변경 중 비밀번호 변경
-    @PatchMapping("/myPage/password")
-    public ResponseEntity updateUser(@RequestBody UpdateMemberDto updateMemberDto, @RequestPart MultipartFile profileImg){
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        //return ResponseEntity.ok(memberService.UpdateUserProfile(memberId,updateMemberDto,profileImg));
-        return ResponseEntity.ok(null);
-    }
 
 }
 

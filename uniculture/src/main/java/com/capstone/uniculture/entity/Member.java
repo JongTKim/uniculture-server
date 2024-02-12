@@ -8,7 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data // ** 일단 Setter 까지 넣어두고 추후 뺄지 결정
@@ -58,14 +60,12 @@ public class Member extends BaseEntity{
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<WantLanguage> wantLanguages = new ArrayList<>();
 
-    // ** 친구관계, 지금은 MtM로 구현했지만 나중에 중간테이블 만들어 줄 필요 있음
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_friend",
-            joinColumns = @JoinColumn(name = "id"),
-            inverseJoinColumns = @JoinColumn(name = "friend_id")
-    )
-    private List<Member> friends = new ArrayList<>();
+    // 친구관계 中 신청리스트
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    private Set<FriendRequest> receivedRequests = new HashSet<>();
+
+    @OneToMany(mappedBy = "fromMember")
+    private Set<Friendship> friendships = new HashSet<>();
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
@@ -82,5 +82,23 @@ public class Member extends BaseEntity{
         this.nickname = nickname;
         this.password = password;
         this.authority = authority;
+    }
+
+    public void addFriend(Member friend) {
+        Friendship friendship = new Friendship(this, friend);
+        friendships.add(friendship);
+    }
+
+    public void removeFriend(Member friend) {
+        Friendship friendship = new Friendship(this, friend);
+        friendships.remove(friendship);
+    }
+
+    public Set<Member> getFriends() {
+        Set<Member> friends = new HashSet<>();
+        for (Friendship friendship : friendships) {
+            friends.add(friendship.getToMember());
+        }
+        return friends;
     }
 }
