@@ -1,13 +1,12 @@
 package com.capstone.uniculture.dto;
 
-import com.capstone.uniculture.entity.Authority;
-import com.capstone.uniculture.entity.Member;
+import com.capstone.uniculture.entity.Member.Authority;
+import com.capstone.uniculture.entity.Member.Member;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter

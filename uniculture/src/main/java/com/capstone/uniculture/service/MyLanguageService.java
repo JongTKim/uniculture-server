@@ -1,9 +1,7 @@
 package com.capstone.uniculture.service;
 
 
-import com.capstone.uniculture.entity.MyHobby;
-import com.capstone.uniculture.entity.MyLanguage;
-import com.capstone.uniculture.repository.MyHobbyRepository;
+import com.capstone.uniculture.entity.Member.MyLanguage;
 import com.capstone.uniculture.repository.MyLanguageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

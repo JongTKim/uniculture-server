@@ -1,16 +1,15 @@
-package com.capstone.uniculture.entity;
+package com.capstone.uniculture.entity.Post;
 
-import jakarta.annotation.Nonnull;
+import com.capstone.uniculture.entity.BaseEntity;
+import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.swing.text.StyledEditorKit;
-
 @Entity
 @Data
 @NoArgsConstructor
-public class Comment extends BaseEntity{
+public class Comment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

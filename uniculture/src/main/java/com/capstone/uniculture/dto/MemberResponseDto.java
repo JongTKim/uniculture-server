@@ -1,6 +1,6 @@
 package com.capstone.uniculture.dto;
 
-import com.capstone.uniculture.entity.Member;
+import com.capstone.uniculture.entity.Member.Member;
 import lombok.*;
 
 @Getter

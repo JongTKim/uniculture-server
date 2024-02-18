@@ -1,8 +1,8 @@
 package com.capstone.uniculture.dto;
 
-import com.capstone.uniculture.entity.Member;
-import com.capstone.uniculture.entity.MyLanguage;
-import com.capstone.uniculture.entity.WantLanguage;
+import com.capstone.uniculture.entity.Member.Member;
+import com.capstone.uniculture.entity.Member.MyLanguage;
+import com.capstone.uniculture.entity.Member.WantLanguage;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

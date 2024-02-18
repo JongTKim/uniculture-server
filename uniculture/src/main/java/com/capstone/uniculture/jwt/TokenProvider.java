@@ -29,7 +29,7 @@ public class TokenProvider {
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;
     private final Key key;
 
-    @Value("${jwt.shortExpiration")
+    @Value("${jwt.shortExpiration}")
     private int shortExpiration;
 
     public TokenProvider(@Value("${jwt.secret}") String secretKey){

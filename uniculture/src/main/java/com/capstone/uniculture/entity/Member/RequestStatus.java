@@ -1,4 +1,4 @@
-package com.capstone.uniculture.entity;
+package com.capstone.uniculture.entity.Member;
 
 public enum RequestStatus {
     PENDING,

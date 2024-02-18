@@ -1,5 +1,6 @@
-package com.capstone.uniculture.entity;
+package com.capstone.uniculture.entity.Post;
 
+import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

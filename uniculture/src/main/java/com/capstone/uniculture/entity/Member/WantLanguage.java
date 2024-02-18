@@ -1,4 +1,4 @@
-package com.capstone.uniculture.entity;
+package com.capstone.uniculture.entity.Member;
 
 import jakarta.persistence.*;
 import lombok.Getter;

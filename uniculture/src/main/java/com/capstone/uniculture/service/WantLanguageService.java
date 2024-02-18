@@ -1,13 +1,11 @@
 package com.capstone.uniculture.service;
 
-import com.capstone.uniculture.entity.MyHobby;
-import com.capstone.uniculture.entity.WantLanguage;
+import com.capstone.uniculture.entity.Member.WantLanguage;
 import com.capstone.uniculture.repository.WantLanguageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service

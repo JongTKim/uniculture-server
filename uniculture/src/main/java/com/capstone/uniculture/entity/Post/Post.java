@@ -1,8 +1,9 @@
-package com.capstone.uniculture.entity;
+package com.capstone.uniculture.entity.Post;
 
+import com.capstone.uniculture.entity.BaseEntity;
+import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
-public class Post extends BaseEntity{
+public class Post extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

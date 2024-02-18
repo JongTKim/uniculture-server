@@ -1,6 +1,6 @@
 package com.capstone.uniculture.repository;
 
-import com.capstone.uniculture.entity.Member;
+import com.capstone.uniculture.entity.Member.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

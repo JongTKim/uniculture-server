@@ -36,7 +36,7 @@ public class MemberController {
 
     // 회원 조회
     @GetMapping("/myPage")
-    public ResponseEntity<MyPageDto> myPage(){
+    public ResponseEntity<MyPageDto> myPage() throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.findUser(memberId));
     }
@@ -50,15 +50,14 @@ public class MemberController {
     // 회원 수정 中 프로필 수정
     @PatchMapping("/myPage/editProfile")
     public ResponseEntity editProfile(@RequestPart UpdateProfileDto updateProfileDto,
-                                      @RequestPart MultipartFile profileImg) throws IOException {
+                                      @RequestPart(required = false) MultipartFile profileImg) throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.UpdateUserProfile(memberId,updateProfileDto,profileImg));
-
     }
 
     // 회원 수정 中 개인정보 수정 초기화면
     @GetMapping("/myPage/editInformation")
-    public ResponseEntity<MyPageDto> editInformationForm(){
+    public ResponseEntity<MyPageDto> editInformationForm() throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.EditUserInformation(memberId));
     }
@@ -77,20 +76,7 @@ public class MemberController {
         return ResponseEntity.ok(memberService.deleteUser(memberId));
     }
 
-    // 회원이 친구 신청
-    @PostMapping("/friendRequest")
-    public ResponseEntity friendRequest(@RequestBody FriendRequestDto friendRequestDto){
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        memberService.friendRequest(memberId,friendRequestDto.getToNickname());
-        return ResponseEntity.ok("성공");
-    }
 
-    // 회원이 친구요청 수락
-    public ResponseEntity acceptFriendRequest(@RequestBody FriendRequestDto friendRequestDto){
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        memberService.acceptFriendRequest(memberId,friendRequestDto.getToNickname());
-        return ResponseEntity.ok("성공");
-    }
 
     // 회원이 친구요청 거절
 

@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
     private final MemberService memberService;
 
 
@@ -44,7 +45,7 @@ public class AuthController {
     }
 
     // 로그아웃
-    @DeleteMapping("/logout")
+    @GetMapping("/logout")
     public ResponseEntity logout(){
         return ResponseEntity.ok(memberService.logout());
     }

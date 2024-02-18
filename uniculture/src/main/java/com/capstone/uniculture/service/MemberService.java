@@ -2,12 +2,12 @@ package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.dto.*;
 import com.capstone.uniculture.entity.*;
+import com.capstone.uniculture.entity.Member.*;
 import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.repository.FileRepository;
 import com.capstone.uniculture.repository.FriendRequestRepository;
 import com.capstone.uniculture.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -39,11 +38,10 @@ public class MemberService implements UserDetailsService {
     private final MemberRepository memberRepository;
     private final FileRepository fileRepository;
 
-    private final FriendRequestRepository friendRequestRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    /* @Value("${file.upload-dir}")
+    private String uploadDir;*/
 
     private final MyHobbyService myHobbyService;
     private final MyLanguageService myLanguageService;
@@ -64,7 +62,7 @@ public class MemberService implements UserDetailsService {
     }
 
     // 회원 조회
-    public MyPageDto findUser(Long id){
+    public MyPageDto findUser(Long id) throws IOException {
         // 1. ID를 기반으로 DB 에서 Member 객체 생성
         Member member = findMember(id);
         // 2. 리턴해줄 DTO 생성. 이 과정에서 프록시 -> 실객체 의 변환이 일어남
@@ -108,16 +106,18 @@ public class MemberService implements UserDetailsService {
         }
 
         // 3. 프사 설정
-        String fileName = UUID.randomUUID().toString() + "_" + profileImg.getOriginalFilename();
-        String filepath = uploadDir + File.separator + fileName;
+        if(!profileImg.isEmpty()) {
+            String fileName = UUID.randomUUID().toString() + "_" + profileImg.getOriginalFilename();
+            String filepath = "/src/main/resources/static" + File.separator + fileName;
 
-        File file = new File(filepath);
-        profileImg.transferTo(file);
+            File file = new File(filepath);
+            profileImg.transferTo(file);
 
-        Files files = new Files(fileName, filepath);
-        fileRepository.save(files);
+            Files files = new Files(fileName, filepath);
+            fileRepository.save(files);
 
-        member.setProfileUrl(updateProfileDto.getProfileUrl());
+            member.setProfileUrl(updateProfileDto.getProfileUrl());
+        }
 
         // 4. 소개 설정
         member.setIntroduce(updateProfileDto.getIntroduce());
@@ -126,7 +126,7 @@ public class MemberService implements UserDetailsService {
     }
 
     // 회원 수정 中 개인정보 수정 초기화면
-    public MyPageDto EditUserInformation(Long id){
+    public MyPageDto EditUserInformation(Long id) throws IOException {
         Member member = findMember(id);
         return new MyPageDto(member);
     }
@@ -155,27 +155,6 @@ public class MemberService implements UserDetailsService {
 
     //---------- MEMBER CRUD CLEAR ----------//
 
-    //---------- FRIENDSHIP START ----------//
-
-    // 친구 요청 신청
-    public void friendRequest(Long id, String toNickname){
-        Member sender = findMember(id);
-        Member receiver = memberRepository.findByNickname(toNickname).get();
-        friendRequestRepository.save(new FriendRequest(sender, receiver, RequestStatus.PENDING));
-    }
-
-    // 친구 요청 수락
-    public void acceptFriendRequest(Long id, String toNickname) {
-        // 1. 친구를 찾아서
-        Member sender = findMember(id);
-        Member receiver = memberRepository.findByNickname(toNickname).get();
-        // 2. 서로 친구관계를 맺어주고
-        sender.addFriend(receiver);
-        receiver.addFriend(sender);
-        // 3. 친구 요청은 삭제시킨다 *** 미완성
-        FriendRequest friendRequest = friendRequestRepository.findById(receiver.getId()).get();
-        friendRequestRepository.delete(friendRequest);
-    }
 
     private Member findMember(Long id) {
         return memberRepository.findById(id).orElseThrow(()->new IllegalArgumentException("찾는 사용자가 존재하지 않습니다."));

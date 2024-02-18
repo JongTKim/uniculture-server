@@ -1,22 +1,23 @@
-package com.capstone.uniculture.entity;
+package com.capstone.uniculture.entity.Member;
 
 
+import com.capstone.uniculture.entity.BaseEntity;
+import com.capstone.uniculture.entity.Post.Post;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
-@Data // ** 일단 Setter 까지 넣어두고 추후 뺄지 결정
-@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@NoArgsConstructor
+@Getter
+@Setter
 @Table(name = "member")
-public class Member extends BaseEntity{
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,7 +65,7 @@ public class Member extends BaseEntity{
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
     private Set<FriendRequest> receivedRequests = new HashSet<>();
 
-    @OneToMany(mappedBy = "fromMember")
+    @OneToMany(mappedBy = "fromMember", cascade = CascadeType.ALL)
     private Set<Friendship> friendships = new HashSet<>();
 
     public void setNickname(String nickname) {
@@ -75,6 +76,12 @@ public class Member extends BaseEntity{
         this.password = password;
     }
 
+
+    // --------------- 생성자 ---------------
+
+    public Member(){
+        this.profileUrl = "resources/static/Noneprofile.jpg";
+    }
     @Builder
     public Member(Long id, String email, String nickname, String password, Authority authority) {
         this.id = id;
@@ -82,11 +89,13 @@ public class Member extends BaseEntity{
         this.nickname = nickname;
         this.password = password;
         this.authority = authority;
+        this.profileUrl = "C:/Users/JongtaeKim/Desktop/캡스톤/uniculture-server/uniculture/src/main/resources/static/Noneprofile.jpg";
     }
 
+    // --------------- 비즈니스 편의 메소드 ---------------
     public void addFriend(Member friend) {
         Friendship friendship = new Friendship(this, friend);
-        friendships.add(friendship);
+        this.friendships.add(friendship);
     }
 
     public void removeFriend(Member friend) {
@@ -94,6 +103,7 @@ public class Member extends BaseEntity{
         friendships.remove(friendship);
     }
 
+    // 친구의 목록을 가져오는 편의 메소드
     public Set<Member> getFriends() {
         Set<Member> friends = new HashSet<>();
         for (Friendship friendship : friendships) {
@@ -101,4 +111,14 @@ public class Member extends BaseEntity{
         }
         return friends;
     }
+
+    // 친구신청한 사람 목록을 가져오는 편의 메소드
+    public List<Member> getRequestMembers(){
+        return receivedRequests.stream()
+                .map(receivedRequest -> receivedRequest.getSender())
+                .collect(Collectors.toList());
+    }
+
+    // 내가 친구신청한 사람 목록을 가져오는 편의 메소드
+    // -> 이거는 FriendRequestRepository 에서 뒤져야된다 Service 단에서 처리
 }
