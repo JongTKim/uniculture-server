@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final MemberService memberService;
 
 
-    @GetMapping("/home")
+    @GetMapping("/auth/home")
     public ResponseEntity signOk(){
         return ResponseEntity.ok().build();
     }
@@ -52,7 +52,7 @@ public class AuthController {
     }
 
     // 로그아웃
-    @GetMapping("/logout")
+    @GetMapping("/auth/logout")
     public ResponseEntity logout(){
         return ResponseEntity.ok(memberService.logout());
     }

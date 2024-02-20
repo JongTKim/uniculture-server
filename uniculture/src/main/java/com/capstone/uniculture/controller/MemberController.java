@@ -13,42 +13,43 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/member")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService memberService;
 
-    // 회원 가입
-    @PostMapping("/signup")
-    public ResponseEntity signup(@RequestBody MemberRequestDto requestDto){
-        return ResponseEntity.ok(memberService.signup(requestDto));
-    }
-
-    // 닉네임 중복 확인
-    @GetMapping("/check")
-    public ResponseEntity<?> checkNicknameValid(@RequestParam("nickname") String nickname) throws BadRequestException {
-        if(memberService.checkNicknameUnique(nickname) == true){
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-        return ResponseEntity.ok("사용 가능한 아이디 입니다.");
-    }
-
-    // 회원 조회
-    @GetMapping("/myPage")
+    // 회원 조회(내 프로필 조회)
+    @GetMapping("/auth/myPage")
     public ResponseEntity<MyPageDto> myPage() throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.findUser(memberId));
     }
+
+    // 회원 조회(상대 프로필 조회)
+    @GetMapping("/otherPage/{userId}")
+    public ResponseEntity<MyPageDto> otherPage(@PathVariable(name="userId") Long userId) throws IOException {
+        try{
+            Long memberId = SecurityUtil.getCurrentMemberId(); // 로그인된 사용자라면
+            System.out.println("memberId = " + memberId);
+        }
+        catch (RuntimeException e){
+            System.out.println("e = " + e.getMessage());
+        }
+        finally {
+            return ResponseEntity.ok(memberService.findUser(userId));
+            }
+        }
+
     // 회원 수정 中 프로필 수정 초기화면
-    @GetMapping("/myPage/editProfile")
+    @GetMapping("/auth/myPage/editProfile")
     public ResponseEntity<UpdateProfileDto> editProfileForm(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.EditUserProfile(memberId));
     }
 
     // 회원 수정 中 프로필 수정
-    @PatchMapping("/myPage/editProfile")
+    @PatchMapping("/auth/myPage/editProfile")
     public ResponseEntity editProfile(@RequestPart UpdateProfileDto updateProfileDto,
                                       @RequestPart(required = false) MultipartFile profileImg) throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
@@ -56,21 +57,21 @@ public class MemberController {
     }
 
     // 회원 수정 中 개인정보 수정 초기화면
-    @GetMapping("/myPage/editInformation")
+    @GetMapping("/auth/myPage/editInformation")
     public ResponseEntity<MyPageDto> editInformationForm() throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.EditUserInformation(memberId));
     }
 
     // 회원 수정 中 개인정보 수정
-    @PatchMapping("/myPage/editInformation")
+    @PatchMapping("/auth/myPage/editInformation")
     public ResponseEntity editInformation(@RequestBody UpdateMemberDto updateMemberDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.UpdateUserInformation(memberId,updateMemberDto));
     }
 
     // 회원 삭제
-    @DeleteMapping("/myPage")
+    @DeleteMapping("/auth/myPage")
     public ResponseEntity deleteUser(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.deleteUser(memberId));
