@@ -13,13 +13,14 @@ import java.nio.file.Files;
 public class MyPageDto {
     private Long id;
     private String email;
-    private String profileUrl;
+    private String profileurl;
     private String nickname;
     private Integer age;
     private String gender;
     //private List<String> post;
-    private Integer friendNum;
-    private Integer receiveRequestNum;
+    private Integer postnum;
+    private Integer friendnum;
+    private Integer receiverequestNum;
 
     public MyPageDto(Member member) throws IOException {
         this.id = member.getId();
@@ -34,7 +35,8 @@ public class MyPageDto {
             File imageFile = new File(member.getProfileUrl());
             this.profileUrl = org.apache.commons.codec.binary.Base64.encodeBase64String(Files.readAllBytes(imageFile.toPath()));
         }*/
-        this.receiveRequestNum = member.getReceivedRequests().size();
-        this.friendNum = member.getFriends().size();
+        this.receiverequestNum = member.getReceivedRequests().size();
+        this.friendnum = member.getFriends().size();
+        this.postnum = member.getPost().size();
     }
 }
