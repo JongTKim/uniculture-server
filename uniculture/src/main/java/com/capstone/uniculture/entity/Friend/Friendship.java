@@ -1,5 +1,6 @@
-package com.capstone.uniculture.entity.Member;
+package com.capstone.uniculture.entity.Friend;
 
+import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
