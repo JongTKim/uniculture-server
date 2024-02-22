@@ -4,8 +4,6 @@ import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.*;
 import com.capstone.uniculture.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,14 +19,14 @@ public class MemberController {
 
     // 회원 조회(내 프로필 조회)
     @GetMapping("/auth/myPage")
-    public ResponseEntity<MyPageDto> myPage() throws IOException {
+    public ResponseEntity<ResponseProfileDto> myPage() throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.findUser(memberId));
     }
 
     // 회원 조회(상대 프로필 조회)
     @GetMapping("/otherPage/{userId}")
-    public ResponseEntity<MyPageDto> otherPage(@PathVariable(name="userId") Long userId) throws IOException {
+    public ResponseEntity<ResponseProfileDto> otherPage(@PathVariable(name="userId") Long userId) throws IOException {
         try{
             Long memberId = SecurityUtil.getCurrentMemberId(); // 로그인된 사용자라면
             System.out.println("memberId = " + memberId);
@@ -58,7 +56,7 @@ public class MemberController {
 
     // 회원 수정 中 개인정보 수정 초기화면
     @GetMapping("/auth/myPage/editInformation")
-    public ResponseEntity<MyPageDto> editInformationForm() throws IOException {
+    public ResponseEntity<ResponseProfileDto> editInformationForm() throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.EditUserInformation(memberId));
     }

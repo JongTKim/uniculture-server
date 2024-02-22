@@ -2,6 +2,8 @@ package com.capstone.uniculture.entity.Member;
 
 
 import com.capstone.uniculture.entity.BaseEntity;
+import com.capstone.uniculture.entity.Friend.FriendRequest;
+import com.capstone.uniculture.entity.Friend.Friendship;
 import com.capstone.uniculture.entity.Post.Post;
 import jakarta.persistence.*;
 import lombok.*;
@@ -90,6 +92,9 @@ public class Member extends BaseEntity {
         this.authority = authority;
         this.profileUrl = "C:/Users/JongtaeKim/Desktop/캡스톤/uniculture-server/uniculture/src/main/resources/static/Noneprofile.jpg";
     }
+    // --------------- 연관관계 편의 메소드 ---------------
+
+
 
     // --------------- 비즈니스 편의 메소드 ---------------
     public void addFriend(Member friend) {
