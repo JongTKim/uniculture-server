@@ -1,7 +1,7 @@
-package com.capstone.uniculture.entity.Member;
+package com.capstone.uniculture.entity.Friend;
 
+import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,5 +30,7 @@ public class FriendRequest {
         this.sender = sender;
         this.receiver = receiver;
         this.status = status;
+        // 친구 신청 받는쪽의 컬렉션에 Request 를 추가해줘야함
+        receiver.getReceivedRequests().add(this);
     }
 }
