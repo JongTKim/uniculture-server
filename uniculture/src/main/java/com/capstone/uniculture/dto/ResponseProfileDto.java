@@ -42,7 +42,7 @@ public class ResponseProfileDto {
     // 취미 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private List<String> hobbies;
 
-    public ResponseProfileDto(Member member) throws IOException {
+    public ResponseProfileDto(Member member){
         this.id = member.getId();
         this.email = member.getEmail();
         this.nickname = member.getNickname();

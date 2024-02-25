@@ -23,19 +23,19 @@ public class AuthController {
     private final MemberService memberService;
 
 
-    @GetMapping("/auth/home")
+    @GetMapping("/auth/sec/home")
     public ResponseEntity signOk(){
         return ResponseEntity.ok().build();
     }
     // 회원가입
-    @PostMapping("/signup")
+    @PostMapping("/sec/signup")
     public ResponseEntity signup(@RequestBody MemberRequestDto requestDto){
         System.out.println("requestDto = " + requestDto);
         return ResponseEntity.ok(memberService.signup(requestDto));
     }
 
     // 닉네임 중복 확인
-    @GetMapping("/check")
+    @GetMapping("/sec/check")
     public ResponseEntity<?> checkNicknameValid(@RequestParam("nickname") String nickname) throws BadRequestException {
         System.out.println("nickname = " + nickname);
         if(memberService.checkNicknameUnique(nickname) == true){
@@ -45,14 +45,14 @@ public class AuthController {
     }
 
     // 로그인
-    @PostMapping("/login")
+    @PostMapping("/sec/login")
     public ResponseEntity<TokenDto> login(@RequestBody MemberRequestDto requestDto){
         System.out.println("requestDto = " + requestDto);
         return ResponseEntity.ok(memberService.login(requestDto));
     }
 
     // 로그아웃
-    @GetMapping("/auth/logout")
+    @GetMapping("/auth/sec/logout")
     public ResponseEntity logout(){
         return ResponseEntity.ok(memberService.logout());
     }
