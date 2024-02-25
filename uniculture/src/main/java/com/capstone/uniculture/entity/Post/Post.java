@@ -1,8 +1,11 @@
 package com.capstone.uniculture.entity.Post;
 
+import com.capstone.uniculture.dto.Post.PostUpdateDto;
 import com.capstone.uniculture.entity.BaseEntity;
 import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +15,8 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Post extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,9 +25,9 @@ public class Post extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PostType posttype;
 
-    private Integer likeCount;
+    private Integer likeCount = 0;
 
-    private Integer commentCount;
+    private Integer commentCount = 0;
 
     private String title;
 
@@ -51,6 +56,11 @@ public class Post extends BaseEntity {
         this.commentCount += 1;
     }
 
+    public void setMember(Member newMember){
+        this.member = newMember;
+        newMember.getPost().add(this);
+    }
+
     public void removeComment(){
         this.commentCount -= 1;
     }
@@ -59,7 +69,15 @@ public class Post extends BaseEntity {
     public void likePost(){
         this.likeCount += 1;
     }
+
     public void unlikePost(){
         this.likeCount -= 1;
+    }
+
+    public void update(PostUpdateDto postUpdateDto) {
+        this.title = postUpdateDto.getTitle();
+        this.content = postUpdateDto.getContents();
+        this.posttype = postUpdateDto.getPosttype();
+
     }
 }
