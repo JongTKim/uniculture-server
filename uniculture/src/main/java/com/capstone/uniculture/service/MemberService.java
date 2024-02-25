@@ -191,16 +191,21 @@ public class MemberService implements UserDetailsService {
 
     // 회원 수정 中 개인정보 수정
     public String UpdateUserInformation(Long id, UpdateMemberDto updateMemberDto){
+        // 0. 멤버찾기
+        Member member = findMember(id);
         // 1. 비밀번호 수정사항이 있는지 확인
         if(updateMemberDto.getExPassword() != null && updateMemberDto.getNewPassword() != null){
             // 1-1. 비밀번호 교체 로직 실행. 만약 예전 비밀번호가 틀렸으면 예외발생
-            changePassword(id, updateMemberDto.getExPassword(), updateMemberDto.getNewPassword());
+            changePassword(member, updateMemberDto.getExPassword(), updateMemberDto.getNewPassword());
         }
         // 2. 닉네임 수정사항이 있는지 확인
         if(updateMemberDto.getNickname() != null){
             // 2-1. 닉네임 교체 로직 실행. 만약 이미 존재하는 이메일이라면 예외발생
-            changeNickname(id, updateMemberDto.getNickname());
+            changeNickname(member, updateMemberDto.getNickname());
         }
+        // 3. 성별과 나이수정
+        member.setAge(updateMemberDto.getAge());
+        member.setGender(updateMemberDto.getGender());
         return "수정 성공";
     }
 
@@ -256,19 +261,18 @@ public class MemberService implements UserDetailsService {
     }
 
     // 프로필 변경 로직 中 비밃번호 변경, 닉네임 변경
-    public String changePassword(Long memberId, String exPassword, String newPassword) {
-        Member member = memberRepository.findById(memberId).get();
+    public String changePassword(Member member, String exPassword, String newPassword) {
         if(!passwordEncoder.matches(exPassword, member.getPassword())){
             throw new RuntimeException("비밀번호가 맞지 않습니다");
         }
         member.setPassword(passwordEncoder.encode(newPassword));
         return "수정이 완료되었습니다";
     }
-    public String changeNickname(Long memberId, String nickname) {
+    public String changeNickname(Member member, String nickname) {
         if(memberRepository.existsByNickname(nickname)){
             throw new RuntimeException("이미 존재하는 이메일입니다");
         }
-        memberRepository.findById(memberId).get().setNickname(nickname);
+        member.setNickname(nickname);
         return "수정이 완료되었습니다";
     }
 

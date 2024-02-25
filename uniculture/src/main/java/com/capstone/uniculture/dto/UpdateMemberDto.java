@@ -1,5 +1,6 @@
 package com.capstone.uniculture.dto;
 
+import com.capstone.uniculture.entity.Member.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateMemberDto {
+    private Integer age;
+    private Gender gender;
     private String nickname;
     private String exPassword;
     private String newPassword;
