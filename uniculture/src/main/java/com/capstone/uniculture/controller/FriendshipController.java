@@ -3,6 +3,7 @@ package com.capstone.uniculture.controller;
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.FriendRequestDto;
 import com.capstone.uniculture.dto.OtherProfileDto;
+import com.capstone.uniculture.dto.ResponseProfileDto;
 import com.capstone.uniculture.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,12 @@ public class FriendshipController {
 
     private final FriendService friendService;
 
-    // 회원이 친구 신청
+    /**
+     * 친구 신청 API
+     * @request : TargetId(신청하려는 상대방의 ID, ReceiverId)
+     * @response : 성공여부
+     * 로직 : Sender, Receiver 찾아서 FriendRequest 생성
+     */
     @PostMapping("/auth/friend/request")
     public ResponseEntity friendRequest(@RequestBody FriendRequestDto friendRequestDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
@@ -25,7 +31,12 @@ public class FriendshipController {
         return ResponseEntity.ok("성공");
     }
 
-    // 회원이 친구 신청 취소
+    /**
+     * 친구 신청 취소 API
+     * @request : TargetId(취소하려는 상대방의 ID, ReceiverId)
+     * @response : 성공여부
+     * 로직 : Sender, Receiver 가지고 FriendRequest 를 찾아서 삭제
+     */
     @DeleteMapping("/auth/friend/request")
     public ResponseEntity revokeFriendRequest(@RequestBody FriendRequestDto friendRequestDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
@@ -33,38 +44,64 @@ public class FriendshipController {
         return ResponseEntity.ok("성공");
     }
 
-    // 회원이 친구 요청 수락
+    /**
+     * 친구 수락 API
+     * @request : TargetId(친구신청 수락하려는 상대방의 ID)
+     * @response : 성공여부
+     * 로직 : Sender, Receiver 를 찾아서 서로 Friendship 맺어주고 FriendRequest 는 삭제
+     */
     @PostMapping("/auth/friend/accept")
     public ResponseEntity acceptFriendRequest(@RequestBody FriendRequestDto friendRequestDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
-        friendService.acceptFriendRequest(friendRequestDto.getRequestId());
-        return ResponseEntity.ok("성공");
+        friendService.acceptFriendRequest(memberId,friendRequestDto.getTargetId());
+        return ResponseEntity.ok("수락함");
     }
 
-    // 회원이 친구 요청 거절
+    /**
+     * 친구 거절 API
+     * @request : TargetId(친구신청 수락하려는 상대방의 ID)
+     * @response : 성공여부
+     * 로직 : Sender, Receiver 가지고 FriendRequest 를 찾아서 삭제
+     */
     @PostMapping("/auth/friend/reject")
     public ResponseEntity rejectFriendRequest(@RequestBody FriendRequestDto friendRequestDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
-        friendService.rejectFriendRequest(friendRequestDto.getRequestId());
-        return ResponseEntity.ok("성공");
+        friendService.rejectFriendRequest(memberId,friendRequestDto.getTargetId());
+        return ResponseEntity.ok("거절됨");
     }
 
-    // 회원이 친구 목록 조회
+    /**
+     * 친구 목록 조회 API
+     * @request : X
+     * @response : List<ResponseProfileDto>
+     * 로직 : 현재 회원의 친구목록을 가져와서 각 친구마다 프로필로 만들어서 반환
+     */
     @GetMapping("/auth/friend/check")
-    public ResponseEntity<List<OtherProfileDto>> checkFriendsList(){
+    public ResponseEntity<List<ResponseProfileDto>> checkFriendsList(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(friendService.listOfFriends(memberId));
     }
 
-    // 회원이 친구 요청받은 목록 조회
+    /**
+     * 친구 요청 목록 조회 API
+     * @request : X
+     * @response : List<ResponseProfileDto>
+     * 로직 : 현재 회원의 친구 요청 목록을 가져와서 각 친구마다 프로필로 만들어서 반환
+     */
     @GetMapping("/auth/friend/check-request")
-    public ResponseEntity<List<OtherProfileDto>> checkRequestFriendsList(){
+    public ResponseEntity<List<ResponseProfileDto>> checkRequestFriendsList(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(friendService.listOfFriendRequest(memberId));
     }
-    // 회원이 친구 신청한 목록 조회
+
+    /**
+     * 친구 신청 목록 조회 API
+     * @request : X
+     * @response : List<ResponseProfileDto>
+     * 로직 : FriendRequestRepository 에서 현재 회원이 Sender 로 들어가있는 List 를 가져와 각 친구마다 프로필로 만들어서 반환
+     */
     @GetMapping("/auth/friend/check-my-request")
-    public ResponseEntity<List<OtherProfileDto>> checkMyRequestFriendsList(){
+    public ResponseEntity<List<ResponseProfileDto>> checkMyRequestFriendsList(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(friendService.listOfMyFriendRequest(memberId));
     }
