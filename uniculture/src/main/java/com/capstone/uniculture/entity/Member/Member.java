@@ -83,6 +83,7 @@ public class Member extends BaseEntity {
     public Member(){
         this.profileUrl = "resources/static/Noneprofile.jpg";
     }
+
     @Builder
     public Member(Long id, String email, String nickname, String password, Authority authority) {
         this.id = id;

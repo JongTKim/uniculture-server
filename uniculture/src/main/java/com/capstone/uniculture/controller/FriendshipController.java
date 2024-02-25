@@ -24,7 +24,7 @@ public class FriendshipController {
      * @response : 성공여부
      * 로직 : Sender, Receiver 찾아서 FriendRequest 생성
      */
-    @PostMapping("/auth/friend/request")
+    @PostMapping("/auth/friend")
     public ResponseEntity friendRequest(@RequestBody FriendRequestDto friendRequestDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
         friendService.friendRequest(memberId,friendRequestDto.getTargetId());
@@ -37,7 +37,7 @@ public class FriendshipController {
      * @response : 성공여부
      * 로직 : Sender, Receiver 가지고 FriendRequest 를 찾아서 삭제
      */
-    @DeleteMapping("/auth/friend/request")
+    @DeleteMapping("/auth/friend")
     public ResponseEntity revokeFriendRequest(@RequestBody FriendRequestDto friendRequestDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
         friendService.revokeFriendRequest(memberId, friendRequestDto.getTargetId());
@@ -76,7 +76,7 @@ public class FriendshipController {
      * @response : List<ResponseProfileDto>
      * 로직 : 현재 회원의 친구목록을 가져와서 각 친구마다 프로필로 만들어서 반환
      */
-    @GetMapping("/auth/friend/check")
+    @GetMapping("/auth/friend")
     public ResponseEntity<List<ResponseProfileDto>> checkFriendsList(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(friendService.listOfFriends(memberId));
@@ -88,7 +88,7 @@ public class FriendshipController {
      * @response : List<ResponseProfileDto>
      * 로직 : 현재 회원의 친구 요청 목록을 가져와서 각 친구마다 프로필로 만들어서 반환
      */
-    @GetMapping("/auth/friend/check-request")
+    @GetMapping("/auth/friend/checkRequest")
     public ResponseEntity<List<ResponseProfileDto>> checkRequestFriendsList(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(friendService.listOfFriendRequest(memberId));
@@ -100,7 +100,7 @@ public class FriendshipController {
      * @response : List<ResponseProfileDto>
      * 로직 : FriendRequestRepository 에서 현재 회원이 Sender 로 들어가있는 List 를 가져와 각 친구마다 프로필로 만들어서 반환
      */
-    @GetMapping("/auth/friend/check-my-request")
+    @GetMapping("/auth/friend/checkMyRequest")
     public ResponseEntity<List<ResponseProfileDto>> checkMyRequestFriendsList(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(friendService.listOfMyFriendRequest(memberId));
