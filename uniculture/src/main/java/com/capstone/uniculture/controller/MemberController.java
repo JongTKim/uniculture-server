@@ -24,20 +24,21 @@ public class MemberController {
         return ResponseEntity.ok(memberService.findUser(memberId));
     }
 
-    // 회원 조회(상대 프로필 조회)
+    // 회원 조회(상대 프로필 조회) - 로그인, 비로그인 나눠서 데이터를 다르게 줘야한다!
     @GetMapping("/otherPage/{userId}")
     public ResponseEntity<ResponseProfileDto> otherPage(@PathVariable(name="userId") Long userId) throws IOException {
-        try{
-            Long memberId = SecurityUtil.getCurrentMemberId(); // 로그인된 사용자라면
+        try {
+            Long memberId = SecurityUtil.getCurrentMemberId();
+            // 여기서부터는 로그인된 사용자 사용
             System.out.println("memberId = " + memberId);
+            return ResponseEntity.ok(memberService.findOtherLogin(userId, memberId));
         }
-        catch (RuntimeException e){
+        catch (RuntimeException e) {
             System.out.println("e = " + e.getMessage());
+            // 여기서 부터는 로그인 되지않은 사용자 사용
+            return ResponseEntity.ok(memberService.findOtherLogout(userId));
         }
-        finally {
-            return ResponseEntity.ok(memberService.findUser(userId));
-            }
-        }
+    }
 
     // 회원 수정 中 프로필 수정 초기화면
     @GetMapping("/auth/myPage/editProfile")
@@ -74,14 +75,6 @@ public class MemberController {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.deleteUser(memberId));
     }
-
-
-
-    // 회원이 친구요청 거절
-
-    // 회원의 친구목록 조회
-
-    // 회원의 친구신청함 조회
 
 
 }

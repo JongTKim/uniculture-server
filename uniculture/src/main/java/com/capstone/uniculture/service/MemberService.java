@@ -63,7 +63,7 @@ public class MemberService implements UserDetailsService {
         return "회원가입 완료";
     }
 
-    // 회원 조회
+    // 자신 조회
     public ResponseProfileDto findUser(Long id) throws IOException {
         // 1. ID를 기반으로 DB 에서 Member 객체 생성
         Member member = findMember(id);
@@ -85,19 +85,48 @@ public class MemberService implements UserDetailsService {
                 .build();
     }
 
-    // 타인 조회
-    public ResponseProfileDto findOther(Long id){
+    // 타인 조회 - 로그인 상태일때
+    public ResponseProfileDto findOtherLogin(Long id, Long myId) throws IOException {
+        // 1. ID를 기반으로 DB 에서 Member 객체 생성
         Member member = findMember(id);
+        // 2. 사용이유는 프록시객체 때문에
         Integer postNum = postRepository.countByMember(member);
         Integer friendNum = friendshipRepository.countByMember(member);
+        // 3. 리턴해줄 DTO 생성. 이 과정에서 컬렉션 필드에서는 프록시 -> 실객체 의 변환이 일어남
         return ResponseProfileDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
                 .introduce(member.getIntroduce())
                 .postnum(postNum)
+                .canlanguages(member.getMyLanguages().stream().collect(Collectors.toMap(MyLanguage::getLanguage, MyLanguage::getLevel)))
+                .wantlanguages(member.getWantLanguages().stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
+                .hobbies(member.getMyHobbyList().stream().map(myHobby -> myHobby.getHobbyName()).collect(Collectors.toList()))
+                .friendnum(friendNum)
+                .isfriend(friendshipRepository.existsByFromMember_IdAndToMember_Id(id,myId))
+                .build();
+    }
+
+    // 타인 조회 - 로그아웃 상태일때
+    public ResponseProfileDto findOtherLogout(Long id) throws IOException {
+        // 1. ID를 기반으로 DB 에서 Member 객체 생성
+        Member member = findMember(id);
+        // 2. 사용이유는 프록시객체 때문에
+        Integer postNum = postRepository.countByMember(member);
+        Integer friendNum = friendshipRepository.countByMember(member);
+        // 3. 리턴해줄 DTO 생성. 이 과정에서 컬렉션 필드에서는 프록시 -> 실객체 의 변환이 일어남
+        return ResponseProfileDto.builder()
+                .id(member.getId())
+                .nickname(member.getNickname())
+                .introduce(member.getIntroduce())
+                .postnum(postNum)
+                .canlanguages(member.getMyLanguages().stream().collect(Collectors.toMap(MyLanguage::getLanguage, MyLanguage::getLevel)))
+                .wantlanguages(member.getWantLanguages().stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
+                .hobbies(member.getMyHobbyList().stream().map(myHobby -> myHobby.getHobbyName()).collect(Collectors.toList()))
                 .friendnum(friendNum)
                 .build();
     }
+
+
 
     // 회원 수정 中 프로필 수정 초기화면
     public UpdateProfileDto EditUserProfile(Long id){
@@ -109,7 +138,7 @@ public class MemberService implements UserDetailsService {
     // 회원 수정 中 프로필 수정
     public String UpdateUserProfile(Long id, UpdateProfileDto updateProfileDto, MultipartFile profileImg) throws IOException {
         Member member = findMember(id);
-        // 1. 원래 내용 삭제
+            // 1. 원래 내용 삭제
         member.getMyHobbyList().forEach(myHobbyService::delete);
         member.getMyLanguages().forEach(myLanguageService::delete);
         member.getWantLanguages().forEach(wantLanguageService::delete);
