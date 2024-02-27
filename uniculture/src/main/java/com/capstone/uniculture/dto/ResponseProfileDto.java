@@ -1,5 +1,6 @@
 package com.capstone.uniculture.dto;
 
+import com.capstone.uniculture.entity.Member.Gender;
 import com.capstone.uniculture.entity.Member.Member;
 import lombok.*;
 
@@ -15,8 +16,6 @@ import java.util.Map;
 public class ResponseProfileDto {
     //아이디 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private Long id;
-    // 이메일 -> 필요 없는것 같음
-    private String email;
     // 프로필 사진 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private String profileurl;
     // 닉네임 (ME,LOGIN-OTHER,LOGOUT-OTHER)
@@ -26,7 +25,7 @@ public class ResponseProfileDto {
     // 나이 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private Integer age;
     // 성별 (ME,LOGIN-OTHER,LOGOUT-OTHER)
-    private String gender;
+    private Gender gender;
     // 게시물 수 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private Integer postnum;
     // 친구 수 (ME,LOGIN-OTHER,LOGOUT-OTHER)
@@ -44,12 +43,8 @@ public class ResponseProfileDto {
 
     public ResponseProfileDto(Member member){
         this.id = member.getId();
-        this.email = member.getEmail();
         this.nickname = member.getNickname();
         this.age = member.getAge();
-        if(member.getGender() != null){
-            this.gender = member.getGender().toString();
-        }
         /*
         if(member.getProfileUrl() != null){
             File imageFile = new File(member.getProfileUrl());

@@ -8,16 +8,15 @@ import com.capstone.uniculture.entity.Post.Post;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
-@Getter
-@Setter
+@Getter @Setter
 @Table(name = "member")
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Member extends BaseEntity {
 
     @Id
@@ -48,6 +47,8 @@ public class Member extends BaseEntity {
     // 관리자 계정과 일반 계정 관리를 위해 권한 필요
     @Enumerated(EnumType.STRING)
     private Authority authority;
+
+    private LocalDate born;
 
     // CascadeType.ALL => 모든 연관관계들은 Member 가 변경되면 다같이 변경된다
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
@@ -80,19 +81,10 @@ public class Member extends BaseEntity {
 
     // --------------- 생성자 ---------------
 
-    public Member(){
+    /*public Member(){
         this.profileUrl = "resources/static/Noneprofile.jpg";
-    }
+    }*/
 
-    @Builder
-    public Member(Long id, String email, String nickname, String password, Authority authority) {
-        this.id = id;
-        this.email = email;
-        this.nickname = nickname;
-        this.password = password;
-        this.authority = authority;
-        this.profileUrl = "C:/Users/JongtaeKim/Desktop/캡스톤/uniculture-server/uniculture/src/main/resources/static/Noneprofile.jpg";
-    }
     // --------------- 연관관계 편의 메소드 ---------------
 
 
@@ -101,11 +93,6 @@ public class Member extends BaseEntity {
     public void addFriend(Member friend) {
         Friendship friendship = new Friendship(this, friend);
         this.friendships.add(friendship);
-    }
-
-    public void removeFriend(Member friend) {
-        Friendship friendship = new Friendship(this, friend);
-        friendships.remove(friendship);
     }
 
     // 친구의 목록을 가져오는 편의 메소드
