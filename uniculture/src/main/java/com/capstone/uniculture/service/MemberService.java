@@ -138,29 +138,41 @@ public class MemberService implements UserDetailsService {
     // 회원 수정 中 프로필 수정
     public String UpdateUserProfile(Long id, UpdateProfileDto updateProfileDto) throws IOException {
         Member member = findMember(id);
-            // 1. 원래 내용 삭제
-        member.getMyHobbyList().forEach(myHobbyService::delete);
-        member.getMyLanguages().forEach(myLanguageService::delete);
-        member.getWantLanguages().forEach(wantLanguageService::delete);
+        // 1. 원래 내용 삭제
+
+        List<MyHobby> myHobbyList = member.getMyHobbyList();
+        List<MyLanguage> myLanguages = member.getMyLanguages();
+        List<WantLanguage> wantLanguages = member.getWantLanguages();
+
+        myHobbyList.forEach(myHobbyService::delete);
+        myLanguages.forEach(myLanguageService::delete);
+        wantLanguages.forEach(wantLanguageService::delete);
+
+        myHobbyList.clear();
+        myLanguages.clear();
+        wantLanguages.clear();
+
 
         // 2. 새로운 내용 투입
-        if(!updateProfileDto.getMyHobbyList().isEmpty()) {
+        if(updateProfileDto.getMyHobbyList() != null && !updateProfileDto.getMyHobbyList().isEmpty()) {
             List<MyHobby> newMyHobby = updateProfileDto.getMyHobbyList()
                     .stream().map(myHobby -> new MyHobby(member, myHobby))
                     .collect(Collectors.toList());
             myHobbyService.createByList(newMyHobby);
         }
-        if(!updateProfileDto.getMyLanguages().isEmpty()){
+        if(updateProfileDto.getMyLanguages() != null && !updateProfileDto.getMyLanguages().isEmpty()){
             List<MyLanguage> newMyLanguage = updateProfileDto.getMyLanguages()
                     .entrySet()
                     .stream().map(myLanguage -> new MyLanguage(member, myLanguage.getKey(), myLanguage.getValue()))
                     .collect(Collectors.toList());
+            myLanguageService.createByList(newMyLanguage);
         }
-        if(!updateProfileDto.getWantLanguage().isEmpty()){
+        if(updateProfileDto.getWantLanguage() != null && !updateProfileDto.getWantLanguage().isEmpty()){
             List<WantLanguage> newWantLanguage = updateProfileDto.getWantLanguage()
                     .entrySet()
                     .stream().map(wantLanguage -> new WantLanguage(member, wantLanguage.getKey(), wantLanguage.getValue()))
                     .collect(Collectors.toList());
+            wantLanguageService.createByList(newWantLanguage);
         }
 
         /*
