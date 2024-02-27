@@ -64,6 +64,9 @@ public class ChatRoomService {
 
   //사용자 담아서 생성
   public CreateChatRoomDTO createChatRoomWithMember(CreateChatRoomDTO dto) {
+    // 수정 좀 해야할듯
+
+
     //먼저 채팅방 생성 후 저장
     ChatRoom chatRoom = new ChatRoom();
     chatRoom.setName(dto.getName());

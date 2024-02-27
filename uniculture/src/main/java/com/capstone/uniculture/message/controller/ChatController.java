@@ -31,6 +31,7 @@ public class ChatController {
     messagingTemplate.convertAndSend("/sub/chat/room/" + savedMessage.getRoomId(), savedMessage);  //roomId로 메시지 전송
   }
 
+  //채팅 목록 가져오기
   @GetMapping("/api/chat/message")
   public List<ChatMessageHistoryDTO> getChatHistory(@PathVariable Long roomId){
     return chatService.findMessageHistory(roomId);

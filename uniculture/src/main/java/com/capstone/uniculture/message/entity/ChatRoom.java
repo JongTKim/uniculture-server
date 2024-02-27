@@ -2,6 +2,7 @@ package com.capstone.uniculture.message.entity;
 
 import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
