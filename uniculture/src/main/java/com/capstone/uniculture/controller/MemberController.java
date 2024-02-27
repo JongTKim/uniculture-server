@@ -54,10 +54,9 @@ public class MemberController {
 
     // 회원 수정 中 프로필 수정
     @PatchMapping("/auth/member/editProfile")
-    public ResponseEntity editProfile(@RequestPart UpdateProfileDto updateProfileDto,
-                                      @RequestPart(required = false) MultipartFile profileImg) throws IOException {
+    public ResponseEntity editProfile(@RequestBody UpdateProfileDto updateProfileDto) throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(memberService.UpdateUserProfile(memberId,updateProfileDto,profileImg));
+        return ResponseEntity.ok(memberService.UpdateUserProfile(memberId,updateProfileDto));
     }
 
     // 회원 수정 中 개인정보 수정 초기화면

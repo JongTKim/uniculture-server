@@ -136,7 +136,7 @@ public class MemberService implements UserDetailsService {
 
 
     // 회원 수정 中 프로필 수정
-    public String UpdateUserProfile(Long id, UpdateProfileDto updateProfileDto, MultipartFile profileImg) throws IOException {
+    public String UpdateUserProfile(Long id, UpdateProfileDto updateProfileDto) throws IOException {
         Member member = findMember(id);
             // 1. 원래 내용 삭제
         member.getMyHobbyList().forEach(myHobbyService::delete);
@@ -163,6 +163,7 @@ public class MemberService implements UserDetailsService {
                     .collect(Collectors.toList());
         }
 
+        /*
         // 3. 프사 설정
         if(!profileImg.isEmpty()) {
             String fileName = UUID.randomUUID().toString() + "_" + profileImg.getOriginalFilename();
@@ -176,6 +177,7 @@ public class MemberService implements UserDetailsService {
 
             member.setProfileUrl(updateProfileDto.getProfileUrl());
         }
+        */
 
         // 4. 소개 설정
         member.setIntroduce(updateProfileDto.getIntroduce());

@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
 public class UpdateProfileDto {
 
     private String profileUrl;
-    private String introduce;
-    private List<String> myHobbyList;
-    private Map<String, Integer> myLanguages;
-    private Map<String, Integer> wantLanguage;
+    private String introduce; // 자기소개
+    private List<String> myHobbyList; // 취미
+    private Map<String, Integer> myLanguages; // 언어
+    private Map<String, Integer> wantLanguage; // 배우고 싶은 언어
 
     public UpdateProfileDto(Member member) {
         this.profileUrl = member.getProfileUrl();
