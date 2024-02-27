@@ -6,6 +6,7 @@ import com.capstone.uniculture.entity.Friend.FriendRequest;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Friend.RequestStatus;
 import com.capstone.uniculture.repository.FriendRequestRepository;
+import com.capstone.uniculture.repository.FriendshipRepository;
 import com.capstone.uniculture.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class FriendService {
 
     private final MemberRepository memberRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final FriendshipRepository friendshipRepository;
 
     private Member findMember(Long id) {
         return memberRepository.findById(id).orElseThrow(
@@ -39,6 +41,15 @@ public class FriendService {
     public void revokeFriendRequest(Long senderId, Long receiverId){
         FriendRequest friendRequest = friendRequestRepository.findBySenderIdAndReceiverId(senderId, receiverId);
         friendRequestRepository.delete(friendRequest);
+    }
+
+    public void deleteFriend(Long memberId, Long targetId) {
+        friendshipRepository.delete(
+                friendshipRepository.findByFromMember_IdAndToMember_Id(memberId,targetId)
+        );
+        friendshipRepository.delete(
+                friendshipRepository.findByFromMember_IdAndToMember_Id(targetId,memberId)
+        );
     }
 
     // 친구 요청 수락 - 일단 신청한사람의 닉네임이 날아온다고 가정한다
@@ -82,4 +93,6 @@ public class FriendService {
                 .stream().map(friendRequest -> new ResponseProfileDto(friendRequest.getSender()))
                 .collect(Collectors.toList());
     }
+
+
 }

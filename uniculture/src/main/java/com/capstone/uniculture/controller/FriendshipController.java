@@ -45,6 +45,18 @@ public class FriendshipController {
     }
 
     /**
+     * 친구 삭제 API
+     * @request : TargetId(삭제하려는 상대방의 ID)
+     * @response : 성공여부
+     * 로직 : FriendshipRepository 에서 두 MemberID를 가지고 요소를 찾아서 삭제 (쌍방으로 2개 삭제필요)
+     */
+    @DeleteMapping("/auth/friend/deleteFriend")
+    public ResponseEntity deleteFriend(@RequestBody FriendRequestDto friendRequestDto){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        friendService.deleteFriend(memberId, friendRequestDto.getTargetId());
+        return ResponseEntity.ok("성공");
+    }
+    /**
      * 친구 수락 API
      * @request : TargetId(친구신청 수락하려는 상대방의 ID)
      * @response : 성공여부
