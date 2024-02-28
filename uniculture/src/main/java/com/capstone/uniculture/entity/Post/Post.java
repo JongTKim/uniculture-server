@@ -29,6 +29,8 @@ public class Post extends BaseEntity {
 
     private Integer commentCount = 0;
 
+    private Integer viewCount = 0;
+
     private String title;
 
     private String content;
@@ -50,7 +52,8 @@ public class Post extends BaseEntity {
         this.member = member;
     }
 
-    //연관관계 메소드
+    // 연관관계 메소드
+
     public void addComment(Comment comment){
         comment.setPost(this);
         this.commentCount += 1;
@@ -61,11 +64,14 @@ public class Post extends BaseEntity {
         newMember.getPost().add(this);
     }
 
+
     public void removeComment(){
         this.commentCount -= 1;
     }
 
-    //편의 메소드
+    // 편의 메소드
+    public void upViewCount(){ this.viewCount++; }
+
     public void likePost(){
         this.likeCount += 1;
     }

@@ -2,6 +2,7 @@ package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Post.PostAddDto;
+import com.capstone.uniculture.dto.Post.PostDetailDto;
 import com.capstone.uniculture.dto.Post.PostUpdateDto;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Post.Post;
@@ -12,6 +13,7 @@ import com.capstone.uniculture.repository.PostLikeRepository;
 import com.capstone.uniculture.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.query.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,10 +50,12 @@ public class PostService {
                 .title(postAddDto.getTitle())
                 .content(postAddDto.getContents())
                 .posttype(postAddDto.getPosttype())
-                .member(member)
                 .build();
 
-        // 3. Repository 에 저장
+        // 3. 멤버 설정
+        post.setMember(member);
+
+        // 4. Repository 에 저장
         postRepository.save(post);
 
         return "게시물 생성 성공";
@@ -106,4 +110,12 @@ public class PostService {
         post.unlikePost();
     }
 
+    public PostDetailDto getPost(Long postId) {
+
+        Post post = findPost(postId);
+
+        post.upViewCount();
+
+        return PostDetailDto.fromEntity(post);
+    }
 }
