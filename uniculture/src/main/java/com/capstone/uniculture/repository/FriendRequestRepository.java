@@ -7,11 +7,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {
 
     @Query("SELECT fr FROM FriendRequest fr WHERE fr.sender.id = :senderId AND fr.receiver.id = :receiverId")
-    FriendRequest findBySenderIdAndReceiverId(Long senderId, Long receiverId);
+    Optional<FriendRequest> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
+
+    Boolean existsBySender_IdAndReceiver_Id(Long senderId, Long receiverId);
 
     @Query("SELECT fr FROM FriendRequest fr WHERE fr.sender.id = :senderId")
     List<FriendRequest> findBySenderId(Long senderId);

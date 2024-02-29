@@ -16,4 +16,5 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     // 두 명의 회원번호를 받아서 친구관계인지 확인
     Boolean existsByFromMember_IdAndToMember_Id(Long member1, Long member2);
 
+
 }
