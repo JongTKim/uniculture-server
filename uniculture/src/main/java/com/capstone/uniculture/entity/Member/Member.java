@@ -5,6 +5,7 @@ import com.capstone.uniculture.entity.BaseEntity;
 import com.capstone.uniculture.entity.Friend.FriendRequest;
 import com.capstone.uniculture.entity.Friend.Friendship;
 import com.capstone.uniculture.entity.Post.Post;
+import com.capstone.uniculture.message.entity.ChatRoomMembership;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -77,6 +78,11 @@ public class Member extends BaseEntity {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    //채팅방 연결
+    @OneToMany(mappedBy = "member")
+    private List<ChatRoomMembership> memberships = new ArrayList<>();
+
 
 
     // --------------- 생성자 ---------------
