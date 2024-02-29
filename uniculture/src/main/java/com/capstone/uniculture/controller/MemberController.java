@@ -1,12 +1,13 @@
 package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.*;
+import com.capstone.uniculture.dto.Member.ResponseProfileDto;
+import com.capstone.uniculture.dto.Member.UpdateMemberDto;
+import com.capstone.uniculture.dto.Member.UpdateProfileDto;
 import com.capstone.uniculture.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 

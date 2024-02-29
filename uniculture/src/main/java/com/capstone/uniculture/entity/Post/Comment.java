@@ -3,6 +3,7 @@ package com.capstone.uniculture.entity.Post;
 import com.capstone.uniculture.entity.BaseEntity;
 import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,9 +28,18 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
+    @Builder
     public Comment(Member member, Post post, String content) {
         this.member = member;
         this.post = post;
         this.content = content;
     }
+
+    // 연관관계 편의 메소드
+
+    public void setPost(Post post){
+        this.post = post;
+        post.getComments().add(this);
+    }
+
 }

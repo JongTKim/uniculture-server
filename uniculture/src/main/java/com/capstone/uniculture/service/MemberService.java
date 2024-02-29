@@ -1,7 +1,10 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.dto.*;
-import com.capstone.uniculture.entity.*;
+import com.capstone.uniculture.dto.Member.MemberRequestDto;
+import com.capstone.uniculture.dto.Member.ResponseProfileDto;
+import com.capstone.uniculture.dto.Member.UpdateMemberDto;
+import com.capstone.uniculture.dto.Member.UpdateProfileDto;
 import com.capstone.uniculture.entity.Member.*;
 import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.repository.*;
@@ -18,14 +21,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service

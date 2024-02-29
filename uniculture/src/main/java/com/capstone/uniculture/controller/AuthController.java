@@ -1,21 +1,13 @@
 package com.capstone.uniculture.controller;
 
-import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.MemberRequestDto;
+import com.capstone.uniculture.dto.Member.MemberRequestDto;
 import com.capstone.uniculture.dto.TokenDto;
-import com.capstone.uniculture.dto.UpdateMemberDto;
-import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")

@@ -1,11 +1,11 @@
-package com.capstone.uniculture.dto;
+package com.capstone.uniculture.dto.Member;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class JoinDto {
+public class MemberJoinDto {
     private String username;
     private String password;
     private String role;

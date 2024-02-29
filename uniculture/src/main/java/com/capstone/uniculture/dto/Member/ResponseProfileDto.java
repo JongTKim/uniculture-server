@@ -1,4 +1,4 @@
-package com.capstone.uniculture.dto;
+package com.capstone.uniculture.dto.Member;
 
 import com.capstone.uniculture.entity.Member.Gender;
 import com.capstone.uniculture.entity.Member.Member;
