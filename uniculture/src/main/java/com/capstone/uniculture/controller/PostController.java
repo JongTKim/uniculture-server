@@ -4,6 +4,7 @@ import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Post.PostAddDto;
 import com.capstone.uniculture.dto.Post.PostDetailDto;
 import com.capstone.uniculture.dto.Post.PostListDto;
+import com.capstone.uniculture.dto.Post.PostUpdateDto;
 import com.capstone.uniculture.entity.Post.PostType;
 import com.capstone.uniculture.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("/auth/post")
-    public ResponseEntity<Page<PostListDto>> MyPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
+    public ResponseEntity<Page<PostListDto>> MyPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
         return ResponseEntity.ok(postService.getPostsByMember(SecurityUtil.getCurrentMemberId(), pageable));
     }
 
@@ -32,9 +33,9 @@ public class PostController {
         return ResponseEntity.ok(postService.createPost(postAddDto));
     }
 
-    @PatchMapping("/auth/post")
-    public ResponseEntity updateBoard(){
-        return ResponseEntity.ok("성공");
+    @PatchMapping("/auth/post/{postId}")
+    public ResponseEntity updateBoard(@PathVariable("postId") Long postId, @RequestBody PostUpdateDto postUpdateDto){
+        return ResponseEntity.ok(postService.updatePost(postId,postUpdateDto));
     }
 
     @DeleteMapping("/auth/post/{postId}")
@@ -67,4 +68,13 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostsByMember(memberId,pageable));
     }
 
+    @PostMapping("/auth/post/{postId}/like")
+    public ResponseEntity likePost(@PathVariable("postId") Long postId){
+        return ResponseEntity.ok(postService.likePost(postId));
+    }
+
+    @DeleteMapping("/auth/post/{postId}/like")
+    public ResponseEntity unlikePost(@PathVariable("postId") Long postId){
+        return ResponseEntity.ok(postService.unlikePost(postId));
+    }
 }

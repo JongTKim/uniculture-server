@@ -20,15 +20,16 @@ public class PostDetailDto {
     private Long postId;
     private String title;
     private String content;
-    private int viewCount;
+    private Integer viewCount;
     private String writerName;
     private LocalDateTime createDate;
     private LocalDateTime modifiedDate;
     private List<CommentResponseDto> comments;
     private Boolean isLogin;
+    private Boolean isLike;
 
     @Builder
-    public PostDetailDto(Long postId, String title, String content, int viewCount, String writerName, LocalDateTime createDate, LocalDateTime modifiedDate, List<CommentResponseDto> comments) {
+    public PostDetailDto(Long postId, String title, String content, Integer viewCount, String writerName, LocalDateTime createDate, LocalDateTime modifiedDate, List<CommentResponseDto> comments) {
         this.postId = postId;
         this.title = title;
         this.content = content;

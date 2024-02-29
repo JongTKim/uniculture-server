@@ -93,13 +93,21 @@ public class PostService {
         post.upViewCount();
         PostDetailDto postDetailDto = PostDetailDto.fromEntity(post);
 
-        // 3. 현재 로그인 상태인지 확인후 DTO 의 필드변경
+        // 3. 현재 로그인 상태인지 확인후 DTO 의 필드 값 변경
         try{
-            SecurityUtil.getCurrentMemberId();
+            Long memberId = SecurityUtil.getCurrentMemberId();
             postDetailDto.setIsLogin(true);
+            // 사용자가 해당 게시물의 좋아요를 눌렀는지 판단. Login 시에만 적용
+            if(postLikeRepository.findByMember_IdAndPost_Id(memberId, postId).isEmpty()){
+                postDetailDto.setIsLike(false);
+            } else{
+                postDetailDto.setIsLike(true);
+            }
         }catch(RuntimeException e){
             postDetailDto.setIsLogin(false);
+            postDetailDto.setIsLike(false);
         }
+
         return postDetailDto;
     }
 
@@ -118,7 +126,7 @@ public class PostService {
     }
 
     // 게시물 좋아요
-    public void likePost(Long postId){
+    public String likePost(Long postId){
         Long memberId = SecurityUtil.getCurrentMemberId();
         Optional<PostLike> postLike = postLikeRepository.findByMember_IdAndPost_Id(memberId, postId);
         if(postLike.isPresent()){
@@ -128,10 +136,12 @@ public class PostService {
         Member member = findMember(memberId);
         postLikeRepository.save(new PostLike(member,post));
         post.likePost();
+
+        return "좋아요 성공";
     }
 
-    // 게시물 안좋아요
-    public void unlikePost(Long postId){
+    // 게시물 좋아요 취소
+    public String unlikePost(Long postId){
         Long memberId = SecurityUtil.getCurrentMemberId();
         Optional<PostLike> postLike = postLikeRepository.findByMember_IdAndPost_Id(memberId, postId);
         if(postLike.isEmpty()){
@@ -140,6 +150,8 @@ public class PostService {
         Post post = findPost(postId);
         postLikeRepository.deleteByMember_IdAndPost_Id(memberId,postId);
         post.unlikePost();
+
+        return "좋아요 취소 성공";
     }
 
     // 모든 게시물 조회
