@@ -3,22 +3,27 @@ package com.capstone.uniculture.service;
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Post.PostAddDto;
 import com.capstone.uniculture.dto.Post.PostDetailDto;
+import com.capstone.uniculture.dto.Post.PostListDto;
 import com.capstone.uniculture.dto.Post.PostUpdateDto;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Post.Post;
 
 import com.capstone.uniculture.entity.Post.PostLike;
+import com.capstone.uniculture.entity.Post.PostType;
 import com.capstone.uniculture.repository.MemberRepository;
 import com.capstone.uniculture.repository.PostLikeRepository;
 import com.capstone.uniculture.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.query.Page;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.rmi.AlreadyBoundException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -79,10 +84,37 @@ public class PostService {
     }
 
     // 게시물 조회
+    public PostDetailDto getPost(Long postId) {
+        // 1. 게시물 찾기(FetchJoin 으로 전부 끌어오기)
+        Post post = postRepository.findPostWithMemberAndCommentsById(postId)
+                    .orElseThrow(()-> new IllegalArgumentException("조회하려는 게시물이 없습니다."));
+
+        // 2. 조회수 증가
+        post.upViewCount();
+        PostDetailDto postDetailDto = PostDetailDto.fromEntity(post);
+
+        // 3. 현재 로그인 상태인지 확인후 DTO 의 필드변경
+        try{
+            SecurityUtil.getCurrentMemberId();
+            postDetailDto.setIsLogin(true);
+        }catch(RuntimeException e){
+            postDetailDto.setIsLogin(false);
+        }
+        return postDetailDto;
+    }
+
 
     // 게시물 삭제
-    public void deletePost(Long postId){
-        postRepository.deleteById(postId);
+    public String deletePost(Long postId){
+
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        // 멤버아이디와 포스트아이디넣고 존재하는지 확인해야됨
+        Post post = postRepository.findPostByIdAndMemberId(postId, memberId).orElseThrow(
+                () -> new IllegalArgumentException("본인이 작성한 글이 아닙니다"));
+
+        postRepository.delete(post);
+        return "게시물 삭제 성공";
     }
 
     // 게시물 좋아요
@@ -110,12 +142,33 @@ public class PostService {
         post.unlikePost();
     }
 
-    public PostDetailDto getPost(Long postId) {
-
-        Post post = findPost(postId);
-
-        post.upViewCount();
-
-        return PostDetailDto.fromEntity(post);
+    // 모든 게시물 조회
+    public Page<PostListDto> getAllPosts(Pageable pageable) {
+        Page<Post> posts = postRepository.findAllWithMemberAndComments(pageable);
+        List<PostListDto> list = posts.getContent().stream()
+                .map(PostListDto::fromEntity)
+                .collect(Collectors.toList());
+        return new PageImpl<>(list, pageable, posts.getTotalElements());
     }
+
+    // 게시물 타입에 따른 게시물 조회
+    public Page<PostListDto> getPostsByType(PostType postType, Pageable pageable) {
+        Page<Post> posts = postRepository.findByPostTypeWithMember(postType, pageable);
+        List<PostListDto> list = posts.getContent().stream()
+                .map(PostListDto::fromEntity)
+                .collect(Collectors.toList());
+        return new PageImpl<>(list,pageable,posts.getTotalElements());
+
+    }
+
+    // 멤버 아이디에 따른 게시물 조회
+    public Page<PostListDto> getPostsByMember(Long memberId, Pageable pageable) {
+        Page<Post> posts = postRepository.findByMemberIdWithMember(memberId, pageable);
+        List<PostListDto> list = posts.getContent().stream()
+                .map(PostListDto::fromEntity)
+                .collect(Collectors.toList());
+        return new PageImpl<>(list,pageable,posts.getTotalElements());
+    }
+
+
 }

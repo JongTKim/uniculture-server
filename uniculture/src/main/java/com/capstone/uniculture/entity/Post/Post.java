@@ -3,6 +3,7 @@ package com.capstone.uniculture.entity.Post;
 import com.capstone.uniculture.dto.Post.PostUpdateDto;
 import com.capstone.uniculture.entity.BaseEntity;
 import com.capstone.uniculture.entity.Member.Member;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,11 +26,12 @@ public class Post extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PostType posttype;
 
-    private Integer likeCount = 0;
+    private int likeCount;
 
-    private Integer commentCount = 0;
+    // 관리 잘해야함 주의
+    private int commentCount;
 
-    private Integer viewCount = 0;
+    private int viewCount;
 
     private String title;
 
