@@ -24,6 +24,7 @@ public class PostDetailDto {
     private String writerName;
     private LocalDateTime createDate;
     private LocalDateTime modifiedDate;
+    // 댓글도 함께 날라가야하므로
     private List<CommentResponseDto> comments;
     private Boolean isLogin;
     private Boolean isLike;

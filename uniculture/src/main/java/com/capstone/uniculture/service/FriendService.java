@@ -70,7 +70,8 @@ public class FriendService {
     // 친구 삭제 - 양방향 모두 삭제해줘야한다
     public String deleteFriend(Long memberId, Long targetId) {
         if(friendshipRepository.existsByFromMember_IdAndToMember_Id(memberId, targetId) &&
-                friendshipRepository.existsByFromMember_IdAndToMember_Id(targetId,memberId)){
+                friendshipRepository.existsByFromMember_IdAndToMember_Id(targetId,memberId))
+        {
             friendshipRepository.delete(
                     friendshipRepository.findByFromMember_IdAndToMember_Id(memberId, targetId)
             );

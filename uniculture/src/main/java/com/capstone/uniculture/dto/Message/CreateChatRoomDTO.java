@@ -1,4 +1,4 @@
-package com.capstone.uniculture.message.dto;
+package com.capstone.uniculture.dto.Message;
 
 import lombok.Data;
 

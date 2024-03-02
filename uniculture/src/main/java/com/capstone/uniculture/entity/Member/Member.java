@@ -5,7 +5,7 @@ import com.capstone.uniculture.entity.BaseEntity;
 import com.capstone.uniculture.entity.Friend.FriendRequest;
 import com.capstone.uniculture.entity.Friend.Friendship;
 import com.capstone.uniculture.entity.Post.Post;
-import com.capstone.uniculture.message.entity.ChatRoomMembership;
+import com.capstone.uniculture.entity.Message.ChatRoomMembership;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -80,7 +80,7 @@ public class Member extends BaseEntity {
     }
 
     //채팅방 연결
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<ChatRoomMembership> memberships = new ArrayList<>();
 
 
