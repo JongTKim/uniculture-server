@@ -1,19 +1,17 @@
-package com.capstone.uniculture.message.service;
+package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.entity.Member.Member;
-import com.capstone.uniculture.message.dto.ChatRoomDTO;
-import com.capstone.uniculture.message.dto.CreateChatRoomDTO;
-import com.capstone.uniculture.message.entity.ChatMessage;
-import com.capstone.uniculture.message.entity.ChatRoom;
-import com.capstone.uniculture.message.entity.ChatRoomMembership;
-import com.capstone.uniculture.message.repository.ChatRoomMembershipRepository;
-import com.capstone.uniculture.message.repository.ChatRoomRepository;
+import com.capstone.uniculture.dto.Message.ChatRoomDTO;
+import com.capstone.uniculture.dto.Message.CreateChatRoomDTO;
+import com.capstone.uniculture.entity.Message.ChatRoom;
+import com.capstone.uniculture.entity.Message.ChatRoomMembership;
+import com.capstone.uniculture.repository.ChatRoomMembershipRepository;
+import com.capstone.uniculture.repository.ChatRoomRepository;
 import com.capstone.uniculture.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 

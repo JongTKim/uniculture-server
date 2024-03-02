@@ -1,5 +1,6 @@
-package com.capstone.uniculture.message.entity;
+package com.capstone.uniculture.entity.Message;
 
+import com.capstone.uniculture.entity.BaseEntity;
 import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,7 +11,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ChatRoomMembership {
+public class ChatRoomMembership extends BaseEntity {
+  // 이 엔티티로 ManyToMany 관계를 풀수있을 뿐만 아니라, Member 가 ChatRoom 에 들어간 시간을 알 수 있음.
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;

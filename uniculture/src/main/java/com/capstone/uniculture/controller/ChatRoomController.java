@@ -1,11 +1,9 @@
-package com.capstone.uniculture.message.controller;
+package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.entity.Member.Member;
-import com.capstone.uniculture.message.dto.ChatRoomDTO;
-import com.capstone.uniculture.message.dto.CreateChatRoomDTO;
-import com.capstone.uniculture.message.service.ChatRoomService;
-import com.capstone.uniculture.message.service.ChatService;
+import com.capstone.uniculture.dto.Message.ChatRoomDTO;
+import com.capstone.uniculture.dto.Message.CreateChatRoomDTO;
+import com.capstone.uniculture.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
