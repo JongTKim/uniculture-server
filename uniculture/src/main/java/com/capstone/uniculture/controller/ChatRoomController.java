@@ -1,10 +1,11 @@
 package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Message.ChatRoomDTO;
-import com.capstone.uniculture.dto.Message.CreateChatRoomDTO;
+import com.capstone.uniculture.dto.Message.*;
 import com.capstone.uniculture.service.ChatRoomService;
+import com.capstone.uniculture.service.ChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,53 +13,54 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequiredArgsConstructor
-@Controller
-@RequestMapping("/api/chat")
+@RestController
+@RequestMapping("/api/auth/room")
 public class ChatRoomController {
   private final ChatRoomService chatRoomService;
+  private final ChatService chatService;
 
-  //채팅 리스트
-  @GetMapping("/room")
-  public String rooms(Model model) {
-    return "/chat/room";
-  }
-
-  //모든 채팅방
-  @GetMapping("/rooms")
+  /**
+   * 자신이 속한 모든 채팅방 조회 API
+   * @Request : X
+   * @Reponse : List<ChatRoomDTO>
+   * 로직 : ChatRoomMembership Repository 에서 Member_id가 현재 접속유저인것을 검색
+   */
+  @GetMapping
   @ResponseBody
-  public List<ChatRoomDTO> room() {
-    return chatRoomService.findRoomByUserId(SecurityUtil.getCurrentMemberId());
+  public ResponseEntity<List<ChatRoomDTO>> myRoom() {
+    return ResponseEntity.ok(chatRoomService.findRoomByUserId(SecurityUtil.getCurrentMemberId()));
   }
 
-  //채팅방 생성
-  @PostMapping("/room")
+  /**
+   * 새로운 채팅방 생성 API
+   * @Request : CreateChatRoomDto (채팅방의 이름과 참여자 명단이 들어감. 추후 단톡방 구현을 위해)
+   * @Response : ChatRoomIdResponseDto (새로 생선된 채팅방의 ID가 들어감)
+   */
+  @PostMapping
   @ResponseBody
-  public CreateChatRoomDTO createRoom(@RequestBody CreateChatRoomDTO dto) {
-    return chatRoomService.createChatRoomWithMember(dto);
+  public ResponseEntity<ChatRoomIdResponseDto> createRoom(@RequestBody CreateChatRoomDTO createChatRoomDTO) {
+    return ResponseEntity.ok(chatRoomService.createChatRoomWithMember(createChatRoomDTO));
   }
 
-  //채팅방 입장 화면?
-  @GetMapping("/room/enter/{roomId}")
-  public String roomDetail(Model model, @PathVariable String roomId) {
-    model.addAttribute("roomId", roomId);
-    return "/chat/roomdetail";
+  //채팅방 입장하면 나와야할 화면, 채팅방 내용도 같이 가져와야함 (한번에 처리필요)
+
+  /**
+   * 채팅방 입장시 채팅의 목록들을 가져와야함. 또한 채팅방 기본정보 (참여자 명수, 채팅방 이름) 필요
+   * @Request : roomId (pathVariable 로 수신)
+   * @Response : 채팅의 내역들
+   */
+  @GetMapping("/{roomId}")
+  public List<MessageResponseDto> getChatHistory(@PathVariable Long roomId){
+    return chatService.findMessageHistory(roomId);
   }
 
-//  //특정 채팅방 조회
-//  @GetMapping("/room/{roomId}")
-//  @ResponseBody
-//  public ChatRoomDTO roomInfo(@PathVariable String roomId) {
-//    return chatRoomService.findRoomById(roomId);
-//  }
-
-  //사용자가 속한 채팅방 조회
-//  @GetMapping("/api/rooms/my")
-//  @ResponseBody
-//  public List<ChatRoomDTO> myRooms(){
-//    Long userId = SecurityUtil.getCurrentMemberId();
-//    if(userId == null){
-//      // 코드 뭔지 모르겠ㄱㄴ
-//    }
-//    return chatRoomService.findRoomByUserId(userId);
-//  }
+  /**
+   * 채팅방에서 인원 클릭시 참여자들의 명단 조회 API
+   * @Request : roomId (pathVariable 로 수신)
+   * @Response : List<ChatRoomMemberResponseDto> 참여중인 멤버들의 기초정보가 담긴 컬렉션
+   */
+  @GetMapping("/{roomId}/list")
+  public ResponseEntity<List<ChatRoomMemberResponseDto>> memberList(@PathVariable("roomId") Long roomId){
+    return ResponseEntity.ok(chatRoomService.findAllRoomMember(roomId));
+  }
 }

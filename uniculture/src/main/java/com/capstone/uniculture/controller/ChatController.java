@@ -24,7 +24,7 @@ public class ChatController {
   private final SimpMessageSendingOperations messagingTemplate;   //브로커 통해서 메시지 전달
 
   /**
-   * 클라이언트 메시지 전송
+   * 클라이언트 메시지 전송 WebSocket
    * @Request : PathVariable(전송하는 방의 번호), ChatMessageDTO(메시지 타입, 멤버이름, 채팅방 번호, 내용)
    * @Reponse : void(하지만, convertAndSend 로 사실상 Message 전송)
    * 로직 : ChatMessageRepository 에 받은 메시지 저장후, 이 채팅방을 구독한 전체에게 Send
@@ -39,7 +39,7 @@ public class ChatController {
   }
 
   /**
-   * 채팅방 내용 가져오기
+   * 채팅방 내용 가져오기 API
    * @Request : PathVariable(가져올 방의 번호)
    * @Response : List<MessageResponseDto> (여러개의 메시지들의 컬렉션)
    * 로직 : ChatMessageRepository 에서 roomId를 가지고 전체조회,
@@ -51,6 +51,7 @@ public class ChatController {
   }
 
   /**
+   * 입장시 입장 안내문 WebSocket
    * 입장시 "~사용자가 입장하였습니다" 전송
    */
   @MessageMapping("/auth/chat/{roomId}/enter")
@@ -62,6 +63,7 @@ public class ChatController {
   }
 
   /**
+   * 퇴장시 퇴장 안내문 WebSocket
    * 퇴장시 "~사용자가 퇴장하였습니다" 전송
    */
   @MessageMapping("/api/chat/{roomId}/leave")   //채팅방 나가기

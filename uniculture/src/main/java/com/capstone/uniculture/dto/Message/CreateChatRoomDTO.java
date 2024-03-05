@@ -8,4 +8,5 @@ import java.util.List;
 public class CreateChatRoomDTO {
   private String name;
   private List<Long> memberIds;
+
 }

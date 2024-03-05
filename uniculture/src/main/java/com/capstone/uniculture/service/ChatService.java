@@ -107,6 +107,7 @@ public class ChatService {
 
     // 3. chatMessageRepository 에 ChatMessage 객체 저장
     chatMessageRepository.save(chatMessage);    //데이터베이스에 저장
+    chatRoom.addMessage(chatMessage);
 
     // 4. Entity -> DTO 변환하여 Return
     return MessageResponseDto.fromEntity(chatMessage);
