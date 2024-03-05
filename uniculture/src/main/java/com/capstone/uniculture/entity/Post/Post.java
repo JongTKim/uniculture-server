@@ -45,7 +45,7 @@ public class Post extends BaseEntity {
 
     // 게시물의 주인 표시
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="member_id",nullable = false)
+    @JoinColumn(name="writer_id",nullable = false)
     private Member member;
 
     public Post(Member member, String title, String content) {
