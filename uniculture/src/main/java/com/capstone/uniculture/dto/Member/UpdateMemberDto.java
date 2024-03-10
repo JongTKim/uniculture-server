@@ -1,6 +1,7 @@
 package com.capstone.uniculture.dto.Member;
 
 import com.capstone.uniculture.entity.Member.Gender;
+import com.capstone.uniculture.entity.Member.Member;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,4 +17,18 @@ public class UpdateMemberDto {
     private String nickname;
     private String exPassword;
     private String newPassword;
+
+    private String email;
+    private Integer year;
+    private Integer month;
+    private Integer day;
+
+    public UpdateMemberDto(Member member){
+        this.gender = member.getGender();
+        this.nickname = member.getNickname();
+        this.email = member.getEmail();
+        this.year = member.getBorn().getYear();
+        this.month = member.getBorn().getMonthValue();
+        this.day = member.getBorn().getDayOfMonth();
+    }
 }
