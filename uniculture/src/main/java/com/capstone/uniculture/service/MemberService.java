@@ -9,6 +9,8 @@ import com.capstone.uniculture.entity.Member.*;
 import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -21,6 +23,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -51,15 +54,16 @@ public class MemberService implements UserDetailsService {
 
     // 회원 가입
     public String signup(MemberRequestDto memberRequestDto){
-        // 1. 이메일 중복 확인
-        if(memberRepository.existsByEmail(memberRequestDto.getEmail())){
-            throw new RuntimeException("이미 가입되어 있는 유저입니다");
-        }
+
         // 2. 패스워드 암호화, DTO -> Entity
         Member member = memberRequestDto.toMember(passwordEncoder);
         // 3. DB에 저장
         memberRepository.save(member);
         return "회원가입 완료";
+    }
+
+    public boolean checkEmailDuplicate(String email) {
+        return memberRepository.existsByEmail(email);
     }
 
     // 자신 조회
@@ -110,9 +114,9 @@ public class MemberService implements UserDetailsService {
     }
 
     // 타인 조회 - 로그아웃 상태일때
-    public ResponseProfileDto findOtherLogout(Long id) throws IOException {
+    public ResponseProfileDto findOtherLogout(String nickname) throws IOException {
         // 1. ID를 기반으로 DB 에서 Member 객체 생성
-        Member member = findMember(id);
+        Member member = findMemberByNickname(nickname);
         // 2. 사용이유는 프록시객체 때문에
         Integer postNum = postRepository.countByMember(member);
         Integer friendNum = friendshipRepository.countByMember(member);
@@ -203,9 +207,9 @@ public class MemberService implements UserDetailsService {
     }
 
     // 회원 수정 中 개인정보 수정 초기화면
-    public ResponseProfileDto EditUserInformation(Long id) throws IOException {
+    public UpdateMemberDto EditUserInformation(Long id) throws IOException {
         Member member = findMember(id);
-        return new ResponseProfileDto(member);
+        return new UpdateMemberDto(member);
     }
 
     // 회원 수정 中 개인정보 수정
@@ -215,12 +219,12 @@ public class MemberService implements UserDetailsService {
         // 1. 비밀번호 수정사항이 있는지 확인
         if(updateMemberDto.getExPassword() != null && updateMemberDto.getNewPassword() != null){
             // 1-1. 비밀번호 교체 로직 실행. 만약 예전 비밀번호가 틀렸으면 예외발생
-            changePassword(member, updateMemberDto.getExPassword(), updateMemberDto.getNewPassword());
+            member.setPassword(passwordEncoder.encode(updateMemberDto.getNewPassword()));
         }
         // 2. 닉네임 수정사항이 있는지 확인
         if(updateMemberDto.getNickname() != null){
             // 2-1. 닉네임 교체 로직 실행. 만약 이미 존재하는 이메일이라면 예외발생
-            changeNickname(member, updateMemberDto.getNickname());
+            member.setNickname(updateMemberDto.getNickname());
         }
         // 3. 성별과 나이수정
         member.setAge(updateMemberDto.getAge());
@@ -240,6 +244,10 @@ public class MemberService implements UserDetailsService {
 
     private Member findMember(Long id) {
         return memberRepository.findById(id).orElseThrow(()->new IllegalArgumentException("찾는 사용자가 존재하지 않습니다."));
+    }
+
+    public Member findMemberByNickname(String nickname){
+        return memberRepository.findByNickname(nickname).orElseThrow(()->new IllegalArgumentException("찾는 사용자가 존재하지 않습니다."));
     }
 
     // 닉네임 중복
@@ -280,19 +288,13 @@ public class MemberService implements UserDetailsService {
     }
 
     // 프로필 변경 로직 中 비밃번호 변경, 닉네임 변경
-    public String changePassword(Member member, String exPassword, String newPassword) {
-        if(!passwordEncoder.matches(exPassword, member.getPassword())){
-            throw new RuntimeException("비밀번호가 맞지 않습니다");
+
+    public boolean checkPassword(Long memberId, String exPassword){
+        Member member = findMember(memberId);
+        if(!passwordEncoder.matches(exPassword, member.getPassword())){ // 비밀번호가 일치하지 않으면 true 반환
+            return true;
         }
-        member.setPassword(passwordEncoder.encode(newPassword));
-        return "수정이 완료되었습니다";
-    }
-    public String changeNickname(Member member, String nickname) {
-        if(memberRepository.existsByNickname(nickname)){
-            throw new RuntimeException("이미 존재하는 이메일입니다");
-        }
-        member.setNickname(nickname);
-        return "수정이 완료되었습니다";
+        return false; // 일치하면 false 반환
     }
 
 
