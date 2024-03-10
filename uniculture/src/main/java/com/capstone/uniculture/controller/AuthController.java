@@ -17,23 +17,29 @@ public class AuthController {
     private final MemberService memberService;
 
 
+    // 로그인 상태 확인
     @GetMapping("/auth/sec/home")
     public ResponseEntity signOk(){
         return ResponseEntity.ok().build();
     }
+
+
     // 회원가입
     @PostMapping("/sec/signup")
     public ResponseEntity signup(@RequestBody MemberRequestDto requestDto){
-        System.out.println("requestDto = " + requestDto);
+
+        if(memberService.checkEmailDuplicate(requestDto.getEmail())){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("실패했습니다");
+        }
         return ResponseEntity.ok(memberService.signup(requestDto));
     }
 
     // 닉네임 중복 확인
     @GetMapping("/sec/check")
-    public ResponseEntity<?> checkNicknameValid(@RequestParam("nickname") String nickname) throws BadRequestException {
+    public ResponseEntity checkNicknameValid(@RequestParam("nickname") String nickname) throws BadRequestException {
         System.out.println("nickname = " + nickname);
-        if(memberService.checkNicknameUnique(nickname) == true){
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        if(memberService.checkNicknameUnique(nickname)){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("닉네임이 중복되었습니다.");
         }
         return ResponseEntity.ok("사용 가능한 아이디 입니다.");
     }
