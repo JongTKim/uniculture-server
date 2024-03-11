@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -229,6 +230,7 @@ public class MemberService implements UserDetailsService {
         // 3. 성별과 나이수정
         member.setAge(updateMemberDto.getAge());
         member.setGender(updateMemberDto.getGender());
+        member.setBorn(LocalDate.of(updateMemberDto.getYear(), updateMemberDto.getMonth(), updateMemberDto.getDay()));
         return "수정 성공";
     }
 
