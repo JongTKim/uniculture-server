@@ -77,8 +77,10 @@ public class MemberController {
     @PatchMapping("/auth/member/editInformation")
     public ResponseEntity editInformation(@RequestBody UpdateMemberDto updateMemberDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
-        if(memberService.checkPassword(memberId, updateMemberDto.getExPassword())){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("현재 비밀번호가 일치하지 않습니다");
+        if(updateMemberDto.getExPassword() != null && updateMemberDto.getNewPassword() != null) {
+            if (memberService.checkPassword(memberId, updateMemberDto.getExPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("현재 비밀번호가 일치하지 않습니다");
+            }
         }
         return ResponseEntity.ok(memberService.UpdateUserInformation(memberId,updateMemberDto));
     }
