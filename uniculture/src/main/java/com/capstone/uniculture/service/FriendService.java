@@ -9,6 +9,8 @@ import com.capstone.uniculture.repository.FriendshipRepository;
 import com.capstone.uniculture.repository.MemberRepository;
 import com.sun.jdi.request.InvalidRequestStateException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,16 +39,16 @@ public class FriendService {
     }
 
     // 친구 요청 신청
-    public String friendRequest(Long id, Long toId){
+    public ResponseEntity friendRequest(Long id, Long toId){
 
         // 1. 먼저, 두 사람이 이미 친구관계가 아닌지 확인
         if(friendshipRepository.existsByFromMember_IdAndToMember_Id(id, toId)){
-            throw new InvalidRequestStateException("이미 친구관계 입니다");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 친구관계 입니다");
         }
         // 2. 두 사람이 서로에게 친구신청을 한것이 있는지 확인(둘다 없어야함)
         if(friendRequestRepository.existsBySender_IdAndReceiver_Id(id, toId) ||
         friendRequestRepository.existsBySender_IdAndReceiver_Id(toId,id)){
-            throw new InvalidRequestStateException("서로에게 요청된 친구신청이 이미 존재합니다");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("친구신청 한 것이 있습니다");
         }
 
         // 2. 두 사람(신청자, 상대)의 정보 획득
@@ -57,7 +59,7 @@ public class FriendService {
         FriendRequest friendRequest = new FriendRequest(sender, receiver, RequestStatus.PENDING);
         friendRequestRepository.save(friendRequest);
 
-        return "친구 요청에 성공하였습니다";
+        return ResponseEntity.ok("친구 요청에 성공하였습니다");
     }
 
     // 친구 요청 취소

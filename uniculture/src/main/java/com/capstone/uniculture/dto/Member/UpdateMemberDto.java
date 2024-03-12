@@ -24,6 +24,7 @@ public class UpdateMemberDto {
     private Integer day;
 
     public UpdateMemberDto(Member member){
+        this.age = member.getAge();
         this.gender = member.getGender();
         this.nickname = member.getNickname();
         this.email = member.getEmail();

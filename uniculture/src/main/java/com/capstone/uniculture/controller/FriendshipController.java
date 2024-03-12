@@ -26,8 +26,7 @@ public class FriendshipController {
     @PostMapping("/auth/friend")
     public ResponseEntity friendRequest(@RequestBody FriendDto friendDto){
         Long memberId = SecurityUtil.getCurrentMemberId();
-
-        return ResponseEntity.ok(friendService.friendRequest(memberId, friendDto.getTargetId()));
+        return friendService.friendRequest(memberId, friendDto.getTargetId());
     }
 
     /**

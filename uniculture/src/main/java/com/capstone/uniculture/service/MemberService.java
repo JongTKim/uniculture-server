@@ -214,12 +214,16 @@ public class MemberService implements UserDetailsService {
     }
 
     // 회원 수정 中 개인정보 수정
-    public String UpdateUserInformation(Long id, UpdateMemberDto updateMemberDto){
+    public ResponseEntity UpdateUserInformation(Long id, UpdateMemberDto updateMemberDto){
         // 0. 멤버찾기
         Member member = findMember(id);
         // 1. 비밀번호 수정사항이 있는지 확인
         if(updateMemberDto.getExPassword() != null && updateMemberDto.getNewPassword() != null){
-            // 1-1. 비밀번호 교체 로직 실행. 만약 예전 비밀번호가 틀렸으면 예외발생
+            // 1-1. 비밀번호 교체 로직 실행. 만약 예전 비밀번호가 틀렸으면 400 예외발생
+            if (this.checkPassword(member.getId(), updateMemberDto.getExPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("현재 비밀번호가 일치하지 않습니다");
+            }
+            // 1-2. 비밀번호 맞을시 교체 로직
             member.setPassword(passwordEncoder.encode(updateMemberDto.getNewPassword()));
         }
         // 2. 닉네임 수정사항이 있는지 확인
@@ -227,11 +231,12 @@ public class MemberService implements UserDetailsService {
             // 2-1. 닉네임 교체 로직 실행. 만약 이미 존재하는 이메일이라면 예외발생
             member.setNickname(updateMemberDto.getNickname());
         }
-        // 3. 성별과 나이수정
+        // 3. 성별과 나이수정 - 설정안하더라도 기본값으로 들어가는 것들이라 수정사항 확인필요 X
         member.setAge(updateMemberDto.getAge());
         member.setGender(updateMemberDto.getGender());
         member.setBorn(LocalDate.of(updateMemberDto.getYear(), updateMemberDto.getMonth(), updateMemberDto.getDay()));
-        return "수정 성공";
+
+        return ResponseEntity.ok("수정 성공");
     }
 
     // 회원 삭제
