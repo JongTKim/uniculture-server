@@ -34,6 +34,7 @@ public class ResponseProfileDto {
     private Integer receiverequestnum;
     // 친구 여부 (LOGIN-OTHER)
     private Boolean isfriend;
+    private Integer friendstatus;
     // 언어 능력 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private Map<String,Integer> canlanguages;
     // 배우고 싶은 언어 (ME,LOGIN-OTHER,LOGOUT-OTHER)

@@ -98,6 +98,21 @@ public class MemberService implements UserDetailsService {
         // 2. 사용이유는 프록시객체 때문에
         Integer postNum = postRepository.countByMember(member);
         Integer friendNum = friendshipRepository.countByMember(member);
+
+        Integer friendStatus;
+        if(friendshipRepository.existsByFromMember_IdAndToMember_Id(id,myId)){ // 친구면
+            friendStatus = 1;
+        }
+        else{
+            if(friendRequestRepository.existsBySender_IdAndReceiver_Id(id,myId)){ // 상대가 나한테 친구요청을 보냈으면
+                friendStatus = 4;
+            } else if (friendRequestRepository.existsBySender_IdAndReceiver_Id(myId, id)) { // 내가 상대한테 보낸게 있으면
+                friendStatus = 3;
+            } else{ // 둘다 보낸거 없고 친구 상태 아니면
+              friendStatus = 2;
+            }
+        }
+
         // 3. 리턴해줄 DTO 생성. 이 과정에서 컬렉션 필드에서는 프록시 -> 실객체 의 변환이 일어남
         return ResponseProfileDto.builder()
                 .id(member.getId())
@@ -110,7 +125,7 @@ public class MemberService implements UserDetailsService {
                 .wantlanguages(member.getWantLanguages().stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
                 .hobbies(member.getMyHobbyList().stream().map(myHobby -> myHobby.getHobbyName()).collect(Collectors.toList()))
                 .friendnum(friendNum)
-                .isfriend(friendshipRepository.existsByFromMember_IdAndToMember_Id(id,myId))
+                .friendstatus(friendStatus)
                 .build();
     }
 
@@ -133,6 +148,7 @@ public class MemberService implements UserDetailsService {
                 .wantlanguages(member.getWantLanguages().stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
                 .hobbies(member.getMyHobbyList().stream().map(myHobby -> myHobby.getHobbyName()).collect(Collectors.toList()))
                 .friendnum(friendNum)
+                .friendstatus(2)
                 .build();
     }
 
