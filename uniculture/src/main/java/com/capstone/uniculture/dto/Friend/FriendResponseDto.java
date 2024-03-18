@@ -21,17 +21,13 @@ public class FriendResponseDto {
     private String nickname;
     private Integer age;
     private Gender gender;
-    private Map<String,Integer> myLanguages;
-    private Map<String,Integer> wantLanguages;
 
     @Builder
-    public FriendResponseDto(Long id, String nickname, Integer age, Gender gender, Map<String, Integer> myLanguages, Map<String, Integer> wantLanguages) {
+    public FriendResponseDto(Long id, String nickname, Integer age, Gender gender) {
         this.id = id;
         this.nickname = nickname;
         this.age = age;
         this.gender = gender;
-        this.myLanguages = myLanguages;
-        this.wantLanguages = wantLanguages;
     }
 
     public static FriendResponseDto fromMember(Member member){
@@ -40,8 +36,6 @@ public class FriendResponseDto {
                 .nickname(member.getNickname())
                 .age(member.getAge())
                 .gender(member.getGender())
-                .myLanguages(member.getMyLanguages().stream().collect(Collectors.toMap(MyLanguage::getLanguage, MyLanguage::getLevel)))
-                .wantLanguages(member.getWantLanguages().stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
                 .build();
     }
 

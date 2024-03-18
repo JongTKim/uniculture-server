@@ -1,5 +1,6 @@
 package com.capstone.uniculture.service;
 
+import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendResponseDto;
 import com.capstone.uniculture.entity.Friend.FriendRequest;
 import com.capstone.uniculture.entity.Member.Member;
@@ -111,13 +112,33 @@ public class FriendService {
     // Stream 은 값이 Null 이더라도 빈 리스트를 반환해주어 NullPointerException 을 방지할수있다.
     // 친구 목록 조회
     public List<FriendResponseDto> listOfFriends(Long id){
+        /*return friendshipRepository.findById(id)
+                .stream().map(friendship ->
+                {
+                    Member toMember = friendship.getToMember();
+                    return FriendResponseDto.fromMember(toMember);
+                }).collect(Collectors.toList());*/
+
         return findMember(id).getFriends()
-                .stream().map(member -> FriendResponseDto.fromMember(member))
+                .stream().map(FriendResponseDto::fromMember)
+                .collect(Collectors.toList());
+    }
+
+    public List<DetailFriendResponseDto> listOfFriends2(Long id){
+        /*return friendshipRepository.findById(id)
+                .stream().map(friendship ->
+                {
+                    Member toMember = friendship.getToMember();
+                    return FriendResponseDto.fromMember(toMember);
+                }).collect(Collectors.toList());*/
+
+        return findMember(id).getFriends()
+                .stream().map(DetailFriendResponseDto::fromMember)
                 .collect(Collectors.toList());
     }
     // 나에게 온 친구 신청 목록 조회
     public List<FriendResponseDto> listOfFriendRequest(Long id){
-        return findMember(id).getReceivedRequests()
+        return friendRequestRepository.findByReceiverId(id)
                 .stream().map(friendRequest -> FriendResponseDto.fromMember(friendRequest.getSender()))
                 .collect(Collectors.toList());
     }

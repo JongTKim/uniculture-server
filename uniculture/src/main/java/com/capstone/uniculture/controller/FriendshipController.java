@@ -1,6 +1,7 @@
 package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
+import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendDto;
 import com.capstone.uniculture.dto.Friend.FriendResponseDto;
 import com.capstone.uniculture.service.FriendService;
@@ -88,6 +89,11 @@ public class FriendshipController {
         return ResponseEntity.ok(friendService.listOfFriends(memberId));
     }
 
+    @GetMapping("/auth/friend/detail")
+    public ResponseEntity<List<DetailFriendResponseDto>> detailFriendsList(){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        return ResponseEntity.ok(friendService.listOfFriends2(memberId));
+    }
     /**
      * 친구 요청 목록 조회 API
      * @request : X
