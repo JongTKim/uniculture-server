@@ -22,14 +22,16 @@ public class DetailFriendResponseDto {
     private String nickname;
     private Integer age;
     private Gender gender;
+    private String introduce;
     private Map<String,Integer> canLanguages;
     private Map<String,Integer> wantLanguages;
     private List<String> hobbies;
 
     @Builder
-    public DetailFriendResponseDto(Long id, String nickname, Integer age, Gender gender, Map<String, Integer> canLanguages, Map<String, Integer> wantLanguages, List<String> hobbies) {
+    public DetailFriendResponseDto(Long id, String nickname, String introduce, Integer age, Gender gender, Map<String, Integer> canLanguages, Map<String, Integer> wantLanguages, List<String> hobbies) {
         this.id = id;
         this.nickname = nickname;
+        this.introduce = introduce;
         this.age = age;
         this.gender = gender;
         this.canLanguages = canLanguages;
@@ -42,6 +44,7 @@ public class DetailFriendResponseDto {
         return DetailFriendResponseDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
+                .introduce(member.getIntroduce())
                 .age(member.getAge())
                 .gender(member.getGender())
                 .canLanguages(member.getMyLanguages().stream().collect(Collectors.toMap(MyLanguage::getLanguage, MyLanguage::getLevel)))

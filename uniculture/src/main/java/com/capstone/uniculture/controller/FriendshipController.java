@@ -6,6 +6,10 @@ import com.capstone.uniculture.dto.Friend.FriendDto;
 import com.capstone.uniculture.dto.Friend.FriendResponseDto;
 import com.capstone.uniculture.service.FriendService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -90,9 +94,11 @@ public class FriendshipController {
     }
 
     @GetMapping("/auth/friend/detail")
-    public ResponseEntity<List<DetailFriendResponseDto>> detailFriendsList(){
+    public ResponseEntity<Page<DetailFriendResponseDto>> detailFriendsList(
+            @PageableDefault(size=10, direction = Sort.Direction.DESC) Pageable pageable)
+    {
         Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(friendService.listOfFriends2(memberId));
+        return ResponseEntity.ok(friendService.listOfFriends2(memberId, pageable));
     }
     /**
      * 친구 요청 목록 조회 API

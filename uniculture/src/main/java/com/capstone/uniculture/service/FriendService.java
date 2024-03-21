@@ -10,6 +10,9 @@ import com.capstone.uniculture.repository.FriendshipRepository;
 import com.capstone.uniculture.repository.MemberRepository;
 import com.sun.jdi.request.InvalidRequestStateException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -124,17 +127,10 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
 
-    public List<DetailFriendResponseDto> listOfFriends2(Long id){
-        /*return friendshipRepository.findById(id)
-                .stream().map(friendship ->
-                {
-                    Member toMember = friendship.getToMember();
-                    return FriendResponseDto.fromMember(toMember);
-                }).collect(Collectors.toList());*/
-
-        return findMember(id).getFriends()
-                .stream().map(DetailFriendResponseDto::fromMember)
-                .collect(Collectors.toList());
+    public Page<DetailFriendResponseDto> listOfFriends2(Long id, Pageable pageable){
+        Page<Member> friendList = friendshipRepository.findAllByFromMember_Id(id, pageable);
+        List<DetailFriendResponseDto> list = friendList.stream().map(DetailFriendResponseDto::fromMember).toList();
+        return new PageImpl<>(list, pageable, friendList.getTotalElements());
     }
     // 나에게 온 친구 신청 목록 조회
     public List<FriendResponseDto> listOfFriendRequest(Long id){
