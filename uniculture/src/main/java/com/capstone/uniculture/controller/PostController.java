@@ -1,12 +1,10 @@
 package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Post.PostAddDto;
-import com.capstone.uniculture.dto.Post.PostDetailDto;
-import com.capstone.uniculture.dto.Post.PostListDto;
-import com.capstone.uniculture.dto.Post.PostUpdateDto;
+import com.capstone.uniculture.dto.Post.*;
 import com.capstone.uniculture.entity.Post.PostType;
 import com.capstone.uniculture.service.PostService;
+import com.capstone.uniculture.service.TranslateService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
@@ -47,8 +45,18 @@ public class PostController {
         return ResponseEntity.ok(postService.getPost(postId));
     }
 
+    @GetMapping("/post/search")
+    public ResponseEntity<Page<PostListDto>> postSearch(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String content,
+            @RequestParam(required = false) String writerName){
+        PostSearchDto searchData = PostSearchDto.createSearchData(title, content, writerName);
+        return ResponseEntity.ok(postService.getAllPostsBySearch(searchData,pageable));
+    }
     @GetMapping("/post")
-    public ResponseEntity<Page<PostListDto>> postList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
+    public ResponseEntity<Page<PostListDto>> postList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
         return ResponseEntity.ok(postService.getAllPosts(pageable));
     }
 

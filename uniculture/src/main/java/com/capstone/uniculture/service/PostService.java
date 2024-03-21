@@ -1,10 +1,7 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Post.PostAddDto;
-import com.capstone.uniculture.dto.Post.PostDetailDto;
-import com.capstone.uniculture.dto.Post.PostListDto;
-import com.capstone.uniculture.dto.Post.PostUpdateDto;
+import com.capstone.uniculture.dto.Post.*;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Post.Post;
 
@@ -14,9 +11,9 @@ import com.capstone.uniculture.repository.MemberRepository;
 import com.capstone.uniculture.repository.PostLikeRepository;
 import com.capstone.uniculture.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional
@@ -183,4 +181,22 @@ public class PostService {
     }
 
 
+    public Page<PostListDto> getAllPostsBySearch(PostSearchDto searchData, Pageable pageable) {
+
+        Page<Post> result = null;
+
+        // 만약 Title로 조회한거 라면?
+        if(!searchData.getTitle().isEmpty()){
+            result = postRepository.findAllByTitleContaining(searchData.getTitle(), pageable);
+        } else if(!searchData.getContent().isEmpty()){
+            result = postRepository.findAllByContentContaining(searchData.getContent(), pageable);
+        } else if(!searchData.getWriterName().isEmpty()){
+            result = postRepository.findAllByNicknameContaining(searchData.getWriterName(), pageable);
+        }
+
+        List<PostListDto> list = result.getContent().stream()
+                .map(PostListDto::fromEntity)
+                .collect(Collectors.toList());
+        return new PageImpl<>(list, pageable, result.getTotalElements());
+    }
 }
