@@ -94,7 +94,15 @@ public class PostService {
         // 3. 현재 로그인 상태인지 확인후 DTO 의 필드 값 변경
         try{
             Long memberId = SecurityUtil.getCurrentMemberId();
+
             postDetailDto.setIsLogin(true);
+
+            // 사용자가 해당 게시물의 주인인지 확인. Login 시에만 적용
+            if(post.getMember().getId() == memberId){
+                postDetailDto.setIsMine(true);
+            }else{
+                postDetailDto.setIsMine(false);
+            }
             // 사용자가 해당 게시물의 좋아요를 눌렀는지 판단. Login 시에만 적용
             if(postLikeRepository.findByMember_IdAndPost_Id(memberId, postId).isEmpty()){
                 postDetailDto.setIsLike(false);
@@ -104,6 +112,7 @@ public class PostService {
         }catch(RuntimeException e){
             postDetailDto.setIsLogin(false);
             postDetailDto.setIsLike(false);
+            postDetailDto.setIsMine(false);
         }
 
         return postDetailDto;

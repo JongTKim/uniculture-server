@@ -3,10 +3,7 @@ package com.capstone.uniculture.dto.Post;
 
 import com.capstone.uniculture.dto.Comment.CommentResponseDto;
 import com.capstone.uniculture.entity.Post.Post;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +11,9 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class PostDetailDto {
 
     private Long postId;
@@ -28,18 +27,8 @@ public class PostDetailDto {
     private List<CommentResponseDto> comments;
     private Boolean isLogin;
     private Boolean isLike;
+    private Boolean isMine;
 
-    @Builder
-    public PostDetailDto(Long postId, String title, String content, Integer viewCount, String writerName, LocalDateTime createDate, LocalDateTime modifiedDate, List<CommentResponseDto> comments) {
-        this.postId = postId;
-        this.title = title;
-        this.content = content;
-        this.viewCount = viewCount;
-        this.writerName = writerName;
-        this.createDate = createDate;
-        this.modifiedDate = modifiedDate;
-        this.comments = comments;
-    }
 
     public static PostDetailDto fromEntity(Post post){
         return PostDetailDto.builder()
