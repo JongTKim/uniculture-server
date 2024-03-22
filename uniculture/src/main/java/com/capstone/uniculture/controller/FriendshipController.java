@@ -4,6 +4,8 @@ import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendDto;
 import com.capstone.uniculture.dto.Friend.FriendResponseDto;
+import com.capstone.uniculture.dto.Friend.FriendSearchDto;
+import com.capstone.uniculture.entity.Member.Gender;
 import com.capstone.uniculture.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -99,6 +101,19 @@ public class FriendshipController {
     {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(friendService.listOfFriends2(memberId, pageable));
+    }
+
+    @GetMapping("/auth/friend/serach")
+    public ResponseEntity<Page<DetailFriendResponseDto>> friendSearch(
+            @PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String cl, // 가능언어
+            @RequestParam(required = false) String wl, // 원하는언어
+            @RequestParam(required = false) String hb, // 취미
+            @RequestParam(required = false) Integer age, // 나이
+            @RequestParam(required = false) Gender ge // 성별
+        ){
+        FriendSearchDto searchData = FriendSearchDto.createSearchData(cl,wl,hb,age,ge);
+        return ResponseEntity.ok(friendService.getMyFriendBySearch(searchData,pageable));
     }
     /**
      * 친구 요청 목록 조회 API

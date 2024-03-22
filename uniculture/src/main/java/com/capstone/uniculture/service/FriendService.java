@@ -1,7 +1,9 @@
 package com.capstone.uniculture.service;
 
+import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendResponseDto;
+import com.capstone.uniculture.dto.Friend.FriendSearchDto;
 import com.capstone.uniculture.entity.Friend.FriendRequest;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Friend.RequestStatus;
@@ -147,4 +149,30 @@ public class FriendService {
     }
 
 
+    public Page<DetailFriendResponseDto> getMyFriendBySearch(FriendSearchDto searchData, Pageable pageable) {
+
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Page<Member> result = null;
+
+        if(searchData.getAge() != null){
+            result = friendshipRepository.findFriendsByAge(memberId, searchData.getAge(), pageable);
+        } else if(searchData.getGender() != null){
+            result = friendshipRepository.findFriendsByGender(memberId, searchData.getGender(), pageable);
+        } else if(searchData.getHobby() != null){
+            result = friendshipRepository.findFriendsByHobbyName(memberId, searchData.getHobby(), pageable);
+        }
+
+        List<DetailFriendResponseDto> list = null;
+
+        if(result != null) {
+            list = result.getContent().stream()
+                    .map(DetailFriendResponseDto::fromMember)
+                    .collect(Collectors.toList());
+        }
+
+        return new PageImpl<>(list, pageable, result.getTotalElements());
+
+
+    }
 }
