@@ -195,11 +195,11 @@ public class PostService {
         Page<Post> result = null;
 
         // 만약 Title로 조회한거 라면?
-        if(!searchData.getTitle().isEmpty()){
+        if(searchData.getTitle() != null){
             result = postRepository.findAllByTitleContaining(searchData.getTitle(), pageable);
-        } else if(!searchData.getContent().isEmpty()){
+        } else if(searchData.getContent() != null){
             result = postRepository.findAllByContentContaining(searchData.getContent(), pageable);
-        } else if(!searchData.getWriterName().isEmpty()){
+        } else if(searchData.getWriterName() != null){
             result = postRepository.findAllByNicknameContaining(searchData.getWriterName(), pageable);
         }
 
