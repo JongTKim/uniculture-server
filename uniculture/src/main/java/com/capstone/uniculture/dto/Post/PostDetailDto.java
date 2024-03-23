@@ -20,6 +20,7 @@ public class PostDetailDto {
     private String title;
     private String content;
     private Integer viewCount;
+    private Integer likeCount;
     private String writerName;
     private LocalDateTime createDate;
     private LocalDateTime modifiedDate;
@@ -42,6 +43,7 @@ public class PostDetailDto {
                 .comments(post.getComments().stream()
                         .map(CommentResponseDto::fromEntity)
                         .collect(Collectors.toList()))
+                .likeCount(post.getLikeCount())
                 .build();
     }
 }
