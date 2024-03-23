@@ -17,6 +17,7 @@ public class UpdateMemberDto {
     private String nickname;
     private String exPassword;
     private String newPassword;
+    private String profileurl;
 
     private String email;
     private Integer year;
@@ -31,5 +32,6 @@ public class UpdateMemberDto {
         this.year = member.getBorn().getYear();
         this.month = member.getBorn().getMonthValue();
         this.day = member.getBorn().getDayOfMonth();
+        this.profileurl = member.getProfileUrl();
     }
 }

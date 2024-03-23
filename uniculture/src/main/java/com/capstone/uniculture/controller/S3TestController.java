@@ -1,12 +1,14 @@
 package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.S3UploadUtil;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+@Tag(name="(미완-사용X)이미지", description = "이미지 서버 관련 API 입니다")
 @RequiredArgsConstructor
 @RequestMapping(value = "aws-s3")
 @RestController

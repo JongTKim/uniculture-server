@@ -14,14 +14,14 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class UpdateProfileDto {
 
-    private String profileUrl;
     private String introduce; // 자기소개
+    private String profileurl;
     private List<String> myHobbyList; // 취미
     private Map<String, Integer> myLanguages; // 언어
     private Map<String, Integer> wantLanguage; // 배우고 싶은 언어
 
     public UpdateProfileDto(Member member) {
-        this.profileUrl = member.getProfileUrl();
+        this.profileurl = member.getProfileUrl();
         this.introduce = member.getIntroduce();
         this.myHobbyList = member.getMyHobbyList().stream().map(myHobby -> myHobby.getHobbyName()).collect(Collectors.toList());
         this.myLanguages = member.getMyLanguages().stream().collect(Collectors.toMap(MyLanguage::getLanguage, MyLanguage::getLevel));

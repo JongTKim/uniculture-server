@@ -1,10 +1,8 @@
 package com.capstone.uniculture.service;
 
+import com.capstone.uniculture.config.S3UploadUtil;
 import com.capstone.uniculture.dto.*;
-import com.capstone.uniculture.dto.Member.MemberRequestDto;
-import com.capstone.uniculture.dto.Member.ResponseProfileDto;
-import com.capstone.uniculture.dto.Member.UpdateMemberDto;
-import com.capstone.uniculture.dto.Member.UpdateProfileDto;
+import com.capstone.uniculture.dto.Member.*;
 import com.capstone.uniculture.entity.Member.*;
 import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.repository.*;
@@ -24,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -51,6 +50,8 @@ public class MemberService implements UserDetailsService {
     private final MyHobbyService myHobbyService;
     private final MyLanguageService myLanguageService;
     private final WantLanguageService wantLanguageService;
+
+    private final S3UploadUtil s3UploadUtil;
 
 
     // 회원 가입
@@ -321,5 +322,11 @@ public class MemberService implements UserDetailsService {
     }
 
 
+    public String UpdateImage(Long memberId, MultipartFile profileImg) throws IOException {
+        // 1. 업로드 후 업로드 된 URL 주소를 받음
+        String test = s3UploadUtil.upload(profileImg, "test");
 
+        // 2. Member의 profileURL에 생성
+        findMember(memberId).setProfileUrl(test); return "성공";
+    }
 }
