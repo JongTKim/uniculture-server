@@ -108,14 +108,15 @@ public class FriendshipController {
     @Operation(summary = "내 친구 목록 상세 조회", description = "친구 페이지에서 자세하게 조회할때 사용합니다.")
     @GetMapping("/auth/friend/detail")
     public ResponseEntity<Page<DetailFriendResponseDto>> detailFriendsList(
-            @PageableDefault(size=10, direction = Sort.Direction.DESC) Pageable pageable)
+            @PageableDefault(size=10, direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String name)
     {
         Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(friendService.listOfFriends2(memberId, pageable));
+        return ResponseEntity.ok(friendService.listOfFriends2(name, memberId, pageable));
     }
 
     @Operation(summary = "내 친구 검색")
-    @GetMapping("/auth/friend/serach")
+    @GetMapping("/auth/friend/search")
     public ResponseEntity<Page<DetailFriendResponseDto>> friendSearch(
             @PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String cl, // 가능언어

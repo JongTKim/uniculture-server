@@ -129,8 +129,16 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
 
-    public Page<DetailFriendResponseDto> listOfFriends2(Long id, Pageable pageable){
-        Page<Member> friendList = friendshipRepository.findAllByFromMember_Id(id, pageable);
+    public Page<DetailFriendResponseDto> listOfFriends2(String name, Long id, Pageable pageable){
+
+        Page<Member> friendList = null;
+
+        if(name != null){ // 만약, 이름 검색조건이 입력되었다면
+            friendList = friendshipRepository.findFriendsByNickname(id, name, pageable);
+        }
+        else { // 아니면 내 친구 전체 상세조회
+            friendList = friendshipRepository.findAllByFromMember_Id(id, pageable);
+        }
         List<DetailFriendResponseDto> list = friendList.stream().map(DetailFriendResponseDto::fromMember).toList();
         return new PageImpl<>(list, pageable, friendList.getTotalElements());
     }

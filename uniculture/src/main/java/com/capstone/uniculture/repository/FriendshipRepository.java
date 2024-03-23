@@ -17,6 +17,9 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     @Query("SELECT DISTINCT p.toMember FROM Friendship p WHERE p.fromMember.id= :member_id")
     Page<Member> findAllByFromMember_Id(@Param("member_id") Long id, Pageable pageable);
 
+    @Query("SELECT DISTINCT f.toMember FROM Friendship f WHERE f.fromMember.id = :member_id AND f.toMember.nickname = :nickname")
+    Page<Member> findFriendsByNickname(@Param("member_id") Long id, @Param("nickname") String nickname, Pageable pageable);
+
     @Query("SELECT DISTINCT f.toMember FROM Friendship f WHERE f.fromMember.id = :member_id AND f.toMember.age = :age")
     Page<Member> findFriendsByAge(@Param("member_id") Long id, @Param("age") Integer age, Pageable pageable);
 
