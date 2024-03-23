@@ -122,10 +122,11 @@ public class FriendshipController {
             @RequestParam(required = false) String cl, // 가능언어
             @RequestParam(required = false) String wl, // 원하는언어
             @RequestParam(required = false) String hb, // 취미
-            @RequestParam(required = false) Integer age, // 나이
+            @RequestParam(required = false) Integer mina, // 나이
+            @RequestParam(required = false) Integer maxa, // 나이
             @RequestParam(required = false) Gender ge // 성별
         ){
-        FriendSearchDto searchData = FriendSearchDto.createSearchData(cl,wl,hb,age,ge);
+        FriendSearchDto searchData = FriendSearchDto.createSearchData(cl,wl,hb,mina,maxa,ge);
         return ResponseEntity.ok(friendService.getMyFriendBySearch(searchData,pageable));
     }
     /**

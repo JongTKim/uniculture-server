@@ -13,24 +13,28 @@ public class FriendSearchDto {
     String canLanguages;
     String wantLanguages;
     String hobby;
-    Integer age;
+    Integer min_age;
+    Integer max_age;
     Gender gender;
 
     @Builder
-    public FriendSearchDto(String canLanguages, String wantLanguages, String hobby, Integer age, Gender gender) {
+    public FriendSearchDto(String canLanguages, String wantLanguages, String hobby, Integer min_age, Integer max_age, Gender gender) {
         this.canLanguages = canLanguages;
         this.wantLanguages = wantLanguages;
         this.hobby = hobby;
-        this.age = age;
+        this.min_age = min_age;
+        this.max_age = max_age;
         this.gender = gender;
     }
 
-    public static FriendSearchDto createSearchData(String canLanguages, String wantLanguages, String hobby, Integer age, Gender gender){
+
+    public static FriendSearchDto createSearchData(String canLanguages, String wantLanguages, String hobby, Integer min_age, Integer max_age, Gender gender){
         return FriendSearchDto.builder()
                 .canLanguages(canLanguages)
                 .wantLanguages(wantLanguages)
                 .hobby(hobby)
-                .age(age)
+                .min_age(min_age)
+                .max_age(max_age)
                 .gender(gender)
                 .build();
     }

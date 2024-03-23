@@ -163,20 +163,24 @@ public class FriendService {
 
         Page<Member> result = null;
 
-        if(searchData.getAge() != null){
-            result = friendshipRepository.findFriendsByAge(memberId, searchData.getAge(), pageable);
+        if(searchData.getMax_age() != null && searchData.getMax_age() != null){ // 둘다 null 이 아닐때만
+            result = friendshipRepository.findFriendsByAge(memberId, searchData.getMin_age(), searchData.getMax_age(), pageable);
         } else if(searchData.getGender() != null){
             result = friendshipRepository.findFriendsByGender(memberId, searchData.getGender(), pageable);
         } else if(searchData.getHobby() != null){
             result = friendshipRepository.findFriendsByHobbyName(memberId, searchData.getHobby(), pageable);
+        } else if(searchData.getCanLanguages() != null){
+            result = friendshipRepository.findFriendsByMyLanguage(memberId, searchData.getCanLanguages(), pageable);
+        } else if(searchData.getWantLanguages() != null){
+            result = friendshipRepository.findFriendsByWantLanguage(memberId, searchData.getWantLanguages(), pageable);
         }
 
         List<DetailFriendResponseDto> list = null;
 
+        // 하나도 입력되지 않을 경우를 대비
         if(result != null) {
             list = result.getContent().stream()
-                    .map(DetailFriendResponseDto::fromMember)
-                    .collect(Collectors.toList());
+                    .map(DetailFriendResponseDto::fromMember).toList();
         }
 
         return new PageImpl<>(list, pageable, result.getTotalElements());
