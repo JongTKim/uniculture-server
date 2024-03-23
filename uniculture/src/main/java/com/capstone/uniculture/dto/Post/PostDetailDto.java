@@ -3,6 +3,7 @@ package com.capstone.uniculture.dto.Post;
 
 import com.capstone.uniculture.dto.Comment.CommentResponseDto;
 import com.capstone.uniculture.entity.Post.Post;
+import com.capstone.uniculture.entity.Post.PostType;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class PostDetailDto {
     private Integer viewCount;
     private Integer likeCount;
     private String writerName;
+    private PostType postType;
     private LocalDateTime createDate;
     private LocalDateTime modifiedDate;
     // 댓글도 함께 날라가야하므로
@@ -44,6 +46,7 @@ public class PostDetailDto {
                         .map(CommentResponseDto::fromEntity)
                         .collect(Collectors.toList()))
                 .likeCount(post.getLikeCount())
+                .postType(post.getPosttype())
                 .build();
     }
 }
