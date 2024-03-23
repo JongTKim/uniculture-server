@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.cglib.core.Local;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -15,10 +14,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
-public class ChatRoom extends BaseEntity {
+public class ChatRoom extends BaseEntity{
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -40,17 +39,18 @@ public class ChatRoom extends BaseEntity {
   @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
   private List<ChatMessage> messages = new ArrayList<>();
 
+  private ChatRoomType chatRoomType;
+
   public ChatRoom(String name, List<Member> members){
     this.name = uniqueName(name, members);
   }
 
   @Builder
-  public ChatRoom(Long id, String name, Member owner, List<ChatRoomMembership> memberships, List<ChatMessage> messages) {
+  public ChatRoom(Long id, String name, Member owner, ChatRoomType chatRoomType) {
     this.id = id;
     this.name = name;
     this.owner = owner;
-    this.memberships = memberships;
-    this.messages = messages;
+    this.chatRoomType = chatRoomType;
   }
 
   // 연관관계 편의 메소드
