@@ -1,8 +1,11 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.S3UploadUtil;
-import com.capstone.uniculture.dto.*;
-import com.capstone.uniculture.dto.Member.*;
+import com.capstone.uniculture.dto.Member.MemberRequestDto;
+import com.capstone.uniculture.dto.Member.ResponseProfileDto;
+import com.capstone.uniculture.dto.Member.UpdateMemberDto;
+import com.capstone.uniculture.dto.Member.UpdateProfileDto;
+import com.capstone.uniculture.dto.TokenDto;
 import com.capstone.uniculture.entity.Member.*;
 import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.repository.*;
