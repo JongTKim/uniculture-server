@@ -208,4 +208,14 @@ public class PostService {
                 .collect(Collectors.toList());
         return new PageImpl<>(list, pageable, result.getTotalElements());
     }
+
+    public Page<PostListDto> getMyFriendPosts(Pageable pageable) {
+
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        Page<Post> posts = postRepository.findPostsFromMyFriends(memberId, pageable);
+        List<PostListDto> list = posts.getContent().stream()
+                .map(PostListDto::fromEntity)
+                .toList();
+        return new PageImpl<>(list,pageable,posts.getTotalElements());
+    }
 }

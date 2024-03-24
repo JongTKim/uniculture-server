@@ -14,12 +14,12 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PostUpdateDto {
 
-    @Schema(description = "제목")
+    @Schema(title = "제목", requiredMode = Schema.RequiredMode.REQUIRED)
     private String title;
 
-    @Schema(description = "내용")
+    @Schema(title = "내용", requiredMode = Schema.RequiredMode.REQUIRED)
     private String contents;
 
-    @Schema(description = "게시글 타입")
+    @Schema(title = "게시글 타입", requiredMode = Schema.RequiredMode.REQUIRED)
     private PostType posttype;
 }

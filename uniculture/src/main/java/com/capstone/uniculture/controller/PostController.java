@@ -86,6 +86,12 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostsByType(PostType.HELP, pageable));
     }
 
+    @Operation(summary = "내 친구의 게시물 전체 조회")
+    @GetMapping("/auth/post/friend")
+    public ResponseEntity<Page<PostListDto>> myFriendPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
+        return ResponseEntity.ok(postService.getMyFriendPosts(pageable));
+    }
+
     @Operation(summary = "멤버별 게시글 리스트")
     @GetMapping("/post/member/{memberId}")
     public ResponseEntity<Page<PostListDto>> MemberPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable,@PathVariable("memberId")Long memberId){

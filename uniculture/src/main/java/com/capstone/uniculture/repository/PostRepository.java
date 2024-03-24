@@ -56,5 +56,9 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     @Query(value = "SELECT p FROM Post p JOIN FETCH p.member WHERE p.member.nickname LIKE %:nickname%")
     Page<Post> findAllByNicknameContaining(@Param("nickname") String nickname, Pageable pageable);
 
+    @Query("SELECT p FROM Post p WHERE p.member IN (SELECT f.toMember FROM Friendship f WHERE f.fromMember.id = :myId)")
+    Page<Post> findPostsFromMyFriends(@Param("myId") Long myId, Pageable pageable);
+
+
 
 }
