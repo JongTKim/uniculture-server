@@ -186,6 +186,7 @@ public class MemberService implements UserDetailsService {
         myLanguageService.createByList(newMyLanguage);
         myHobbyService.createByList(newMyHobby);
 
+        member.setCountry(afterSignupDto.getCountry());
         member.setMainPurpose(afterSignupDto.getMainPurpose());
         return "성공";
     }
