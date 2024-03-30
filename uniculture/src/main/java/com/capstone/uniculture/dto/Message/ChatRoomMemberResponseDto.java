@@ -1,9 +1,7 @@
 package com.capstone.uniculture.dto.Message;
 
-import com.capstone.uniculture.dto.Member.MemberResponseDto;
 import com.capstone.uniculture.entity.Member.Gender;
 import com.capstone.uniculture.entity.Member.Member;
-import com.capstone.uniculture.entity.Message.ChatRoomMembership;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

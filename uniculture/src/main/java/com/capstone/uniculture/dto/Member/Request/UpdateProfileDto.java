@@ -1,4 +1,4 @@
-package com.capstone.uniculture.dto.Member;
+package com.capstone.uniculture.dto.Member.Request;
 
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Member.MyLanguage;

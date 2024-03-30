@@ -1,10 +1,9 @@
-package com.capstone.uniculture.dto.Member;
+package com.capstone.uniculture.dto.Member.Response;
 
 import com.capstone.uniculture.entity.Member.Gender;
 import com.capstone.uniculture.entity.Member.Member;
 import lombok.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +12,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ResponseProfileDto {
+public class ProfileResponseDto {
     //아이디 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private Long id;
     // 프로필 사진 (ME,LOGIN-OTHER,LOGOUT-OTHER)
@@ -42,7 +41,7 @@ public class ResponseProfileDto {
     // 취미 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private List<String> hobbies;
 
-    public ResponseProfileDto(Member member){
+    public ProfileResponseDto(Member member){
         this.id = member.getId();
         this.nickname = member.getNickname();
         this.age = member.getAge();

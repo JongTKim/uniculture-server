@@ -1,4 +1,4 @@
-package com.capstone.uniculture.dto.Member;
+package com.capstone.uniculture.dto.Member.Request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

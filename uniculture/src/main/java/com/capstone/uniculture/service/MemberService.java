@@ -1,7 +1,11 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.S3UploadUtil;
-import com.capstone.uniculture.dto.Member.Request.*;
+import com.capstone.uniculture.dto.Member.Request.AfterSignupDto;
+import com.capstone.uniculture.dto.Member.Request.SignupRequestDto;
+import com.capstone.uniculture.dto.Member.Request.UpdateMemberDto;
+import com.capstone.uniculture.dto.Member.Request.UpdateProfileDto;
+import com.capstone.uniculture.dto.Member.Request.LoginRequestDto;
 import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
 import com.capstone.uniculture.dto.Member.Response.SignupResponseDto;
 import com.capstone.uniculture.dto.TokenDto;

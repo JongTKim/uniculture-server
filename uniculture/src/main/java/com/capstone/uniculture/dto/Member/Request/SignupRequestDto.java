@@ -1,9 +1,8 @@
-package com.capstone.uniculture.dto.Member;
+package com.capstone.uniculture.dto.Member.Request;
 
 import com.capstone.uniculture.entity.Member.Authority;
 import com.capstone.uniculture.entity.Member.Gender;
 import com.capstone.uniculture.entity.Member.Member;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,13 +11,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MemberRequestDto{
+public class SignupRequestDto {
     private String email;
     private String password;
     private String nickname;
@@ -28,7 +26,7 @@ public class MemberRequestDto{
     private Integer month;
     private Integer day;
 
-    public Member toMember(PasswordEncoder passwordEncoder) {
+    public Member toMember(PasswordEncoder passwordEncoder) { // DTO -> Entity
         return Member.builder()
                 .email(email)
                 .password(passwordEncoder.encode(password))
@@ -38,9 +36,5 @@ public class MemberRequestDto{
                 .age(age)
                 .born(LocalDate.of(year,month,day))
                 .build();
-    }
-
-    public UsernamePasswordAuthenticationToken toAuthentication() {
-        return new UsernamePasswordAuthenticationToken(email, password);
     }
 }
