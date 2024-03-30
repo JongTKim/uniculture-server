@@ -1,10 +1,9 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.S3UploadUtil;
-import com.capstone.uniculture.dto.Member.MemberRequestDto;
-import com.capstone.uniculture.dto.Member.ResponseProfileDto;
-import com.capstone.uniculture.dto.Member.UpdateMemberDto;
-import com.capstone.uniculture.dto.Member.UpdateProfileDto;
+import com.capstone.uniculture.dto.Member.Request.*;
+import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
+import com.capstone.uniculture.dto.Member.Response.SignupResponseDto;
 import com.capstone.uniculture.dto.TokenDto;
 import com.capstone.uniculture.entity.Member.*;
 import com.capstone.uniculture.jwt.TokenProvider;
@@ -24,7 +23,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -53,18 +51,22 @@ public class MemberService implements UserDetailsService {
     private final MyHobbyService myHobbyService;
     private final MyLanguageService myLanguageService;
     private final WantLanguageService wantLanguageService;
+    private final PurposeService purposeService;
 
     private final S3UploadUtil s3UploadUtil;
 
 
     // 회원 가입
-    public String signup(MemberRequestDto memberRequestDto){
+    public SignupResponseDto signup(SignupRequestDto signUpRequestDto){
 
-        // 2. 패스워드 암호화, DTO -> Entity
-        Member member = memberRequestDto.toMember(passwordEncoder);
-        // 3. DB에 저장
+        // 1. 패스워드 암호화 , DTO -> Entity
+        Member member = signUpRequestDto.toMember(passwordEncoder);
+
+        // 2. DB에 저장. 이 순간 member 에는 id가 기록됨
         memberRepository.save(member);
-        return "회원가입 완료";
+
+        // 3. 프로필 수정을 위해 id와 함께 Return
+        return new SignupResponseDto(member.getId());
     }
 
     public boolean checkEmailDuplicate(String email) {
@@ -72,7 +74,7 @@ public class MemberService implements UserDetailsService {
     }
 
     // 자신 조회
-    public ResponseProfileDto findUser(Long id) throws IOException {
+    public ProfileResponseDto findUser(Long id) throws IOException {
         // 1. ID를 기반으로 DB 에서 Member 객체 생성
         Member member = findMember(id);
         // 2. 사용이유는 프록시객체 때문에
@@ -80,7 +82,7 @@ public class MemberService implements UserDetailsService {
         Integer postNum = postRepository.countByMember(member);
         Integer friendNum = friendshipRepository.countByMember(member);
         // 3. 리턴해줄 DTO 생성. 이 과정에서 컬렉션 필드에서는 프록시 -> 실객체 의 변환이 일어남
-        return ResponseProfileDto.builder()
+        return ProfileResponseDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
                 .introduce(member.getIntroduce())
@@ -96,7 +98,7 @@ public class MemberService implements UserDetailsService {
     }
 
     // 타인 조회 - 로그인 상태일때
-    public ResponseProfileDto findOtherLogin(Long id, Long myId) throws IOException {
+    public ProfileResponseDto findOtherLogin(Long id, Long myId) throws IOException {
         // 1. ID를 기반으로 DB 에서 Member 객체 생성
         Member member = findMember(id);
         // 2. 사용이유는 프록시객체 때문에
@@ -118,7 +120,7 @@ public class MemberService implements UserDetailsService {
         }
 
         // 3. 리턴해줄 DTO 생성. 이 과정에서 컬렉션 필드에서는 프록시 -> 실객체 의 변환이 일어남
-        return ResponseProfileDto.builder()
+        return ProfileResponseDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
                 .introduce(member.getIntroduce())
@@ -134,14 +136,14 @@ public class MemberService implements UserDetailsService {
     }
 
     // 타인 조회 - 로그아웃 상태일때
-    public ResponseProfileDto findOtherLogout(String nickname) throws IOException {
+    public ProfileResponseDto findOtherLogout(String nickname) throws IOException {
         // 1. ID를 기반으로 DB 에서 Member 객체 생성
         Member member = findMemberByNickname(nickname);
         // 2. 사용이유는 프록시객체 때문에
         Integer postNum = postRepository.countByMember(member);
         Integer friendNum = friendshipRepository.countByMember(member);
         // 3. 리턴해줄 DTO 생성. 이 과정에서 컬렉션 필드에서는 프록시 -> 실객체 의 변환이 일어남
-        return ResponseProfileDto.builder()
+        return ProfileResponseDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
                 .introduce(member.getIntroduce())
@@ -157,6 +159,32 @@ public class MemberService implements UserDetailsService {
     }
 
 
+    public String AfterSignup(AfterSignupDto afterSignupDto){
+        Member member = findMember(afterSignupDto.getId());
+
+        List<Purpose> newPurpose = afterSignupDto.getPurpose()
+                .stream().map(purpose -> new Purpose(member, purpose)).toList();
+
+        List<MyHobby> newMyHobby = afterSignupDto.getMyHobbyList()
+                .stream().map(myHobby -> new MyHobby(member, myHobby)).toList();
+
+        List<MyLanguage> newMyLanguage = afterSignupDto.getCanLanguages()
+                .entrySet()
+                .stream().map(myLanguage -> new MyLanguage(member, myLanguage.getKey(), myLanguage.getValue())).toList();
+
+        List<WantLanguage> newWantLanguage = afterSignupDto.getWantLanguage()
+                .entrySet()
+                .stream().map(wantLanguage -> new WantLanguage(member, wantLanguage.getKey(), wantLanguage.getValue())).toList();
+
+
+        purposeService.createByList(newPurpose);
+        wantLanguageService.createByList(newWantLanguage);
+        myLanguageService.createByList(newMyLanguage);
+        myHobbyService.createByList(newMyHobby);
+
+        member.setMainPurpose(afterSignupDto.getMainPurpose());
+        return "성공";
+    }
 
     // 회원 수정 中 프로필 수정 초기화면
     public UpdateProfileDto EditUserProfile(Long id){
@@ -283,7 +311,7 @@ public class MemberService implements UserDetailsService {
     }
 
     // 로그인
-    public TokenDto login(MemberRequestDto requestDto) {
+    public TokenDto login(LoginRequestDto requestDto) {
         UsernamePasswordAuthenticationToken authenticationToken = requestDto.toAuthentication();
         // 여기서 비밀번호를 조회하고 인증된 객체를 Authentication 에 넣어줌
         Authentication authentication = managerBuilder.getObject().authenticate(authenticationToken);

@@ -1,9 +1,10 @@
 package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Member.ResponseProfileDto;
-import com.capstone.uniculture.dto.Member.UpdateMemberDto;
-import com.capstone.uniculture.dto.Member.UpdateProfileDto;
+import com.capstone.uniculture.dto.Member.Request.AfterSignupDto;
+import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
+import com.capstone.uniculture.dto.Member.Request.UpdateMemberDto;
+import com.capstone.uniculture.dto.Member.Request.UpdateProfileDto;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +29,7 @@ public class MemberController {
     // 회원 조회(내 프로필 조회)
     @Operation(summary = "내 프로필 조회")
     @GetMapping("/auth/member/myPage")
-    public ResponseEntity<ResponseProfileDto> myPage() throws IOException {
+    public ResponseEntity<ProfileResponseDto> myPage() throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.findUser(memberId));
     }
@@ -36,7 +37,7 @@ public class MemberController {
     // 회원 조회(상대 프로필 조회) - 로그인, 비로그인 나눠서 데이터를 다르게 줘야한다!
     @Operation(summary = "상대 프로필 조회")
     @GetMapping("/member/otherPage/{nickname}")
-    public ResponseEntity<ResponseProfileDto> otherPage(@PathVariable(name="nickname") String nickname) throws IOException {
+    public ResponseEntity<ProfileResponseDto> otherPage(@PathVariable(name="nickname") String nickname) throws IOException {
         try {
 
             Long memberId = SecurityUtil.getCurrentMemberId();
@@ -67,6 +68,11 @@ public class MemberController {
         return ResponseEntity.ok(memberService.EditUserProfile(memberId));
     }
 
+    @Operation(summary = "회원가입 직후 프로필 수정")
+    @PatchMapping("/member/editProfile")
+    public ResponseEntity afterSignup(@RequestBody AfterSignupDto afterSignupDto){
+        return ResponseEntity.ok(memberService.AfterSignup(afterSignupDto));
+    }
     // 회원 수정 中 프로필 수정
     @Operation(summary = "내 프로필 수정")
     @PatchMapping("/auth/member/editProfile")
