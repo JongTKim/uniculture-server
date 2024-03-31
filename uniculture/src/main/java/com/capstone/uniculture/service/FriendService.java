@@ -4,6 +4,10 @@ import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendSearchDto;
+import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
+import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
+import com.capstone.uniculture.dto.Recommend.ProfileRecommendResponseDto;
+import com.capstone.uniculture.dto.Recommend.ToFlaskRequestDto;
 import com.capstone.uniculture.entity.Friend.FriendRequest;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Friend.RequestStatus;
@@ -15,12 +19,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -186,5 +194,67 @@ public class FriendService {
         return new PageImpl<>(list, pageable, result.getTotalElements());
 
 
+    }
+
+    public List<ProfileRecommendRequestDto> requestTest(){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        // 2. 내 친구를 제외한 모든 멤버의 정보 가져오기 -> 목적, 취미, 언어는 Proxy 상태
+        List<Member> memberList = memberRepository.findNonFriendMembers(memberId);
+
+        // 3. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
+        return memberList.stream().map(ProfileRecommendRequestDto::fromEntity).toList();
+
+    }
+
+
+    public List<DetailFriendResponseDto> recommendFriends(Pageable pageable) {
+
+        // 1. 내 정보 찾기
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        // 2. 내 친구를 제외한 모든 멤버의 정보 가져오기 -> 목적, 취미, 언어는 Proxy 상태
+        List<Member> memberList = memberRepository.findNonFriendMembers(memberId);
+
+        // 3. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
+        List<ProfileRecommendRequestDto> recommendRequestItems = memberList.stream().map(ProfileRecommendRequestDto::fromEntity).toList();
+
+        // 4. Flask로 보내서 받아오기
+        ProfileRecommendResponseDto responseDto = sendRequestToFlask(ToFlaskRequestDto.builder()
+                .id(memberId)
+                .profiles(recommendRequestItems)
+                .build());
+
+        // 5. 추천받은 아이디로 멤버 상세 객체 만들어서 반환
+        List<DetailFriendResponseDto> detailFriendResponseDtos = responseDto.getData().getSortedIdList().stream()
+                .filter(id -> id != memberId)
+                .map(id -> {
+                    Member member = findMember(id);
+                    DetailFriendResponseDto detailFriendResponseDto = DetailFriendResponseDto.fromMember(member);
+                    return detailFriendResponseDto;
+                }).toList();
+
+        return detailFriendResponseDtos;
+    }
+
+    private ProfileRecommendResponseDto sendRequestToFlask(ToFlaskRequestDto requestDto) {
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-type", "application/json");
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<ProfileRecommendResponseDto> responseEntity = restTemplate.postForEntity(
+                "http://localhost:8000/api/v1/profile/recommend",
+                new HttpEntity<>(requestDto, headers),
+                ProfileRecommendResponseDto.class
+        );
+
+        if(responseEntity.getStatusCode() == HttpStatus.OK) {
+            return responseEntity.getBody();
+        }
+        else{
+            throw new RuntimeException("친구 추천 서버 오류입니다");
+        }
     }
 }

@@ -5,6 +5,7 @@ import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendDto;
 import com.capstone.uniculture.dto.Friend.FriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendSearchDto;
+import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
 import com.capstone.uniculture.entity.Member.Gender;
 import com.capstone.uniculture.service.FriendService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -113,6 +114,17 @@ public class FriendshipController {
     {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(friendService.listOfFriends2(name, memberId, pageable));
+    }
+
+    @Operation(summary = "친구추천", description = "친구 추천을 받을때 사용합니다")
+    @GetMapping("/auth/friend/recommend")
+    public ResponseEntity<List<DetailFriendResponseDto>> recommendFriendsList(@PageableDefault(size=10, direction = Sort.Direction.DESC) Pageable pageable){
+        return ResponseEntity.ok(friendService.recommendFriends(pageable));
+    }
+
+    @GetMapping("/auth/friend/recommend2")
+    public ResponseEntity<List<ProfileRecommendRequestDto>> test(){
+        return ResponseEntity.ok(friendService.requestTest());
     }
 
     @Operation(summary = "내 친구 검색")
