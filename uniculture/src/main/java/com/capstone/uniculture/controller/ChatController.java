@@ -4,7 +4,6 @@ import com.capstone.uniculture.dto.Message.ChatMessageDTO;
 import com.capstone.uniculture.dto.Message.MessageResponseDto;
 import com.capstone.uniculture.entity.Message.ChatMessage;
 import com.capstone.uniculture.service.ChatService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.util.List;
 
 
-@Tag(name="채팅", description = "채팅(Chat) 관련 API 입니다.")
 @RequiredArgsConstructor
 @RequestMapping("/api")
 @RestController

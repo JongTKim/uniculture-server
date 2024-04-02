@@ -1,13 +1,7 @@
 package com.capstone.uniculture.service;
 
-import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendResponseDto;
-import com.capstone.uniculture.dto.Friend.FriendSearchDto;
-import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
-import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
-import com.capstone.uniculture.dto.Recommend.ProfileRecommendResponseDto;
-import com.capstone.uniculture.dto.Recommend.ToFlaskRequestDto;
 import com.capstone.uniculture.entity.Friend.FriendRequest;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Friend.RequestStatus;
@@ -16,19 +10,12 @@ import com.capstone.uniculture.repository.FriendshipRepository;
 import com.capstone.uniculture.repository.MemberRepository;
 import com.sun.jdi.request.InvalidRequestStateException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -137,18 +124,17 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
 
-    public Page<DetailFriendResponseDto> listOfFriends2(String name, Long id, Pageable pageable){
+    public List<DetailFriendResponseDto> listOfFriends2(Long id){
+        /*return friendshipRepository.findById(id)
+                .stream().map(friendship ->
+                {
+                    Member toMember = friendship.getToMember();
+                    return FriendResponseDto.fromMember(toMember);
+                }).collect(Collectors.toList());*/
 
-        Page<Member> friendList = null;
-
-        if(name != null){ // 만약, 이름 검색조건이 입력되었다면
-            friendList = friendshipRepository.findFriendsByNickname(id, name, pageable);
-        }
-        else { // 아니면 내 친구 전체 상세조회
-            friendList = friendshipRepository.findAllByFromMember_Id(id, pageable);
-        }
-        List<DetailFriendResponseDto> list = friendList.stream().map(DetailFriendResponseDto::fromMember).toList();
-        return new PageImpl<>(list, pageable, friendList.getTotalElements());
+        return findMember(id).getFriends()
+                .stream().map(DetailFriendResponseDto::fromMember)
+                .collect(Collectors.toList());
     }
     // 나에게 온 친구 신청 목록 조회
     public List<FriendResponseDto> listOfFriendRequest(Long id){
@@ -165,96 +151,4 @@ public class FriendService {
     }
 
 
-    public Page<DetailFriendResponseDto> getMyFriendBySearch(FriendSearchDto searchData, Pageable pageable) {
-
-        Long memberId = SecurityUtil.getCurrentMemberId();
-
-        Page<Member> result = null;
-
-        if(searchData.getMax_age() != null && searchData.getMax_age() != null){ // 둘다 null 이 아닐때만
-            result = friendshipRepository.findFriendsByAge(memberId, searchData.getMin_age(), searchData.getMax_age(), pageable);
-        } else if(searchData.getGender() != null){
-            result = friendshipRepository.findFriendsByGender(memberId, searchData.getGender(), pageable);
-        } else if(searchData.getHobby() != null){
-            result = friendshipRepository.findFriendsByHobbyName(memberId, searchData.getHobby(), pageable);
-        } else if(searchData.getCanLanguages() != null){
-            result = friendshipRepository.findFriendsByMyLanguage(memberId, searchData.getCanLanguages(), pageable);
-        } else if(searchData.getWantLanguages() != null){
-            result = friendshipRepository.findFriendsByWantLanguage(memberId, searchData.getWantLanguages(), pageable);
-        }
-
-        List<DetailFriendResponseDto> list = null;
-
-        // 하나도 입력되지 않을 경우를 대비
-        if(result != null) {
-            list = result.getContent().stream()
-                    .map(DetailFriendResponseDto::fromMember).toList();
-        }
-
-        return new PageImpl<>(list, pageable, result.getTotalElements());
-
-
-    }
-
-    public List<ProfileRecommendRequestDto> requestTest(){
-        Long memberId = SecurityUtil.getCurrentMemberId();
-
-        // 2. 내 친구를 제외한 모든 멤버의 정보 가져오기 -> 목적, 취미, 언어는 Proxy 상태
-        List<Member> memberList = memberRepository.findNonFriendMembers(memberId);
-
-        // 3. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
-        return memberList.stream().map(ProfileRecommendRequestDto::fromEntity).toList();
-
-    }
-
-
-    public List<DetailFriendResponseDto> recommendFriends(Pageable pageable) {
-
-        // 1. 내 정보 찾기
-        Long memberId = SecurityUtil.getCurrentMemberId();
-
-        // 2. 내 친구를 제외한 모든 멤버의 정보 가져오기 -> 목적, 취미, 언어는 Proxy 상태
-        List<Member> memberList = memberRepository.findNonFriendMembers(memberId);
-
-        // 3. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
-        List<ProfileRecommendRequestDto> recommendRequestItems = memberList.stream().map(ProfileRecommendRequestDto::fromEntity).toList();
-
-        // 4. Flask로 보내서 받아오기
-        ProfileRecommendResponseDto responseDto = sendRequestToFlask(ToFlaskRequestDto.builder()
-                .id(memberId)
-                .profiles(recommendRequestItems)
-                .build());
-
-        // 5. 추천받은 아이디로 멤버 상세 객체 만들어서 반환
-        List<DetailFriendResponseDto> detailFriendResponseDtos = responseDto.getData().getSortedIdList().stream()
-                .filter(id -> id != memberId)
-                .map(id -> {
-                    Member member = findMember(id);
-                    DetailFriendResponseDto detailFriendResponseDto = DetailFriendResponseDto.fromMember(member);
-                    return detailFriendResponseDto;
-                }).toList();
-
-        return detailFriendResponseDtos;
-    }
-
-    private ProfileRecommendResponseDto sendRequestToFlask(ToFlaskRequestDto requestDto) {
-
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/json");
-
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<ProfileRecommendResponseDto> responseEntity = restTemplate.postForEntity(
-                "http://localhost:8000/api/v1/profile/recommend",
-                new HttpEntity<>(requestDto, headers),
-                ProfileRecommendResponseDto.class
-        );
-
-        if(responseEntity.getStatusCode() == HttpStatus.OK) {
-            return responseEntity.getBody();
-        }
-        else{
-            throw new RuntimeException("친구 추천 서버 오류입니다");
-        }
-    }
 }

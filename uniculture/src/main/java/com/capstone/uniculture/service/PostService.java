@@ -1,7 +1,10 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Post.*;
+import com.capstone.uniculture.dto.Post.PostAddDto;
+import com.capstone.uniculture.dto.Post.PostDetailDto;
+import com.capstone.uniculture.dto.Post.PostListDto;
+import com.capstone.uniculture.dto.Post.PostUpdateDto;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Post.Post;
 
@@ -11,9 +14,9 @@ import com.capstone.uniculture.repository.MemberRepository;
 import com.capstone.uniculture.repository.PostLikeRepository;
 import com.capstone.uniculture.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Transactional
@@ -94,15 +96,7 @@ public class PostService {
         // 3. 현재 로그인 상태인지 확인후 DTO 의 필드 값 변경
         try{
             Long memberId = SecurityUtil.getCurrentMemberId();
-
             postDetailDto.setIsLogin(true);
-
-            // 사용자가 해당 게시물의 주인인지 확인. Login 시에만 적용
-            if(post.getMember().getId() == memberId){
-                postDetailDto.setIsMine(true);
-            }else{
-                postDetailDto.setIsMine(false);
-            }
             // 사용자가 해당 게시물의 좋아요를 눌렀는지 판단. Login 시에만 적용
             if(postLikeRepository.findByMember_IdAndPost_Id(memberId, postId).isEmpty()){
                 postDetailDto.setIsLike(false);
@@ -112,7 +106,6 @@ public class PostService {
         }catch(RuntimeException e){
             postDetailDto.setIsLogin(false);
             postDetailDto.setIsLike(false);
-            postDetailDto.setIsMine(false);
         }
 
         return postDetailDto;
@@ -190,32 +183,4 @@ public class PostService {
     }
 
 
-    public Page<PostListDto> getAllPostsBySearch(PostSearchDto searchData, Pageable pageable) {
-
-        Page<Post> result = null;
-
-        // 만약 Title로 조회한거 라면?
-        if(searchData.getTitle() != null){
-            result = postRepository.findAllByTitleContaining(searchData.getTitle(), pageable);
-        } else if(searchData.getContent() != null){
-            result = postRepository.findAllByContentContaining(searchData.getContent(), pageable);
-        } else if(searchData.getWriterName() != null){
-            result = postRepository.findAllByNicknameContaining(searchData.getWriterName(), pageable);
-        }
-
-        List<PostListDto> list = result.getContent().stream()
-                .map(PostListDto::fromEntity)
-                .collect(Collectors.toList());
-        return new PageImpl<>(list, pageable, result.getTotalElements());
-    }
-
-    public Page<PostListDto> getMyFriendPosts(Pageable pageable) {
-
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        Page<Post> posts = postRepository.findPostsFromMyFriends(memberId, pageable);
-        List<PostListDto> list = posts.getContent().stream()
-                .map(PostListDto::fromEntity)
-                .toList();
-        return new PageImpl<>(list,pageable,posts.getTotalElements());
-    }
 }

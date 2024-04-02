@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 // 복합키를 두는대신 유효성 규칙을 만들어 두었음 (복합키는 복잡성 증가)
 @Table(uniqueConstraints=
         {@UniqueConstraint(
-                columnNames={"member_id","post_id"})}
+                columnNames={"member","post"})}
 )
 public class PostLike {
 

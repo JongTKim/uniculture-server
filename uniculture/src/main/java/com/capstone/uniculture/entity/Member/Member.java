@@ -51,14 +51,7 @@ public class Member extends BaseEntity {
 
     private LocalDate born;
 
-    private String country;
-
-    private String mainPurpose;
-
     // CascadeType.ALL => 모든 연관관계들은 Member 가 변경되면 다같이 변경된다
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<Purpose> purpose = new ArrayList<>();
-
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Post> post = new ArrayList<>();
 
@@ -77,6 +70,14 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "fromMember", cascade = CascadeType.ALL)
     private Set<Friendship> friendships = new HashSet<>();
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     //채팅방 연결
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)

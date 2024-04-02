@@ -4,14 +4,14 @@ import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Message.*;
 import com.capstone.uniculture.service.ChatRoomService;
 import com.capstone.uniculture.service.ChatService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name="채팅방", description = "채팅방(ChatRoom) 관련 API 입니다.")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/auth/room")
@@ -32,11 +32,11 @@ public class ChatRoomController {
   }
 
   /**
-   * 새로운 단체 채팅방 생성 API
+   * 새로운 채팅방 생성 API
    * @Request : CreateChatRoomDto (채팅방의 이름과 참여자 명단이 들어감. 추후 단톡방 구현을 위해)
    * @Response : ChatRoomIdResponseDto (새로 생선된 채팅방의 ID가 들어감)
    */
-  @PostMapping("/multi")
+  @PostMapping
   @ResponseBody
   public ResponseEntity<ChatRoomIdResponseDto> createRoom(@RequestBody CreateChatRoomDTO createChatRoomDTO) {
     return ResponseEntity.ok(chatRoomService.createChatRoomWithMember(createChatRoomDTO));
@@ -55,7 +55,7 @@ public class ChatRoomController {
   }
 
   /**
-   * 채팅방에서 인원 클릭시 참여자`들의 명단 조회 API
+   * 채팅방에서 인원 클릭시 참여자들의 명단 조회 API
    * @Request : roomId (pathVariable 로 수신)
    * @Response : List<ChatRoomMemberResponseDto> 참여중인 멤버들의 기초정보가 담긴 컬렉션
    */

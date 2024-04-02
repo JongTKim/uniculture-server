@@ -43,9 +43,6 @@ public class Post extends BaseEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Photo> photos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<PostLike> postLikes = new ArrayList<>();
-
     // 게시물의 주인 표시
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="writer_id",nullable = false)

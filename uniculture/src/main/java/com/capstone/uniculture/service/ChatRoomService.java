@@ -1,11 +1,13 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Message.*;
+import com.capstone.uniculture.dto.Message.ChatRoomIdResponseDto;
+import com.capstone.uniculture.dto.Message.ChatRoomMemberResponseDto;
 import com.capstone.uniculture.entity.Member.Member;
+import com.capstone.uniculture.dto.Message.ChatRoomDTO;
+import com.capstone.uniculture.dto.Message.CreateChatRoomDTO;
 import com.capstone.uniculture.entity.Message.ChatRoom;
 import com.capstone.uniculture.entity.Message.ChatRoomMembership;
-import com.capstone.uniculture.entity.Message.ChatRoomType;
 import com.capstone.uniculture.repository.ChatRoomMembershipRepository;
 import com.capstone.uniculture.repository.ChatRoomRepository;
 import com.capstone.uniculture.repository.MemberRepository;
@@ -64,7 +66,6 @@ public class ChatRoomService {
       ChatRoom chatRoom = ChatRoom.builder()
               .name(createChatRoomDTO.getName())
               .owner(owner)
-              .chatRoomType(ChatRoomType.MULTI)
               .build();
 
       // 3. 채팅룸에 멤버관계 주입
@@ -95,6 +96,4 @@ public class ChatRoomService {
                         ChatRoomMemberResponseDto.fromEntity(chatRoomMembership.getMember()))
                 .collect(Collectors.toList());
     }
-
-
 }

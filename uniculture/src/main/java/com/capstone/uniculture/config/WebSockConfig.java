@@ -25,7 +25,7 @@ public class WebSockConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("ws").setAllowedOriginPatterns("*")
+    registry.addEndpoint("/ws-stomp").setAllowedOriginPatterns("*")
             .withSockJS()
             // WebSocket 연결 전 사용자의 로그인 정보에서 ID 값을 불러와 저장하는 인터셉터
             .setInterceptors(new JwtHandshakeInterceptor());
