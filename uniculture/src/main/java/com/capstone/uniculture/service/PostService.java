@@ -1,17 +1,18 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Post.*;
+import com.capstone.uniculture.dto.Post.Request.PostAddDto;
+import com.capstone.uniculture.dto.Post.Request.PostUpdateDto;
+import com.capstone.uniculture.dto.Post.Response.PostDetailDto;
+import com.capstone.uniculture.dto.Post.Response.PostListDto;
+import com.capstone.uniculture.dto.Post.Response.PostSearchDto;
 import com.capstone.uniculture.entity.Member.Member;
-import com.capstone.uniculture.entity.Post.Post;
+import com.capstone.uniculture.entity.Post.*;
 
-import com.capstone.uniculture.entity.Post.PostLike;
-import com.capstone.uniculture.entity.Post.PostType;
 import com.capstone.uniculture.repository.MemberRepository;
 import com.capstone.uniculture.repository.PostLikeRepository;
 import com.capstone.uniculture.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Transactional
@@ -31,6 +31,7 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostTagService postTagService;
 
 
     private Member findMember(Long id) {
@@ -49,17 +50,18 @@ public class PostService {
         Member member = findMember(SecurityUtil.getCurrentMemberId());
 
         // 2. 빌더 패턴을 사용하여 게시물 객체 생성
-        Post post = Post.builder()
-                .title(postAddDto.getTitle())
-                .content(postAddDto.getContents())
-                .posttype(postAddDto.getPosttype())
-                .build();
+        Post post = postAddDto.toPost();
 
         // 3. 멤버 설정
         post.setMember(member);
 
-        // 4. Repository 에 저장
+        // 4. 태그 설정
+        List<PostTag> postTags = postAddDto.getTag()
+                .stream().map(tag -> new PostTag(post, tag)).toList();
+
+        // 5. Repository 에 저장
         postRepository.save(post);
+        postTagService.createByList(postTags);
 
         return "게시물 생성 성공";
     }
@@ -84,7 +86,7 @@ public class PostService {
     // 게시물 조회
     public PostDetailDto getPost(Long postId) {
         // 1. 게시물 찾기(FetchJoin 으로 전부 끌어오기)
-        Post post = postRepository.findPostWithMemberAndCommentsById(postId)
+        Post post = postRepository.findPostWithMemberById(postId)
                     .orElseThrow(()-> new IllegalArgumentException("조회하려는 게시물이 없습니다."));
 
         // 2. 조회수 증가
@@ -190,21 +192,15 @@ public class PostService {
     }
 
 
-    public Page<PostListDto> getAllPostsBySearch(PostSearchDto searchData, Pageable pageable) {
+    public Page<PostSearchDto> getAllPostsBySearch(PostCategory category, String content, List<String> tag, Pageable pageable) {
 
         Page<Post> result = null;
 
         // 만약 Title로 조회한거 라면?
-        if(searchData.getTitle() != null){
-            result = postRepository.findAllByTitleContaining(searchData.getTitle(), pageable);
-        } else if(searchData.getContent() != null){
-            result = postRepository.findAllByContentContaining(searchData.getContent(), pageable);
-        } else if(searchData.getWriterName() != null){
-            result = postRepository.findAllByNicknameContaining(searchData.getWriterName(), pageable);
-        }
+        result = postRepository.findByTitleAndContentAndAuthorName(category, content, tag, pageable);
 
-        List<PostListDto> list = result.getContent().stream()
-                .map(PostListDto::fromEntity)
+        List<PostSearchDto> list = result.getContent().stream()
+                .map(PostSearchDto::fromEntity)
                 .collect(Collectors.toList());
         return new PageImpl<>(list, pageable, result.getTotalElements());
     }

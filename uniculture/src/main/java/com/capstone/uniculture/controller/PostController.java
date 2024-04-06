@@ -1,22 +1,27 @@
 package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Post.*;
+import com.capstone.uniculture.dto.Post.Request.PostAddDto;
+import com.capstone.uniculture.dto.Post.Request.PostUpdateDto;
+import com.capstone.uniculture.dto.Post.Response.PostDetailDto;
+import com.capstone.uniculture.dto.Post.Response.PostListDto;
+import com.capstone.uniculture.dto.Post.Response.PostSearchDto;
+import com.capstone.uniculture.entity.Post.PostCategory;
 import com.capstone.uniculture.entity.Post.PostType;
 import com.capstone.uniculture.service.PostService;
-import com.capstone.uniculture.service.TranslateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name="게시물", description = "게시물(Post) 관련 API 입니다.")
 @RestController
@@ -60,13 +65,12 @@ public class PostController {
 
     @Operation(summary = "게시글 검색")
     @GetMapping("/post/search")
-    public ResponseEntity<Page<PostListDto>> postSearch(
+    public ResponseEntity<Page<PostSearchDto>> postSearch(
             @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
-            @RequestParam(required = false) String title,
+            @RequestParam PostCategory category,
             @RequestParam(required = false) String content,
-            @RequestParam(required = false) String writerName){
-        PostSearchDto searchData = PostSearchDto.createSearchData(title, content, writerName);
-        return ResponseEntity.ok(postService.getAllPostsBySearch(searchData,pageable));
+            @RequestParam(required = false) List<String> tag){
+        return ResponseEntity.ok(postService.getAllPostsBySearch(category, content, tag, pageable));
     }
     @Operation(summary = "게시글 전체 조회(최신순)")
     @GetMapping("/post")
