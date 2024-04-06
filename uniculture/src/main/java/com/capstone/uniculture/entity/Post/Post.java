@@ -1,9 +1,8 @@
 package com.capstone.uniculture.entity.Post;
 
-import com.capstone.uniculture.dto.Post.PostUpdateDto;
+import com.capstone.uniculture.dto.Post.Request.PostUpdateDto;
 import com.capstone.uniculture.entity.BaseEntity;
 import com.capstone.uniculture.entity.Member.Member;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,8 +22,13 @@ public class Post extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 여기에 DAILY, HELP, 언어교류, 취미 등등이 들어감
     @Enumerated(EnumType.STRING)
     private PostType posttype;
+
+    // 여기에 NORMAL, STUDY 가 들어감
+    @Enumerated(EnumType.STRING)
+    private PostCategory postCategory;
 
     private int likeCount;
 
@@ -35,6 +39,7 @@ public class Post extends BaseEntity {
 
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
@@ -45,6 +50,9 @@ public class Post extends BaseEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostLike> postLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<PostTag> postTags = new ArrayList<>();
 
     // 게시물의 주인 표시
     @ManyToOne(fetch = FetchType.LAZY)
