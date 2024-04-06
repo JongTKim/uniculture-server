@@ -2,6 +2,7 @@ package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Comment.CommentDto;
+import com.capstone.uniculture.dto.Comment.CommentResponseDto;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Post.Comment;
 import com.capstone.uniculture.entity.Post.Post;
@@ -9,9 +10,13 @@ import com.capstone.uniculture.repository.CommentRepository;
 import com.capstone.uniculture.repository.MemberRepository;
 import com.capstone.uniculture.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -64,5 +69,15 @@ public class CommentService {
     private Comment findComment(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다"));
+    }
+
+    public Page<CommentResponseDto> viewComment(Long postId, Pageable pageable) {
+        Page<Comment> comments = commentRepository.findCommentByPostId(postId, pageable);
+
+        List<CommentResponseDto> list = comments.getContent().stream()
+                .map(CommentResponseDto::fromEntity)
+                .toList();
+
+        return new PageImpl<>(list, pageable, comments.getTotalElements());
     }
 }
