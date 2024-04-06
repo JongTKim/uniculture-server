@@ -1,8 +1,9 @@
-package com.capstone.uniculture.dto.Post;
+package com.capstone.uniculture.dto.Post.Response;
 
 
 import com.capstone.uniculture.dto.Comment.CommentResponseDto;
 import com.capstone.uniculture.entity.Post.Post;
+import com.capstone.uniculture.entity.Post.PostTag;
 import com.capstone.uniculture.entity.Post.PostType;
 import lombok.*;
 
@@ -20,16 +21,18 @@ public class PostDetailDto {
     private Long postId;
     private String title;
     private String content;
+    private List<String> tags;
     private Integer viewCount;
     private Integer likeCount;
     private String writerName;
     private PostType postType;
     private LocalDateTime createDate;
     private LocalDateTime modifiedDate;
-    // 댓글도 함께 날라가야하므로
-    private List<CommentResponseDto> comments;
+    // 내가 로그인 상태인지
     private Boolean isLogin;
+    // 내가 좋아요를 눌렀는지 -> 하트를 채울지말지 나타내기 위해
     private Boolean isLike;
+    // 내 게시물인지 -> 수정버튼을 나타내기 위해
     private Boolean isMine;
 
 
@@ -40,11 +43,9 @@ public class PostDetailDto {
                 .content(post.getContent())
                 .viewCount(post.getViewCount())
                 .writerName(post.getMember().getNickname())
+                .tags(post.getPostTags().stream().map(PostTag::getHashtag).toList())
                 .createDate(post.getCreatedDate())
                 .modifiedDate(post.getModifiedDate())
-                .comments(post.getComments().stream()
-                        .map(CommentResponseDto::fromEntity)
-                        .collect(Collectors.toList()))
                 .likeCount(post.getLikeCount())
                 .postType(post.getPosttype())
                 .build();

@@ -1,4 +1,4 @@
-package com.capstone.uniculture.dto.Post;
+package com.capstone.uniculture.dto.Post.Request;
 
 import com.capstone.uniculture.entity.Post.Post;
 import com.capstone.uniculture.entity.Post.PostType;

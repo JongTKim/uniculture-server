@@ -1,6 +1,5 @@
-package com.capstone.uniculture.dto.Post;
+package com.capstone.uniculture.dto.Post.Response;
 
-import com.capstone.uniculture.dto.Comment.CommentResponseDto;
 import com.capstone.uniculture.entity.Post.Post;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
