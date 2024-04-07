@@ -2,6 +2,13 @@ package com.capstone.uniculture.repository;
 
 import com.capstone.uniculture.entity.Member.MyHobby;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
 public interface MyHobbyRepository extends JpaRepository<MyHobby, Long> {
+
+
+    @Query("SELECT m.hobbyName FROM MyHobby m WHERE m.member.id = :memberId")
+    List<String> findAllByMemberId(Long memberId);
 }

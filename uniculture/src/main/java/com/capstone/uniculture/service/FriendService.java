@@ -1,9 +1,7 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
-import com.capstone.uniculture.dto.Friend.FriendResponseDto;
-import com.capstone.uniculture.dto.Friend.FriendSearchDto;
+import com.capstone.uniculture.dto.Friend.*;
 import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendResponseDto;
@@ -15,6 +13,7 @@ import com.capstone.uniculture.entity.Friend.RequestStatus;
 import com.capstone.uniculture.repository.FriendRequestRepository;
 import com.capstone.uniculture.repository.FriendshipRepository;
 import com.capstone.uniculture.repository.MemberRepository;
+import com.capstone.uniculture.repository.MyHobbyRepository;
 import com.deepl.api.Usage;
 import com.sun.jdi.request.InvalidRequestStateException;
 import jakarta.persistence.EntityManager;
@@ -36,6 +35,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,6 +46,7 @@ public class FriendService {
 
     private final MemberRepository memberRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final MyHobbyRepository myHobbyRepository;
     private final FriendshipRepository friendshipRepository;
     private final EntityManager entityManager;
 
@@ -303,43 +304,14 @@ public class FriendService {
         return members.stream().map(DetailFriendResponseDto::fromMember).toList();
     }
 
-    public Page<DetailFriendResponseDto> getMyFriendBySearch(FriendSearchDto searchData, Pageable pageable) {
 
-        Long memberId = SecurityUtil.getCurrentMemberId();
-
-        Page<Member> result = null;
-
-
-        if(searchData.getMax_age() != null && searchData.getMax_age() != null){ // 둘다 null 이 아닐때만
-            result = friendshipRepository.findFriendsByAge(memberId, searchData.getMin_age(), searchData.getMax_age(), pageable);
-        } else if(searchData.getGender() != null){
-            result = friendshipRepository.findFriendsByGender(memberId, searchData.getGender(), pageable);
-        } else if(searchData.getHobby() != null){
-            result = friendshipRepository.findFriendsByHobbyName(memberId, searchData.getHobby(), pageable);
-        } else if(searchData.getCanLanguages() != null){
-            result = friendshipRepository.findFriendsByMyLanguage(memberId, searchData.getCanLanguages(), pageable);
-        } else if(searchData.getWantLanguages() != null){
-            result = friendshipRepository.findFriendsByWantLanguage(memberId, searchData.getWantLanguages(), pageable);
-        }
-
-        List<DetailFriendResponseDto> list = null;
-
-        // 하나도 입력되지 않을 경우를 대비
-        if(result != null) {
-            list = result.getContent().stream()
-                    .map(DetailFriendResponseDto::fromMember).toList();
-        }
-
-        return new PageImpl<>(list, pageable, result.getTotalElements());
-
-
-    }
-
-
-    public List<DetailFriendResponseDto> recommendFriends(Pageable pageable) {
+    public List<RecommendFriendResponseDto> recommendFriends(Pageable pageable) {
 
         // 1. 내 정보 찾기
         Long memberId = SecurityUtil.getCurrentMemberId();
+
+        // 2. 내 취미정보 찾아놓기(추후, 취미 비교를 위함)
+        List<String> myHobby = myHobbyRepository.findAllByMemberId(memberId);
 
         // 2. 내 친구를 제외한 모든 멤버의 정보 가져오기 -> 목적, 취미, 언어는 Proxy 상태
         List<Member> memberList = memberRepository.findNonFriendMembers(memberId);
@@ -354,15 +326,19 @@ public class FriendService {
                 .build());
 
         // 5. 추천받은 아이디로 멤버 상세 객체 만들어서 반환
-        List<DetailFriendResponseDto> detailFriendResponseDtos = responseDto.getData().getSortedIdList().stream()
-                .filter(id -> id != memberId)
+
+        return responseDto.getData().getSortedIdList().stream()
+                .filter(id -> !Objects.equals(id, memberId))
                 .map(id -> {
                     Member member = findMember(id);
-                    DetailFriendResponseDto detailFriendResponseDto = DetailFriendResponseDto.fromMember(member);
-                    return detailFriendResponseDto;
+                    List<RecommendHobby> hobbies = new ArrayList<>();
+                    member.getMyHobbyList().forEach(p -> {
+                        hobbies.add(new RecommendHobby(p.getHobbyName(), myHobby.contains(p.getHobbyName())))
+                    });
+                    RecommendFriendResponseDto recommendFriendResponseDto = RecommendFriendResponseDto.fromMember(member);
+                    recommendFriendResponseDto.setHobbies(hobbies);
+                    return recommendFriendResponseDto;
                 }).toList();
-
-        return detailFriendResponseDtos;
     }
 
     private ProfileRecommendResponseDto sendRequestToFlask(ToFlaskRequestDto requestDto) {
