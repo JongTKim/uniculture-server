@@ -7,7 +7,9 @@ import com.capstone.uniculture.dto.Friend.FriendResponseDto;
 import com.capstone.uniculture.dto.Friend.FriendSearchDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
 import com.capstone.uniculture.entity.Member.Gender;
+import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.service.FriendService;
+import com.deepl.api.Usage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -139,7 +141,21 @@ public class FriendshipController {
             @RequestParam(required = false) Gender ge // 성별
         ){
         FriendSearchDto searchData = FriendSearchDto.createSearchData(cl,wl,hb,mina,maxa,ge);
-        return ResponseEntity.ok(friendService.getMyFriendBySearch(searchData,pageable));
+        return ResponseEntity.ok(friendService.getMyFriendBySearch2(hb,cl,wl,mina,maxa,ge,pageable));
+    }
+
+    @Operation(summary = "전체 멤버중 필터 검색")
+    @GetMapping("/auth/friend/search2")
+    public ResponseEntity<List<DetailFriendResponseDto>> friendSearch2(
+            @PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String cl, // 가능언어
+            @RequestParam(required = false) String wl, // 원하는언어
+            @RequestParam(required = false) String hb, // 취미
+            @RequestParam(required = false) Integer mina, // 나이
+            @RequestParam(required = false) Integer maxa, // 나이
+            @RequestParam(required = false) Gender ge // 성별
+    ){
+        return ResponseEntity.ok(friendService.searchMembers(hb, cl, wl, mina, maxa, ge, pageable));
     }
     /**
      * 친구 요청 목록 조회 API

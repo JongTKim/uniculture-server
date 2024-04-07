@@ -6,10 +6,11 @@ import com.capstone.uniculture.entity.Member.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
+public interface FriendshipRepository extends JpaRepository<Friendship, Long>, JpaSpecificationExecutor<Friendship> {
 
     @Query("SELECT COUNT(p) FROM Friendship p WHERE p.fromMember = :member")
     Integer countByMember(@Param("member") Member member);
@@ -25,6 +26,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
      */
     @Query("SELECT DISTINCT f.toMember FROM Friendship f WHERE f.fromMember.id = :member_id AND f.toMember.age BETWEEN :min_age AND :max_age")
     Page<Member> findFriendsByAge(@Param("member_id") Long id, @Param("min_age") Integer min_age, @Param("max_age") Integer max_age, Pageable pageable);
+
 
     /**
      * 성별로 검색
