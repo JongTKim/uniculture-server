@@ -333,7 +333,7 @@ public class FriendService {
                     Member member = findMember(id);
                     List<RecommendHobby> hobbies = new ArrayList<>();
                     member.getMyHobbyList().forEach(p -> {
-                        hobbies.add(new RecommendHobby(p.getHobbyName(), myHobby.contains(p.getHobbyName())))
+                        hobbies.add(new RecommendHobby(p.getHobbyName(), myHobby.contains(p.getHobbyName())));
                     });
                     RecommendFriendResponseDto recommendFriendResponseDto = RecommendFriendResponseDto.fromMember(member);
                     recommendFriendResponseDto.setHobbies(hobbies);
