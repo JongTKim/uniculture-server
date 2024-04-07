@@ -12,13 +12,16 @@ import com.capstone.uniculture.entity.Post.*;
 import com.capstone.uniculture.repository.MemberRepository;
 import com.capstone.uniculture.repository.PostLikeRepository;
 import com.capstone.uniculture.repository.PostRepository;
+import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -59,7 +62,7 @@ public class PostService {
         List<PostTag> postTags = postAddDto.getTag()
                 .stream().map(tag -> new PostTag(post, tag)).toList();
 
-        // 5. Repository 에 저장
+        // 5. Repository 에 저장(Post, PostTag 각각)
         postRepository.save(post);
         postTagService.createByList(postTags);
 
@@ -183,35 +186,65 @@ public class PostService {
     }
 
     // 멤버 아이디에 따른 게시물 조회
-    public Page<PostListDto> getPostsByMember(Long memberId, Pageable pageable) {
-        Page<Post> posts = postRepository.findByMemberIdWithMember(memberId, pageable);
+    public Page<PostListDto> getPostsByMember(PostCategory postCategory, Long memberId, Pageable pageable) {
+
+        // 1. 카테고리와 아이디로 게시물 목록 가져오기 (Paging 처리)
+        Page<Post> posts = postRepository.findByMemberIdWithMember(postCategory, memberId, pageable);
+
+        // 2. Entity -> DTO 변환 (Fetch Join 을 했기에 Post.getMember().getNickname()을 하더라도 추가로 쿼리문이 나가지않음)
         List<PostListDto> list = posts.getContent().stream()
                 .map(PostListDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
+
         return new PageImpl<>(list,pageable,posts.getTotalElements());
     }
 
 
+    // 모든 게시물중 검색(카테고리, 제목, 태그에 따른)
     public Page<PostSearchDto> getAllPostsBySearch(PostCategory category, String content, List<String> tag, Pageable pageable) {
 
-        Page<Post> result = null;
+        // Page<Post> result = null;
+
+        Specification<Post> specification = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            predicates.add(criteriaBuilder.equal(root.get("postCategory"), category)); // category는 필수
+
+            if(content != null){
+                predicates.add(criteriaBuilder.like(root.get("title"), "%"+content+"%"));
+            }
+            if(tag != null){
+                Join<Post, PostTag> postTags = root.join("postTags", JoinType.INNER);
+                Expression<String> hashtag = postTags.get("hashtag");
+                hashtag.in(tag);
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Post> page = postRepository.findAll(specification, pageable);
 
         // 만약 Title로 조회한거 라면?
-        result = postRepository.findByTitleAndContentAndAuthorName(category, content, tag, pageable);
+        // result = postRepository.findByTitleAndContentAndAuthorName(category, content, tag, pageable);
 
-        List<PostSearchDto> list = result.getContent().stream()
+        List<PostSearchDto> list = page.getContent().stream()
                 .map(PostSearchDto::fromEntity)
                 .collect(Collectors.toList());
-        return new PageImpl<>(list, pageable, result.getTotalElements());
+        return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
     public Page<PostListDto> getMyFriendPosts(Pageable pageable) {
 
+        // 1. 나의 아이디 얻어오기
         Long memberId = SecurityUtil.getCurrentMemberId();
+
+        // 2. 내 친구인 Member 의 게시물만 가져오기
         Page<Post> posts = postRepository.findPostsFromMyFriends(memberId, pageable);
+
+        // 3. Entity -> DTO 변환 (Fetch Join 을 했기에 Post.getMember().getNickname()을 하더라도 추가로 쿼리문이 나가지않음)
         List<PostListDto> list = posts.getContent().stream()
                 .map(PostListDto::fromEntity)
                 .toList();
+
         return new PageImpl<>(list,pageable,posts.getTotalElements());
     }
 }

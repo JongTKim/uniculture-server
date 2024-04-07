@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +53,13 @@ public class Post extends BaseEntity {
     private List<PostLike> postLikes = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @BatchSize(size = 10)
     private List<PostTag> postTags = new ArrayList<>();
 
     // 게시물의 주인 표시
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="writer_id",nullable = false)
+    @BatchSize(size = 10)
     private Member member;
 
     public Post(Member member, String title, String content) {

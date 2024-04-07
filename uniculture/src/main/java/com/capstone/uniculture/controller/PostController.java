@@ -32,8 +32,11 @@ public class PostController {
 
     @Operation(summary = "내 게시글 조회")
     @GetMapping("/auth/post")
-    public ResponseEntity<Page<PostListDto>> MyPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
-        return ResponseEntity.ok(postService.getPostsByMember(SecurityUtil.getCurrentMemberId(), pageable));
+    public ResponseEntity<Page<PostListDto>> MyPostList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam PostCategory category) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        return ResponseEntity.ok(postService.getPostsByMember(category, memberId, pageable));
     }
 
     @Operation(summary = "게시글 작성")
@@ -74,32 +77,40 @@ public class PostController {
     }
     @Operation(summary = "게시글 전체 조회(최신순)")
     @GetMapping("/post")
-    public ResponseEntity<Page<PostListDto>> postList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
+    public ResponseEntity<Page<PostListDto>> postList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam PostCategory postCategory){
         return ResponseEntity.ok(postService.getAllPosts(pageable));
     }
 
     @Operation(summary = "일상 게시글 전체 조회")
     @GetMapping("/post/daily")
-    public ResponseEntity<Page<PostListDto>> dailyPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
+    public ResponseEntity<Page<PostListDto>> dailyPostList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
         return ResponseEntity.ok(postService.getPostsByType(PostType.DAILY, pageable));
     }
 
     @Operation(summary = "도움 게시글 전체 조회")
     @GetMapping("/post/help")
-    public ResponseEntity<Page<PostListDto>> helpPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
+    public ResponseEntity<Page<PostListDto>> helpPostList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
         return ResponseEntity.ok(postService.getPostsByType(PostType.HELP, pageable));
     }
 
     @Operation(summary = "내 친구의 게시물 전체 조회")
     @GetMapping("/auth/post/friend")
-    public ResponseEntity<Page<PostListDto>> myFriendPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
+    public ResponseEntity<Page<PostListDto>> myFriendPostList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
         return ResponseEntity.ok(postService.getMyFriendPosts(pageable));
     }
 
     @Operation(summary = "멤버별 게시글 리스트")
     @GetMapping("/post/member/{memberId}")
-    public ResponseEntity<Page<PostListDto>> MemberPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable,@PathVariable("memberId")Long memberId){
-        return ResponseEntity.ok(postService.getPostsByMember(memberId,pageable));
+    public ResponseEntity<Page<PostListDto>> MemberPostList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable,
+            @PathVariable("memberId")Long memberId,
+            @RequestParam PostCategory postCategory){
+        return ResponseEntity.ok(postService.getPostsByMember(postCategory, memberId,pageable));
     }
 
     @Operation(summary = "게시글 좋아요")
