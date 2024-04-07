@@ -217,59 +217,49 @@ public class FriendService {
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
-    public List<DetailFriendResponseDto> getMyFriendBySearch3(String hobby, String myLanguage, String wantLanguage, Integer minAge, Integer maxAge, Gender gender, Pageable pageable) {
+
+    public Page<DetailFriendResponseDto> getMyFriendBySearch4(String hobby, String myLanguage, String wantLanguage, Integer minAge, Integer maxAge, Gender gender, Pageable pageable) {
 
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Member> criteriaQuery = criteriaBuilder.createQuery(Member.class);
-        Root<Friendship> friendshipRoot = criteriaQuery.from(Friendship.class);
+        Specification<Member> specification = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        List<Predicate> predicates = new ArrayList<>();
-        predicates.add(criteriaBuilder.equal(friendshipRoot.get("fromMember"), memberId));
+            predicates.add(criteriaBuilder.notEqual(root.get("id"), memberId));
 
-        Join<Friendship, Member> toMemberJoin = friendshipRoot.join("toMember", JoinType.INNER);
+            if (hobby != null) {
+                Join<Member, MyHobby> myHobbyJoin = root.join("myHobbyList", JoinType.INNER); // 조인 수정
+                predicates.add(criteriaBuilder.equal(myHobbyJoin.get("hobbyName"), hobby));
+            }
 
+            if (myLanguage != null) {
+                Join<Member, MyLanguage> myLanguageJoin = root.join("myLanguages", JoinType.INNER);
+                predicates.add(criteriaBuilder.equal(myLanguageJoin.get("language"), myLanguage));
+            }
 
-        if (hobby != null) {
-            Join<Member, MyHobby> myHobbyJoin = toMemberJoin.join("myHobbyList", JoinType.INNER);
-            predicates.add(criteriaBuilder.equal(myHobbyJoin.get("hobbyName"), hobby));
-        }
+            if (wantLanguage != null) {
+                Join<Member, WantLanguage> wantLanguageJoin = root.join("wantLanguages", JoinType.INNER);
+                predicates.add(criteriaBuilder.equal(wantLanguageJoin.get("language"), wantLanguage));
+            }
 
-        if (myLanguage != null) {
-            Join<Member, MyLanguage> myLanguageJoin = toMemberJoin.join("myLanguages", JoinType.INNER);
-            predicates.add(criteriaBuilder.equal(myLanguageJoin.get("language"), myLanguage));
-        }
+            if (minAge != null && maxAge != null) {
+                predicates.add(criteriaBuilder.between(root.get("age"), minAge, maxAge));
+            }
 
-        if (wantLanguage != null) {
-            Join<Member, WantLanguage> wantLanguageJoin = toMemberJoin.join("wantLanguages", JoinType.INNER);
-            predicates.add(criteriaBuilder.equal(wantLanguageJoin.get("language"), wantLanguage));
-        }
+            if (gender != null) {
+                predicates.add(criteriaBuilder.equal(root.get("gender"), gender));
+            }
 
-        if (minAge != null && maxAge != null) {
-            predicates.add(criteriaBuilder.between(toMemberJoin.get("age"), minAge, maxAge));
-        }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
 
-        if (gender != null) {
-            predicates.add(criteriaBuilder.equal(toMemberJoin.get("gender"), gender));
-        }
+        Page<Member> page = memberRepository.findAll(specification, pageable);
 
-        criteriaQuery.select(toMemberJoin);
-        criteriaQuery.where(predicates.toArray(new Predicate[0]));
+        List<DetailFriendResponseDto> list = page.getContent().stream()
+                .map(DetailFriendResponseDto::fromMember).toList();
 
-        TypedQuery<Member> typedQuery = entityManager.createQuery(criteriaQuery);
-
-        // 페이징 적용
-        typedQuery.setFirstResult((pageable.getPageNumber() - 1) * pageable.getPageSize());
-        typedQuery.setMaxResults(pageable.getPageSize());
-
-        List<Member> members = typedQuery.getResultList();
-
-        List<DetailFriendResponseDto> list = members.stream().map(DetailFriendResponseDto::fromMember).toList();
-
-        return list;
+        return new PageImpl<>(list, pageable, page.getTotalElements());
     }
-
     public List<DetailFriendResponseDto> searchMembers(String hobby, String myLanguage, String wantLanguage, Integer minAge, Integer maxAge, Gender gender, Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Member> criteriaQuery = criteriaBuilder.createQuery(Member.class);
@@ -342,17 +332,6 @@ public class FriendService {
 
         return new PageImpl<>(list, pageable, result.getTotalElements());
 
-
-    }
-
-    public List<ProfileRecommendRequestDto> requestTest(){
-        Long memberId = SecurityUtil.getCurrentMemberId();
-
-        // 2. 내 친구를 제외한 모든 멤버의 정보 가져오기 -> 목적, 취미, 언어는 Proxy 상태
-        List<Member> memberList = memberRepository.findNonFriendMembers(memberId);
-
-        // 3. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
-        return memberList.stream().map(ProfileRecommendRequestDto::fromEntity).toList();
 
     }
 

@@ -124,10 +124,6 @@ public class FriendshipController {
         return ResponseEntity.ok(friendService.recommendFriends(pageable));
     }
 
-    @GetMapping("/auth/friend/recommend2")
-    public ResponseEntity<List<ProfileRecommendRequestDto>> test(){
-        return ResponseEntity.ok(friendService.requestTest());
-    }
 
     @Operation(summary = "내 친구 검색")
     @GetMapping("/auth/friend/search")
@@ -146,7 +142,7 @@ public class FriendshipController {
 
     @Operation(summary = "전체 멤버중 필터 검색")
     @GetMapping("/auth/friend/search2")
-    public ResponseEntity<List<DetailFriendResponseDto>> friendSearch2(
+    public ResponseEntity<Page<DetailFriendResponseDto>> friendSearch2(
             @PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String cl, // 가능언어
             @RequestParam(required = false) String wl, // 원하는언어
@@ -155,7 +151,7 @@ public class FriendshipController {
             @RequestParam(required = false) Integer maxa, // 나이
             @RequestParam(required = false) Gender ge // 성별
     ){
-        return ResponseEntity.ok(friendService.searchMembers(hb, cl, wl, mina, maxa, ge, pageable));
+        return ResponseEntity.ok(friendService.getMyFriendBySearch4(hb, cl, wl, mina, maxa, ge, pageable));
     }
     /**
      * 친구 요청 목록 조회 API
