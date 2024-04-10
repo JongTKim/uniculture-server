@@ -3,6 +3,7 @@ package com.capstone.uniculture.repository;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Post.Post;
 import com.capstone.uniculture.entity.Post.PostCategory;
+import com.capstone.uniculture.entity.Post.PostStatus;
 import com.capstone.uniculture.entity.Post.PostType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,8 +36,14 @@ public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificati
      * 전체 게시물을 조회하는 메소드 - 메인창에 들어갈 내용
      * 여기서는 Comment 까지 Join 필요X. CommentCount 만 쓸꺼기때문
      */
-    @Query("SELECT DISTINCT p FROM Post p JOIN FETCH p.member")
-    Page<Post> findAllWithMemberAndComments(Pageable pageable);
+    @Query("SELECT DISTINCT p FROM Post p JOIN FETCH p.member " +
+            "WHERE (:pt is null or p.posttype = :pt) " +
+            "and (:ct is null or p.postCategory = :ct)" +
+            "and (:ps is null or p.postStatus = :ps)")
+    Page<Post> findAllWithMemberAndComments(Pageable pageable,
+                                            @Param("pt") PostType postType,
+                                            @Param("ct") PostCategory postCategory,
+                                            @Param("ps") PostStatus postStatus);
 
     /**
      * Post 타입에 따른 게시물만 조회하는 메소드 - 메인창에 들어갈 내용

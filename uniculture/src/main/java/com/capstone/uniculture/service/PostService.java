@@ -2,6 +2,7 @@ package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Post.Request.PostAddDto;
+import com.capstone.uniculture.dto.Post.Request.PostListRequestDto;
 import com.capstone.uniculture.dto.Post.Request.PostUpdateDto;
 import com.capstone.uniculture.dto.Post.Response.PostDetailDto;
 import com.capstone.uniculture.dto.Post.Response.PostListDto;
@@ -80,8 +81,16 @@ public class PostService {
             throw new RuntimeException("자신의 게시물이 아닙니다.");
         }
 
-        // 3. 수정하기
+        // 3. 태그 설정
+        List<PostTag> postTags = postUpdateDto.getTag()
+                .stream().map(tag -> new PostTag(post, tag)).toList();
+        postTagService.deleteAllById(post.getId());
+        postTagService.createByList(postTags);
+
+        // 4. 수정하기
         post.update(postUpdateDto);
+        if(postUpdateDto.getPostStatus() != null) // 스터디 수정으로 날라온 경우
+            post.setPostStatus(postUpdateDto.getPostStatus());
 
         return "게시물 수정 성공";
     }
@@ -167,15 +176,20 @@ public class PostService {
     }
 
     // 모든 게시물 조회
-    public Page<PostListDto> getAllPosts(Pageable pageable) {
-        Page<Post> posts = postRepository.findAllWithMemberAndComments(pageable);
+    public Page<PostListDto> getAllPosts(Pageable pageable, PostListRequestDto postListRequestDto) {
+        Page<Post> posts = postRepository.findAllWithMemberAndComments(pageable,
+                postListRequestDto.getPt(),
+                postListRequestDto.getCa(),
+                postListRequestDto.getPs()
+        );
         List<PostListDto> list = posts.getContent().stream()
                 .map(PostListDto::fromEntity)
                 .collect(Collectors.toList());
         return new PageImpl<>(list, pageable, posts.getTotalElements());
     }
 
-    // 게시물 타입에 따른 게시물 조회
+    // 게시물 타입에 따른 게시물 조회 (통합으로 인한 미사용)
+    /*
     public Page<PostListDto> getPostsByType(PostType postType, Pageable pageable) {
         Page<Post> posts = postRepository.findByPostTypeWithMember(postType, pageable);
         List<PostListDto> list = posts.getContent().stream()
@@ -184,6 +198,7 @@ public class PostService {
         return new PageImpl<>(list,pageable,posts.getTotalElements());
 
     }
+     */
 
     // 멤버 아이디에 따른 게시물 조회
     public Page<PostListDto> getPostsByMember(PostCategory postCategory, Long memberId, Pageable pageable) {

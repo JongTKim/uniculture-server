@@ -31,6 +31,9 @@ public class Post extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PostCategory postCategory;
 
+    @Enumerated(EnumType.STRING)
+    private PostStatus postStatus;
+
     private int likeCount;
 
     // 관리 잘해야함 주의
