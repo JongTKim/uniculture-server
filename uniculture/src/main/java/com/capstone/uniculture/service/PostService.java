@@ -215,8 +215,7 @@ public class PostService {
             }
             if(tag != null){
                 Join<Post, PostTag> postTags = root.join("postTags", JoinType.INNER);
-                Expression<String> hashtag = postTags.get("hashtag");
-                hashtag.in(tag);
+                predicates.add(criteriaBuilder.and(postTags.get("hashtag").in(tag)));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
