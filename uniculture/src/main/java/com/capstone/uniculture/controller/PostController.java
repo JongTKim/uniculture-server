@@ -2,11 +2,13 @@ package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Post.Request.PostAddDto;
+import com.capstone.uniculture.dto.Post.Request.PostListRequestDto;
 import com.capstone.uniculture.dto.Post.Request.PostUpdateDto;
 import com.capstone.uniculture.dto.Post.Response.PostDetailDto;
 import com.capstone.uniculture.dto.Post.Response.PostListDto;
 import com.capstone.uniculture.dto.Post.Response.PostSearchDto;
 import com.capstone.uniculture.entity.Post.PostCategory;
+import com.capstone.uniculture.entity.Post.PostStatus;
 import com.capstone.uniculture.entity.Post.PostType;
 import com.capstone.uniculture.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,8 +34,11 @@ public class PostController {
 
     @Operation(summary = "내 게시글 조회")
     @GetMapping("/auth/post")
-    public ResponseEntity<Page<PostListDto>> MyPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
-        return ResponseEntity.ok(postService.getPostsByMember(SecurityUtil.getCurrentMemberId(), pageable));
+    public ResponseEntity<Page<PostListDto>> MyPostList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam PostCategory category) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        return ResponseEntity.ok(postService.getPostsByMember(category, memberId, pageable));
     }
 
     @Operation(summary = "게시글 작성")
@@ -42,10 +47,10 @@ public class PostController {
         return ResponseEntity.ok(postService.createPost(postAddDto));
     }
 
+
     @Operation(summary = "게시글 수정")
     @PatchMapping("/auth/post/{postId}")
     public ResponseEntity updateBoard(
-            @Parameter(name = "id", description = "게시글의 ID", in = ParameterIn.PATH)
             @PathVariable("postId") Long postId,
             @RequestBody PostUpdateDto postUpdateDto){
         return ResponseEntity.ok(postService.updatePost(postId,postUpdateDto));
@@ -72,34 +77,35 @@ public class PostController {
             @RequestParam(required = false) List<String> tag){
         return ResponseEntity.ok(postService.getAllPostsBySearch(category, content, tag, pageable));
     }
-    @Operation(summary = "게시글 전체 조회(최신순)")
+
+    // Post 조회하는 컨트롤러. (+Paging)
+    // postType, postCategory, postStatus 에 따른 조회가능
+    // RequestParam 을 DTO 로 받도록 Refactoring
+    @Operation(summary = "게시글 전체 조회(눌러서 설명확인)",
+            description = "postType(일반이면 DAILY, HELP 스터디면 HOBBY,LANGUAGE)," +
+                    "postCategory(NORMAL,STUDY), postStatus(모집중이면 START, 모집완료면 FINISH)에 따른 조회가 가능합니다" +
+                    "sort(commentCount, likeCount, viewCount) 로 정렬조건도 줄 수 있습니다")
     @GetMapping("/post")
-    public ResponseEntity<Page<PostListDto>> postList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
-        return ResponseEntity.ok(postService.getAllPosts(pageable));
-    }
-
-    @Operation(summary = "일상 게시글 전체 조회")
-    @GetMapping("/post/daily")
-    public ResponseEntity<Page<PostListDto>> dailyPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
-        return ResponseEntity.ok(postService.getPostsByType(PostType.DAILY, pageable));
-    }
-
-    @Operation(summary = "도움 게시글 전체 조회")
-    @GetMapping("/post/help")
-    public ResponseEntity<Page<PostListDto>> helpPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
-        return ResponseEntity.ok(postService.getPostsByType(PostType.HELP, pageable));
+    public ResponseEntity<Page<PostListDto>> postList(
+            @ModelAttribute PostListRequestDto postListRequestDto,
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
+        return ResponseEntity.ok(postService.getAllPosts(pageable, postListRequestDto));
     }
 
     @Operation(summary = "내 친구의 게시물 전체 조회")
     @GetMapping("/auth/post/friend")
-    public ResponseEntity<Page<PostListDto>> myFriendPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
+    public ResponseEntity<Page<PostListDto>> myFriendPostList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable){
         return ResponseEntity.ok(postService.getMyFriendPosts(pageable));
     }
 
     @Operation(summary = "멤버별 게시글 리스트")
     @GetMapping("/post/member/{memberId}")
-    public ResponseEntity<Page<PostListDto>> MemberPostList(@PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable,@PathVariable("memberId")Long memberId){
-        return ResponseEntity.ok(postService.getPostsByMember(memberId,pageable));
+    public ResponseEntity<Page<PostListDto>> MemberPostList(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable,
+            @PathVariable("memberId")Long memberId,
+            @RequestParam PostCategory postCategory){
+        return ResponseEntity.ok(postService.getPostsByMember(postCategory, memberId,pageable));
     }
 
     @Operation(summary = "게시글 좋아요")

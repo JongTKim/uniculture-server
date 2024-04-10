@@ -18,4 +18,6 @@ public class PostTagService {
     public void createByList(List<PostTag> postTagList){
         postTagRepository.saveAll(postTagList);
     }
+
+    public void deleteAllById(Long postId){postTagRepository.deleteAllByPostId(postId);}
 }

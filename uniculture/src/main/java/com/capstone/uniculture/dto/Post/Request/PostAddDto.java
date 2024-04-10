@@ -2,6 +2,7 @@ package com.capstone.uniculture.dto.Post.Request;
 
 import com.capstone.uniculture.entity.Post.Post;
 import com.capstone.uniculture.entity.Post.PostCategory;
+import com.capstone.uniculture.entity.Post.PostStatus;
 import com.capstone.uniculture.entity.Post.PostType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,7 @@ public class PostAddDto {
                 .content(contents)
                 .posttype(posttype)
                 .postCategory(postCategory)
+                .postStatus(PostStatus.START)
                 .build();
     }
 }

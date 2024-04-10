@@ -1,6 +1,7 @@
 package com.capstone.uniculture.dto.Post.Response;
 
 import com.capstone.uniculture.entity.Post.Post;
+import com.capstone.uniculture.entity.Post.PostStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,14 +21,18 @@ public class PostListDto {
     private Integer commentCount;
     private Integer likeCount;
     private String writerName;
+    private PostStatus postStatus;
     private LocalDateTime createDate;
     private LocalDateTime modifiedDate;
 
     @Builder
-    public PostListDto(Long postId, String title, String content, Integer viewCount, Integer commentCount, Integer likeCount, String writerName, LocalDateTime createDate, LocalDateTime modifiedDate) {
+    public PostListDto(Long postId, String title, String content, PostStatus postStatus,
+                       Integer viewCount, Integer commentCount, Integer likeCount,
+                       String writerName, LocalDateTime createDate, LocalDateTime modifiedDate) {
         this.postId = postId;
         this.title = title;
         this.content = content;
+        this.postStatus = postStatus;
         this.viewCount = viewCount;
         this.commentCount = commentCount;
         this.likeCount = likeCount;
@@ -41,6 +46,7 @@ public class PostListDto {
                 .postId(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .postStatus(post.getPostStatus())
                 .viewCount(post.getViewCount())
                 .commentCount(post.getCommentCount())
                 .likeCount(post.getLikeCount())
