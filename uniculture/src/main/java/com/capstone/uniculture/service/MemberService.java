@@ -46,6 +46,7 @@ public class MemberService implements UserDetailsService {
     private final PostRepository postRepository;
     private final FriendshipRepository friendshipRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final MyHobbyRepository myHobbyRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
@@ -197,6 +198,17 @@ public class MemberService implements UserDetailsService {
         return new UpdateProfileDto(member);
     }
 
+    public List<List<MyHobby>> test1(Long id){
+        List<Member> members = memberRepository.findAll();
+        return members.stream().map(member -> {
+            return myHobbyRepository.findAllByMemberId2(member.getId()); // 단방향일때
+        }).toList();
+    } // => 이때는 N+1 문제를 해결하기 위해 설정해둔 BatchSize 값이 작동하지 않음 (N+1 문제발생)
+
+    public List<List<MyHobby>> test2(Long id){
+        List<Member> members = memberRepository.findAll();
+        return members.stream().map(Member::getMyHobbyList).toList(); // 양방향일때
+    } // => 이때는 N+1 문제를 해결하기 위해 설정한 BatchSize 값이 적용되어 in 절을 사용해 쿼리문 1개로 Hobby 를 가저옴
 
     // 회원 수정 中 프로필 수정
     public String UpdateUserProfile(Long id, UpdateProfileDto updateProfileDto) throws IOException {

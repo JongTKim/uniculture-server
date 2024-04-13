@@ -49,6 +49,8 @@ public class DetailFriendResponseDto {
                 .gender(member.getGender())
                 .canLanguages(member.getMyLanguages().stream().collect(Collectors.toMap(MyLanguage::getLanguage, MyLanguage::getLevel)))
                 .wantLanguages(member.getWantLanguages().stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
+                // member.getMyHobbyList 부터 이미 SELECT * from MyHobby WHERE member_id=? 가 날라간다.
+                // 그리고 가져온후 영속성 컨텍스트에 넣어두고 찾아가는 것
                 .hobbies(member.getMyHobbyList().stream().map(myHobby -> myHobby.getHobbyName()).collect(Collectors.toList()))
                 .build();
     }

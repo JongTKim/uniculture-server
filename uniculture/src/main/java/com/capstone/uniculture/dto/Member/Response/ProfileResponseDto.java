@@ -1,11 +1,12 @@
 package com.capstone.uniculture.dto.Member.Response;
 
-import com.capstone.uniculture.entity.Member.Gender;
-import com.capstone.uniculture.entity.Member.Member;
+import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
+import com.capstone.uniculture.entity.Member.*;
 import lombok.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -41,17 +42,20 @@ public class ProfileResponseDto {
     // 취미 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private List<String> hobbies;
 
-    public ProfileResponseDto(Member member){
-        this.id = member.getId();
-        this.nickname = member.getNickname();
-        this.age = member.getAge();
-        /*
-        if(member.getProfileUrl() != null){
-            File imageFile = new File(member.getProfileUrl());
-            this.profileUrl = org.apache.commons.codec.binary.Base64.encodeBase64String(Files.readAllBytes(imageFile.toPath()));
-        }*/
-        this.receiverequestnum = member.getReceivedRequests().size();
-        this.friendnum = member.getFriends().size();
-        this.postnum = member.getPost().size();
+
+    public static ProfileResponseDto fromMember(Member member){
+        return ProfileResponseDto.builder()
+                .id(member.getId())
+                .nickname(member.getNickname())
+                .introduce(member.getIntroduce())
+                .age(member.getAge())
+                .gender(member.getGender())
+                .canlanguages(member.getMyLanguages()
+                        .stream().collect(Collectors.toMap(MyLanguage::getLanguage, MyLanguage::getLevel)))
+                .wantlanguages(member.getWantLanguages()
+                        .stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
+                .hobbies(member.getMyHobbyList()
+                        .stream().map(MyHobby::getHobbyName).collect(Collectors.toList()))
+                .build();
     }
 }

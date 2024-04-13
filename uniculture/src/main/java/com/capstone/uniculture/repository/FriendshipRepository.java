@@ -10,13 +10,19 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface FriendshipRepository extends JpaRepository<Friendship, Long>, JpaSpecificationExecutor<Friendship> {
 
     @Query("SELECT COUNT(p) FROM Friendship p WHERE p.fromMember = :member")
     Integer countByMember(@Param("member") Member member);
 
     @Query("SELECT DISTINCT p.toMember FROM Friendship p WHERE p.fromMember.id= :member_id")
-    Page<Member> findAllByFromMember_Id(@Param("member_id") Long id, Pageable pageable);
+    Page<Member> findAllByFromMember_Id_Paging(@Param("member_id") Long id, Pageable pageable);
+
+    @Query("SELECT DISTINCT p.toMember FROM Friendship p WHERE p.fromMember.id= :member_id")
+    List<Member> findAllByFromMember_Id(@Param("member_id") Long id);
+
 
     @Query("SELECT DISTINCT f.toMember FROM Friendship f WHERE f.fromMember.id = :member_id AND f.toMember.nickname LIKE %:nickname%")
     Page<Member> findFriendsByNickname(@Param("member_id") Long id, @Param("nickname") String nickname, Pageable pageable);

@@ -56,8 +56,8 @@ public class FriendService {
     }
 
     private FriendRequest findFriendRequest(Long senderId, Long receiverId) {
-        FriendRequest friendRequest = friendRequestRepository.findBySenderIdAndReceiverId(senderId, receiverId).orElseThrow(
-                () -> new IllegalArgumentException("찾는 친구 요청이 존재하지 않습니다")
+        FriendRequest friendRequest = friendRequestRepository.findBySenderIdAndReceiverId(senderId, receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("찾는 친구 요청이 존재하지 않습니다")
         );
         return friendRequest;
     }
@@ -133,20 +133,21 @@ public class FriendService {
     }
 
     // Stream 은 값이 Null 이더라도 빈 리스트를 반환해주어 NullPointerException 을 방지할수있다.
-    // 친구 목록 조회
+    // 간단 친구 목록 조회 (프로필창에서 친구 눌러 조회할때)
     public List<FriendResponseDto> listOfFriends(Long id){
-        /*return friendshipRepository.findById(id)
-                .stream().map(friendship ->
-                {
-                    Member toMember = friendship.getToMember();
-                    return FriendResponseDto.fromMember(toMember);
-                }).collect(Collectors.toList());*/
-
-        return findMember(id).getFriends()
+        return friendshipRepository.findAllByFromMember_Id(id)
                 .stream().map(FriendResponseDto::fromMember)
                 .collect(Collectors.toList());
     }
 
+    public List<List<String>> listOfFriends2(Long id){
+        List<Member> members = friendshipRepository.findAllByFromMember_Id(id);
+        List<MyHobby> allByMember = myHobbyRepository.findAllByMember(members);
+        allByMember.stream().map(myHobby -> myHobby.getHobbyName()).toList();
+    }
+
+
+    // 친구 목록 상세조회
     public Page<DetailFriendResponseDto> listOfFriends2(String name, Long id, Pageable pageable){
 
         Page<Member> friendList = null;
@@ -155,7 +156,7 @@ public class FriendService {
             friendList = friendshipRepository.findFriendsByNickname(id, name, pageable);
         }
         else { // 아니면 내 친구 전체 상세조회
-            friendList = friendshipRepository.findAllByFromMember_Id(id, pageable);
+            friendList = friendshipRepository.findAllByFromMember_Id_Paging(id, pageable);
         }
         List<DetailFriendResponseDto> list = friendList.stream().map(DetailFriendResponseDto::fromMember).toList();
         return new PageImpl<>(list, pageable, friendList.getTotalElements());
@@ -257,7 +258,10 @@ public class FriendService {
         Page<Member> page = memberRepository.findAll(specification, pageable);
 
         List<DetailFriendResponseDto> list = page.getContent().stream()
-                .map(DetailFriendResponseDto::fromMember).toList();
+                .map(member -> {
+                    System.out.println("Member 한명 조회했습니다");
+                    return DetailFriendResponseDto.fromMember(member);
+                }).toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
