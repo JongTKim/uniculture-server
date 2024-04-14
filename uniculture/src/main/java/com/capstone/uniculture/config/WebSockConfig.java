@@ -17,17 +17,27 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSockConfig implements WebSocketMessageBrokerConfigurer {
 
 
+  private final FilterChannelInterceptor filterChannelInterceptor;
+
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
-    registry.enableSimpleBroker("/sub");
-    registry.setApplicationDestinationPrefixes("/pub");
+    registry.enableSimpleBroker("/sub"); // 구독 url
+    registry.setApplicationDestinationPrefixes("/pub"); // prefix 정의
   }
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("ws").setAllowedOriginPatterns("*")
-            .withSockJS()
+    registry.addEndpoint("ws")
+            .setAllowedOriginPatterns("*");
+            //.withSockJS()
             // WebSocket 연결 전 사용자의 로그인 정보에서 ID 값을 불러와 저장하는 인터셉터
-            .setInterceptors(new JwtHandshakeInterceptor());
+            //.setInterceptors(new JwtHandshakeInterceptor());
   }
+
+
+  @Override
+  public void configureClientInboundChannel(ChannelRegistration registration) {
+    registration.interceptors(filterChannelInterceptor);
+  }
+
 }
