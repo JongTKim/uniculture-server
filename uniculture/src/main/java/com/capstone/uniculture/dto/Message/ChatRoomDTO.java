@@ -25,7 +25,7 @@ public class ChatRoomDTO {
             .name(chatRoom.getName())
             .latestMessage(chatRoom.getLatestMessage())
             .latestMessageTime(chatRoom.getLatestMessageTime())
-            .memberCount(chatRoom.getMemberships().size())
+            .memberCount(chatRoom.getMemberships().size()) // 조심해야됨 고쳐야됨
             .build();
   }
 }

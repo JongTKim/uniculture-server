@@ -14,6 +14,7 @@ import com.capstone.uniculture.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class ChatService {
 
   private final ChatRoomRepository chatRoomRepository;
@@ -93,10 +95,12 @@ public class ChatService {
   }
 
   // 메시지 보내기 -> 받아서 저장하기 메소드
-  public MessageResponseDto sendMessage(Long senderId, ChatMessageDTO chatMessageDTO) {
+  public ChatMessageDTO sendMessage(Long writerId, ChatMessageDTO chatMessageDTO) {
     // 1. 채팅이 저장될 채팅방, 보내는 멤버 찾기
     ChatRoom chatRoom = findChatRoom(chatMessageDTO.getRoomId());
-    Member member = findMember(senderId);
+
+    System.out.println("저장할 사람 아이디는? = " + writerId);
+    Member member = findMember(writerId);
 
     // 2. DTO -> Entity 변환하여, ChatMessage 객체 생성
     // 시간은 생성될때 JPA Auditing 에 의해 자동으로 생성된다
@@ -109,14 +113,13 @@ public class ChatService {
     chatRoom.addMessage(chatMessage);
 
     // 4. Entity -> DTO 변환하여 Return
-    return MessageResponseDto.fromEntity(chatMessage);
+    chatMessageDTO.setSender(member.getNickname());
+    return chatMessageDTO;
   }
 
   //채팅방에서 키워드로 메시지 찾기
   public ChatMessageDTO findMessageByKeyword(String keyword) {
     return null;
   }
-
-
 
 }

@@ -198,12 +198,6 @@ public class MemberService implements UserDetailsService {
         return new UpdateProfileDto(member);
     }
 
-    public List<List<MyHobby>> test1(Long id){
-        List<Member> members = memberRepository.findAll();
-        return members.stream().map(member -> {
-            return myHobbyRepository.findAllByMemberId2(member.getId()); // 단방향일때
-        }).toList();
-    } // => 이때는 N+1 문제를 해결하기 위해 설정해둔 BatchSize 값이 작동하지 않음 (N+1 문제발생)
 
     public List<List<MyHobby>> test2(Long id){
         List<Member> members = memberRepository.findAll();

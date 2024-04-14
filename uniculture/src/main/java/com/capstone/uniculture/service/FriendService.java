@@ -140,12 +140,6 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
 
-    public List<List<String>> listOfFriends2(Long id){
-        List<Member> members = friendshipRepository.findAllByFromMember_Id(id);
-        List<MyHobby> allByMember = myHobbyRepository.findAllByMember(members);
-        allByMember.stream().map(myHobby -> myHobby.getHobbyName()).toList();
-    }
-
 
     // 친구 목록 상세조회
     public Page<DetailFriendResponseDto> listOfFriends2(String name, Long id, Pageable pageable){

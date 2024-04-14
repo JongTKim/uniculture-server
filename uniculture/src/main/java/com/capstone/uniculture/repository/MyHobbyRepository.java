@@ -14,7 +14,6 @@ public interface MyHobbyRepository extends JpaRepository<MyHobby, Long> {
     @Query("SELECT m.hobbyName FROM MyHobby m WHERE m.member.id = :memberId")
     List<String> findAllByMemberId(Long memberId);
 
-    List<MyHobby> findAllByMemberId2(Long memberId);
 
     @Query("SELECT m.hobbyName FROM MyHobby m WHERE m.member in :members")
     List<MyHobby> findAllByMember(@Param("members") List<Member> members);

@@ -105,11 +105,6 @@ public class FriendshipController {
         return ResponseEntity.ok(friendService.listOfFriends(memberId));
     }
 
-    @GetMapping("/friend/friend/f")
-    public ResponseEntity<List<List<String>>> test1(){
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(friendService.listOfFriends2(currentMemberId));
-    }
 
     @Operation(summary = "내 친구 목록 상세 조회", description = "친구 페이지에서 자세하게 조회할때 사용합니다.")
     @GetMapping("/auth/friend/detail")
