@@ -105,6 +105,7 @@ public class FriendshipController {
         return ResponseEntity.ok(friendService.listOfFriends(memberId));
     }
 
+
     @Operation(summary = "내 친구 목록 상세 조회", description = "친구 페이지에서 자세하게 조회할때 사용합니다.")
     @GetMapping("/auth/friend/detail")
     public ResponseEntity<Page<DetailFriendResponseDto>> detailFriendsList(

@@ -5,6 +5,7 @@ import com.capstone.uniculture.entity.Message.ChatRoom;
 import com.capstone.uniculture.entity.Message.ChatRoomMembership;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,7 +14,8 @@ import java.util.Optional;
 @Repository
 public interface ChatRoomMembershipRepository extends JpaRepository<ChatRoomMembership, Long> {
 
-  List<ChatRoomMembership> findByMember_Id(Long memberId);
+    @Query("SELECT crm FROM ChatRoomMembership crm JOIN FETCH crm.chatRoom WHERE crm.member.id = :memberId")
+  List<ChatRoomMembership> findByMember_Id(@Param("memberId") Long memberId);
 
   List<ChatRoomMembership> findByChatRoom_Id(Long chatroomId);
 

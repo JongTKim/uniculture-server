@@ -26,7 +26,6 @@ public class ChatRoomController {
    * 로직 : ChatRoomMembership Repository 에서 Member_id가 현재 접속유저인것을 검색
    */
   @GetMapping
-  @ResponseBody
   public ResponseEntity<List<ChatRoomDTO>> myRoom() {
     return ResponseEntity.ok(chatRoomService.findRoomByUserId(SecurityUtil.getCurrentMemberId()));
   }
@@ -37,9 +36,14 @@ public class ChatRoomController {
    * @Response : ChatRoomIdResponseDto (새로 생선된 채팅방의 ID가 들어감)
    */
   @PostMapping("/multi")
-  @ResponseBody
   public ResponseEntity<ChatRoomIdResponseDto> createRoom(@RequestBody CreateChatRoomDTO createChatRoomDTO) {
     return ResponseEntity.ok(chatRoomService.createChatRoomWithMember(createChatRoomDTO));
+  }
+
+  @GetMapping("/duo")
+  public ResponseEntity<ChatRoomIdResponseDto> createDuoRoom(@RequestParam Long toId){
+    Long memberId = SecurityUtil.getCurrentMemberId();
+    return ResponseEntity.ok(chatRoomService.createChatRoomWithMemberDuo(memberId, toId));
   }
 
   //채팅방 입장하면 나와야할 화면, 채팅방 내용도 같이 가져와야함 (한번에 처리필요)

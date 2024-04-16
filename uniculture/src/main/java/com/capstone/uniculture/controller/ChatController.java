@@ -3,27 +3,43 @@ package com.capstone.uniculture.controller;
 import com.capstone.uniculture.dto.Message.ChatMessageDTO;
 import com.capstone.uniculture.dto.Message.MessageResponseDto;
 import com.capstone.uniculture.entity.Message.ChatMessage;
+import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.service.ChatService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.io.IOException;
-import java.util.List;
+import java.security.Principal;
+import java.util.*;
 
 
 @Tag(name="채팅", description = "채팅(Chat) 관련 API 입니다.")
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@Controller
+//@RequestMapping("/api")
 @RestController
 public class ChatController {
   private final ChatService chatService;
   private final SimpMessageSendingOperations messagingTemplate;   //브로커 통해서 메시지 전달
+  private static final Map<String, Long> sessions = new HashMap<>();
 
   /**
    * 클라이언트 메시지 전송 WebSocket
@@ -31,15 +47,32 @@ public class ChatController {
    * @Reponse : void(하지만, convertAndSend 로 사실상 Message 전송)
    * 로직 : ChatMessageRepository 에 받은 메시지 저장후, 이 채팅방을 구독한 전체에게 Send
    */
-  @MessageMapping("/auth/chat/{roomId}")
-  public void message(WebSocketSession session,
+  @MessageMapping("/chat/{roomId}")
+  public void message(//WebSocketSession session,
                       @DestinationVariable Long roomId,
-                      ChatMessageDTO message) {
-    Long userId = (Long) session.getAttributes().get("userId");
-    chatService.sendMessage(userId, message);   //데이터베이스 먼저 저장
-    messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message);  //roomId로 메시지 전송
+                      @Payload ChatMessageDTO message,
+                      SimpMessageHeaderAccessor accessor) {
+
+    Long writerId = sessions.get(accessor.getSessionId());
+    ChatMessageDTO message2 = chatService.sendMessage(writerId, message);//데이터베이스 먼저 저장
+    messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message2);  //roomId로 메시지 전송
   }
 
+  @EventListener(SessionConnectEvent.class)
+  public void onConnect(SessionConnectEvent event) {
+    System.out.println("세션 연결됨");
+    String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
+    System.out.println("내용이 뭘까? = " + event.getMessage().getHeaders().get("nativeHeaders").toString());
+    String userId = event.getMessage().getHeaders().get("nativeHeaders").toString().split("User=\\[")[1].split("]")[0];
+    System.out.println("userId = " + userId);
+    sessions.put(sessionId, Long.parseLong(userId));
+  }
+
+  @EventListener(SessionDisconnectEvent.class)
+  public void onDisconnect(SessionDisconnectEvent event) {
+    System.out.println("세션 끊김");
+    sessions.remove(event.getSessionId());
+  }
   /**
    * 채팅방 내용 가져오기 API
    * @Request : PathVariable(가져올 방의 번호)
@@ -47,9 +80,9 @@ public class ChatController {
    * 로직 : ChatMessageRepository 에서 roomId를 가지고 전체조회,
    * Front 에서는 DTO 의 chatMessageId 번호를 가지고 정렬하면 편할듯함
    */
-  @GetMapping("/auth/chat/{roomId}")
-  public List<MessageResponseDto> getChatHistory(@PathVariable Long roomId){
-    return chatService.findMessageHistory(roomId);
+  @GetMapping("/api/auth/chat/{roomId}")
+  public ResponseEntity<List<MessageResponseDto>> getChatHistory(@PathVariable Long roomId){
+    return ResponseEntity.ok(chatService.findMessageHistory(roomId));
   }
 
   /**

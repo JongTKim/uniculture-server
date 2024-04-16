@@ -104,8 +104,8 @@ public class PostController {
     public ResponseEntity<Page<PostListDto>> MemberPostList(
             @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC)Pageable pageable,
             @PathVariable("memberId")Long memberId,
-            @RequestParam PostCategory postCategory){
-        return ResponseEntity.ok(postService.getPostsByMember(postCategory, memberId,pageable));
+            @RequestParam PostCategory category){
+        return ResponseEntity.ok(postService.getPostsByMember(category, memberId,pageable));
     }
 
     @Operation(summary = "게시글 좋아요")

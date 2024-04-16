@@ -1,6 +1,7 @@
 package com.capstone.uniculture.dto.Post.Response;
 
 import com.capstone.uniculture.entity.Post.Post;
+import com.capstone.uniculture.entity.Post.PostStatus;
 import com.capstone.uniculture.entity.Post.PostTag;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,12 +22,14 @@ public class PostSearchDto {
     private Integer commentCount;
     private Integer likeCount;
     private String writerName;
+    private PostStatus postStatus;
     private List<String> tags;
     private LocalDateTime createDate;
     private LocalDateTime modifiedDate;
 
     @Builder
-    public PostSearchDto(Long postId, String title, String content, Integer viewCount, Integer commentCount, Integer likeCount, String writerName, LocalDateTime createDate, LocalDateTime modifiedDate, List<String> tags) {
+    public PostSearchDto(Long postId, String title, String content, Integer viewCount, Integer commentCount, Integer likeCount, String writerName,
+                         PostStatus postStatus, LocalDateTime createDate, LocalDateTime modifiedDate, List<String> tags) {
         this.postId = postId;
         this.title = title;
         this.content = content;
@@ -34,6 +37,7 @@ public class PostSearchDto {
         this.commentCount = commentCount;
         this.likeCount = likeCount;
         this.writerName = writerName;
+        this.postStatus = postStatus;
         this.createDate = createDate;
         this.modifiedDate = modifiedDate;
         this.tags = tags;
@@ -48,6 +52,7 @@ public class PostSearchDto {
                 .commentCount(post.getCommentCount())
                 .likeCount(post.getLikeCount())
                 .writerName(post.getMember().getNickname())
+                .postStatus(post.getPostStatus())
                 .createDate(post.getCreatedDate())
                 .modifiedDate(post.getModifiedDate())
                 .tags(post.getPostTags().stream().map(PostTag::getHashtag).toList())

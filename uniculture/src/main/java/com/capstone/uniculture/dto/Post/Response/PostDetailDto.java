@@ -3,6 +3,7 @@ package com.capstone.uniculture.dto.Post.Response;
 
 import com.capstone.uniculture.dto.Comment.CommentResponseDto;
 import com.capstone.uniculture.entity.Post.Post;
+import com.capstone.uniculture.entity.Post.PostStatus;
 import com.capstone.uniculture.entity.Post.PostTag;
 import com.capstone.uniculture.entity.Post.PostType;
 import lombok.*;
@@ -26,6 +27,7 @@ public class PostDetailDto {
     private Integer likeCount;
     private String writerName;
     private PostType postType;
+    private PostStatus postStatus;
     private LocalDateTime createDate;
     private LocalDateTime modifiedDate;
     // 내가 로그인 상태인지
@@ -48,6 +50,7 @@ public class PostDetailDto {
                 .modifiedDate(post.getModifiedDate())
                 .likeCount(post.getLikeCount())
                 .postType(post.getPosttype())
+                .postStatus(post.getPostStatus())
                 .build();
     }
 }

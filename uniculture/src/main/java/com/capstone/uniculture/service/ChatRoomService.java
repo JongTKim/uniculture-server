@@ -97,4 +97,7 @@ public class ChatRoomService {
     }
 
 
+    public Object createChatRoomWithMemberDuo(Long memberId, Long toId) {
+
+    }
 }
