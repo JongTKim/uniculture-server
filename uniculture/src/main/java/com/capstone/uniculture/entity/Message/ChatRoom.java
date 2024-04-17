@@ -13,44 +13,37 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Entity
-@Getter @Setter
+@Entity @Getter @Setter
 @NoArgsConstructor
 public class ChatRoom extends BaseEntity{
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-
   private String name;
-
   private String latestMessage;
-
-  // 마지막 메시지 시간이 필요함 -> modifiedDate 로 하면 name 이 바뀔때도 변하므로 안됨
   private LocalDateTime latestMessageTime;
+  // 마지막 메시지 시간이 필요함 -> modifiedDate 로 하면 name 이 바뀔때도 변하므로 안됨
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "owner_id")
-  private Member owner;
+  @JoinColumn(name="member1_id", nullable = false)
+  private Member member1;
 
-  @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
-  private List<ChatRoomMembership> memberships = new ArrayList<>();
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name="member2_id", nullable = false)
+  private Member member2;
 
   @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
   private List<ChatMessage> messages = new ArrayList<>();
 
-  private ChatRoomType chatRoomType;
 
   public ChatRoom(String name, List<Member> members){
     this.name = uniqueName(name, members);
   }
 
-  @Builder
-  public ChatRoom(Long id, String name, Member owner, ChatRoomType chatRoomType) {
-    this.id = id;
-    this.name = name;
-    this.owner = owner;
-    this.chatRoomType = chatRoomType;
+  public ChatRoom(Member member1, Member member2) {
+    this.member1 = member1;
+    this.member2 = member2;
   }
 
   // 연관관계 편의 메소드
@@ -58,12 +51,6 @@ public class ChatRoom extends BaseEntity{
     messages.add(message);
     setLatestMessage(message.getMessage());
     setLatestMessageTime(message.getCreatedDate()); // 만들어진 시간 활용
-  }
-
-  public void addMember(Member member){
-    ChatRoomMembership membership = new ChatRoomMembership(this, member);
-    this.memberships.add(membership);
-    memberships.add(membership);
   }
 
   // 사용자 편의 메소드

@@ -57,7 +57,6 @@ public class ChatService {
     Member member = findMember(senderId);
     ChatRoom chatRoom = findChatRoom(roomId);
 
-    chatRoom.addMember(member);
 
     ChatMessage chatMessage = ChatMessage.builder()
             .type(MessageType.ENTER)
