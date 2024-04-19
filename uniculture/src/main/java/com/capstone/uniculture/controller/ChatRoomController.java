@@ -35,15 +35,16 @@ public class ChatRoomController {
    * @Request : CreateChatRoomDto (채팅방의 이름과 참여자 명단이 들어감. 추후 단톡방 구현을 위해)
    * @Response : ChatRoomIdResponseDto (새로 생선된 채팅방의 ID가 들어감)
    */
-  @PostMapping("/multi")
+  @PostMapping
   public ResponseEntity<ChatRoomIdResponseDto> createRoom(@RequestBody CreateChatRoomDTO createChatRoomDTO) {
-    return ResponseEntity.ok(chatRoomService.createChatRoomWithMember(createChatRoomDTO));
+    Long memberId = SecurityUtil.getCurrentMemberId();
+    return ResponseEntity.ok(chatRoomService.createChatRoomWithMember(memberId,createChatRoomDTO.getMemberId()));
   }
 
   @GetMapping("/duo")
   public ResponseEntity<ChatRoomIdResponseDto> createDuoRoom(@RequestParam Long toId){
     Long memberId = SecurityUtil.getCurrentMemberId();
-    return ResponseEntity.ok(chatRoomService.createChatRoomWithMemberDuo(memberId, toId));
+    return ResponseEntity.ok(chatRoomService.checkAndCreate(memberId, toId));
   }
 
   //채팅방 입장하면 나와야할 화면, 채팅방 내용도 같이 가져와야함 (한번에 처리필요)

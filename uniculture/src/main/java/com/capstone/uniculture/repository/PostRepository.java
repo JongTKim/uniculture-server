@@ -32,6 +32,9 @@ public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificati
     @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.member WHERE p.id = :postId")
     Optional<Post> findPostWithMemberById(@Param("postId") Long postId);
 
+    @Query("SELECT p FROM Post p JOIN FETCH p.member")
+    List<Post> findAllWithMember();
+
     /**
      * 전체 게시물을 조회하는 메소드 - 메인창에 들어갈 내용
      * 여기서는 Comment 까지 Join 필요X. CommentCount 만 쓸꺼기때문
@@ -75,6 +78,8 @@ public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificati
     @Query(value = "SELECT p FROM Post p JOIN FETCH p.member WHERE p.member.nickname LIKE %:nickname%")
     Page<Post> findAllByNicknameContaining(@Param("nickname") String nickname, Pageable pageable);
 
+    @Query("SELECT p FROM Post p JOIN FETCH p.member WHERE p.id = :postId")
+    Optional<Post> findPostByIdFetch(@Param("postId") Long postId);
 
     // 문제점 : Fetch Join + Paging, LEFT Outer Join + Fetch Join
     // 문제점 : 동적 쿼리로 바꿔줘야됨.
