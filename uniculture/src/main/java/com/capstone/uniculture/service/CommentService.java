@@ -15,46 +15,80 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
 
+    @Transactional
     public String createComment(Long postId, CommentDto commentDto) {
-        // 1. 게시물 검색
-        Post post = findPost(postId);
+        // 1. 게시물 검색(프록시)
+        Post post = postRepository.getReferenceById(postId);
 
-        // 2. 작성자 검색
-        Member member = findMember(SecurityUtil.getCurrentMemberId());
+        // 2. 작성자 검색(프록시)
+        Member member = memberRepository.getReferenceById(SecurityUtil.getCurrentMemberId());
 
         // 3. Dto -> Entity, 연관관계 매핑
         Comment comment = CommentDto.toComment(commentDto);
-        comment.setPost(post);
-        comment.setMember(member);
 
+        // 4. 대댓글 이라면 부모를 설정해줘야함
+        if (commentDto.getParentId() != null) {
+            Comment parentComment = commentRepository.getReferenceById(commentDto.getParentId());
+            comment.setParent(parentComment); // 부모 설정
+        }
+
+        // 5. 그 외 정보들 완성
+        comment.setPost(post); // 게시물 설정
+        comment.setMember(member); // 멤버 설정
+
+        // 6. 댓글 저장
         commentRepository.save(comment);
+
         return "댓글 작성에 성공하였습니다";
 
     }
 
-    public String updateComment(Long commentId, CommentDto commentDto){
+    @Transactional
+    public String updateComment(Long commentId, CommentDto commentDto) {
         Comment comment = findComment(commentId);
         comment.setContent(commentDto.getContent());
         return "댓글 수정에 성공하였습니다";
     }
 
-    public String deleteComment(Long commentId){
-        commentRepository.deleteById(commentId);
+    @Transactional
+    public String deleteComment(Long commentId) {
+
+        // 1. 댓글 가져오기
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                () -> new NotFoundException("댓글이 존재하지 않습니다"));
+
+        // 2. 만약 자식(대댓글)이 있으면 바로 삭제하지 않고, (삭제된 게시물입니다) 처리만 해줌
+        if(comment.getChildren().size() != 0){
+            comment.setIsDeleted(true);
+        }
+
+        // 3. 자식이 없다면 바로 삭제. 근데 만약 이게 대댓글이고, 부모가 삭제된 상태고, 이거 지우면 더이상 대댓글이 없으면 부모까지 삭제해줘야함
+        else{
+            Comment parent = comment.getParent();
+            if(parent != null && parent.getChildren().size() == 1 && parent.getIsDeleted()){
+                commentRepository.deleteById(parent.getId());
+            }
+            else { // 셋중에 한조건이라도 만족하지 못하면 대댓글만 삭제
+                commentRepository.deleteById(commentId);
+            }
+        }
         return "댓글 삭제에 성공하였습니다";
     }
+
 
     private Member findMember(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(
@@ -71,13 +105,58 @@ public class CommentService {
                 () -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다"));
     }
 
-    public Page<CommentResponseDto> viewComment(Long postId, Pageable pageable) {
-        Page<Comment> comments = commentRepository.findCommentByPostId(postId, pageable);
+    public Page<CommentResponseDto> viewCommentLogin(Long postId, Pageable pageable) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
 
-        List<CommentResponseDto> list = comments.getContent().stream()
-                .map(CommentResponseDto::fromEntity)
-                .toList();
+        Post post = postRepository.findPostByIdFetch(postId).orElseThrow(
+                () -> new IllegalArgumentException("해당 게시물이 존재하지 않습니다"));
 
-        return new PageImpl<>(list, pageable, comments.getTotalElements());
+        Page<Comment> comments = commentRepository.findCommentsByBoardIdOrderByParentIdAscCreatedAtAsc(postId, pageable);
+
+        List<CommentResponseDto> result = new ArrayList<>();
+        // Map<Long, CommentResponseDto> map = new HashMap<>();
+
+        comments.getContent().forEach(comment -> {
+            CommentResponseDto dto = CommentResponseDto.fromEntity(comment);
+            if (comment.getMember().getId() == memberId) dto.setIsMine(true);
+            if (post.getMember().getId() == comment.getMember().getId()) dto.setPostMine(true);
+
+            comment.getChildren().forEach(comment1 -> {
+                CommentResponseDto chileDto = CommentResponseDto.fromEntity(comment1);
+                if (comment1.getMember().getId() == memberId) chileDto.setIsMine(true);
+                if (post.getMember().getId() == comment1.getMember().getId()) chileDto.setPostMine(true);
+                dto.getChildren().add(chileDto);
+            });
+            result.add(dto);
+        });
+        return new PageImpl<>(result, pageable, comments.getTotalElements());
+    }
+
+    public Page<CommentResponseDto> viewCommentLogout(Long postId, Pageable pageable) {
+
+        Post post = postRepository.findPostByIdFetch(postId).orElseThrow(
+                () -> new IllegalArgumentException("해당 게시물이 존재하지 않습니다"));
+
+        Page<Comment> comments = commentRepository.findCommentsByBoardIdOrderByParentIdAscCreatedAtAsc(postId, pageable);
+
+        List<CommentResponseDto> result = new ArrayList<>();
+        // Map<Long, CommentResponseDto> map = new HashMap<>();
+
+        comments.getContent().forEach(comment -> {
+            CommentResponseDto dto = CommentResponseDto.fromEntity(comment);
+            if (post.getMember().getId() == comment.getMember().getId()) dto.setPostMine(true);
+
+            comment.getChildren().forEach(comment1 -> {
+                CommentResponseDto chileDto = CommentResponseDto.fromEntity(comment1);
+                if (post.getMember().getId() == comment1.getMember().getId()) chileDto.setPostMine(true);
+                dto.getChildren().add(chileDto);
+            });
+            result.add(dto);
+        });
+        return new PageImpl<>(result, pageable, comments.getTotalElements());
+    }
+
+    public Long countComment(Long postId) {
+        return commentRepository.countCommentByPost_Id(postId);
     }
 }
