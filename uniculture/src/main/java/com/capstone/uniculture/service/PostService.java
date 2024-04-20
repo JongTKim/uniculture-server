@@ -59,13 +59,19 @@ public class PostService {
         // 3. 멤버 설정
         post.setMember(member);
 
-        // 4. 태그 설정
-        List<PostTag> postTags = postAddDto.getTag()
-                .stream().map(tag -> new PostTag(post, tag)).toList();
+        // 4. 태그 설정(태그가 없는경우도 있으니 NULL 체크 필요)
+        System.out.println("postAddDto = " + postAddDto.getTag());
+        
+        List<String> tags = postAddDto.getTag();
+
+        if(tags != null) {
+            List<PostTag> postTags = tags.stream().map(tag -> new PostTag(post, tag)).toList();
+            postTagService.createByList(postTags);
+        }
+
 
         // 5. Repository 에 저장(Post, PostTag 각각)
         postRepository.save(post);
-        postTagService.createByList(postTags);
 
         return "게시물 생성 성공";
     }
@@ -81,11 +87,15 @@ public class PostService {
             throw new RuntimeException("자신의 게시물이 아닙니다.");
         }
 
-        // 3. 태그 설정
-        List<PostTag> postTags = postUpdateDto.getTag()
-                .stream().map(tag -> new PostTag(post, tag)).toList();
+        // 3. 태그 설정(원래 있던 태그를 지우고 새 태그를 삽입)
         postTagService.deleteAllById(post.getId());
-        postTagService.createByList(postTags);
+
+        List<String> tag = postUpdateDto.getTag();
+        if(tag != null){
+            List<PostTag> postTags = tag.stream().map(tags
+                    -> new PostTag(post,tags)).toList();
+            postTagService.createByList(postTags);
+        }
 
         // 4. 수정하기
         post.update(postUpdateDto);
