@@ -59,19 +59,16 @@ public class PostService {
         // 3. 멤버 설정
         post.setMember(member);
 
-        // 4. 태그 설정(태그가 없는경우도 있으니 NULL 체크 필요)
-        System.out.println("postAddDto = " + postAddDto.getTag());
-        
+        // 4. 게시물 생성을 한후에 id 값을 부여받아서 PostTag 를 저장해야함
+        postRepository.save(post);
+
+        // 5. 태그 설정(태그가 없는경우도 있으니 NULL 체크 필요)
         List<String> tags = postAddDto.getTag();
 
         if(tags != null) {
             List<PostTag> postTags = tags.stream().map(tag -> new PostTag(post, tag)).toList();
             postTagService.createByList(postTags);
         }
-
-
-        // 5. Repository 에 저장(Post, PostTag 각각)
-        postRepository.save(post);
 
         return "게시물 생성 성공";
     }
@@ -92,8 +89,7 @@ public class PostService {
 
         List<String> tag = postUpdateDto.getTag();
         if(tag != null){
-            List<PostTag> postTags = tag.stream().map(tags
-                    -> new PostTag(post,tags)).toList();
+            List<PostTag> postTags = tag.stream().map(tags -> new PostTag(post,tags)).toList();
             postTagService.createByList(postTags);
         }
 
