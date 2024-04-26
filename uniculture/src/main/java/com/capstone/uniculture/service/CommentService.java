@@ -40,40 +40,59 @@ public class CommentService {
         // 3. Dto -> Entity, 연관관계 매핑
         Comment comment = CommentDto.toComment(commentDto);
 
-        // 4. 대댓글 이라면 부모를 설정해줘야함
+        // 4. 대댓글 이라면 부모를 설정해줘야함. 그 후 그외 정보들을 완성시킴
         if (commentDto.getParentId() != null) {
             Comment parentComment = commentRepository.getReferenceById(commentDto.getParentId());
-            comment.setParent(parentComment); // 부모 설정
+            // ** 4-1. 부모는 부모를 가지고있으면 안된다 (대댓글은 한 층까지만 허용, 대대댓글은 불가)
+            // -> 보류, 사유 : 부모를 가지고 오려면 쿼리가 한번더 날아가야하는데 클라이언트에서 임의로 조작하지 않을경우 이 경우가 될수없음
+            comment.setting(parentComment, post, member);
+        }
+        else {
+            comment.setting(null, post, member);
         }
 
-        // 5. 그 외 정보들 완성
-        comment.setPost(post); // 게시물 설정
-        comment.setMember(member); // 멤버 설정
-
-        // 6. 댓글 저장
+        // 5. 댓글 저장
         commentRepository.save(comment);
 
         return "댓글 작성에 성공하였습니다";
-
     }
 
     @Transactional
     public String updateComment(Long commentId, CommentDto commentDto) {
+        // 1. 댓글 가져오기
         Comment comment = findComment(commentId);
-        comment.setContent(commentDto.getContent());
+
+        // 2. 자기 댓글인지 확인, 삭제된 댓글인지 확인(대댓글이 달린경우 댓글이 삭제되도 남아있기 때문)
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        if(comment.getMember().getId() != memberId){
+            throw new RuntimeException("자신이 작성한 댓글이 아닙니다");
+        }
+        if(comment.getIsDeleted() == Boolean.TRUE){
+            throw new RuntimeException("삭제된 댓글은 수정할 수 없습니다");
+        }
+
+        // 3. 변경 감지에 의해 자동으로 Update
+        comment.changeContent(commentDto.getContent());
+
         return "댓글 수정에 성공하였습니다";
     }
 
     @Transactional
     public String deleteComment(Long commentId) {
-
         // 1. 댓글 가져오기
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new NotFoundException("댓글이 존재하지 않습니다"));
 
+        // 2. 자기 댓글인지 확인
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        if(comment.getMember().getId() != memberId){
+            throw new RuntimeException("자신이 작성한 댓글이 아닙니다");
+        }
+
         // 2. 만약 자식(대댓글)이 있으면 바로 삭제하지 않고, (삭제된 게시물입니다) 처리만 해줌
         if(comment.getChildren().size() != 0){
-            comment.setIsDeleted(true);
+            comment.changeStatus(true);
         }
 
         // 3. 자식이 없다면 바로 삭제. 근데 만약 이게 대댓글이고, 부모가 삭제된 상태고, 이거 지우면 더이상 대댓글이 없으면 부모까지 삭제해줘야함
@@ -90,32 +109,25 @@ public class CommentService {
     }
 
 
-    private Member findMember(Long memberId) {
-        return memberRepository.findById(memberId).orElseThrow(
-                () -> new IllegalArgumentException("해당 멤버가 존재하지 않습니다"));
-    }
-
-    private Post findPost(Long postId) {
-        return postRepository.findById(postId).orElseThrow(
-                () -> new IllegalArgumentException("해당 게시물이 존재하지 않습니다"));
-    }
-
     private Comment findComment(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다"));
     }
 
     public Page<CommentResponseDto> viewCommentLogin(Long postId, Pageable pageable) {
+        // 0. 사용자의 아이디 받아오기 (댓글이 자신의 댓글인지 판단을 위함)
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        Post post = postRepository.findPostByIdFetch(postId).orElseThrow(
-                () -> new IllegalArgumentException("해당 게시물이 존재하지 않습니다"));
+        // 1. 게시물 존재하는지 확인
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 게시물이 존재하지 않습니다"));
 
-        Page<Comment> comments = commentRepository.findCommentsByBoardIdOrderByParentIdAscCreatedAtAsc(postId, pageable);
+        // 2. 댓글중에서만 Paging 실행
+        Page<Comment> comments = commentRepository.findCommentsByOnlyParent(postId, pageable);
 
         List<CommentResponseDto> result = new ArrayList<>();
         // Map<Long, CommentResponseDto> map = new HashMap<>();
 
+        // 3. 댓글과 대댓글로 DTO 구성하기(계층구조)
         comments.getContent().forEach(comment -> {
             CommentResponseDto dto = CommentResponseDto.fromEntity(comment);
             if (comment.getMember().getId() == memberId) dto.setIsMine(true);
@@ -137,7 +149,7 @@ public class CommentService {
         Post post = postRepository.findPostByIdFetch(postId).orElseThrow(
                 () -> new IllegalArgumentException("해당 게시물이 존재하지 않습니다"));
 
-        Page<Comment> comments = commentRepository.findCommentsByBoardIdOrderByParentIdAscCreatedAtAsc(postId, pageable);
+        Page<Comment> comments = commentRepository.findCommentsByOnlyParent(postId, pageable);
 
         List<CommentResponseDto> result = new ArrayList<>();
         // Map<Long, CommentResponseDto> map = new HashMap<>();

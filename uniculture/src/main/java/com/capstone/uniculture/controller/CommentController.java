@@ -22,33 +22,38 @@ public class CommentController {
 
     private final CommentService commentService;
 
-
+    /**
+     * 게시물에 달린 전체 댓글 조회 API
+     * [로직 : 로그인 판단 -> 부모 댓글만 Page size 에 따라 가져오기 -> 가져온 댓글을 로그인 상태에 따른 DTO 로 변경]
+     * 로그인 한 사용자와 로그인 안한 사용자의 댓글 조회가 다르게 되야하는 이유는 DTO 에 isMine 이 달려서 날아기 때문이다 (자신이 쓴 댓글여부)
+     * 주의 : Page 의 Size 는 부모 댓글의 개수이다. 즉, 5개의 댓글을 요청했어도, 그 중 1개의 댓글에 대댓글이 100개가 달렸을경우
+     */
     @Operation(summary = "게시물의 댓글 조회")
     @GetMapping("/comment")
-    public ResponseEntity<Page<CommentResponseDto>> viewComment(
-            @PageableDefault(size=10, direction = Sort.Direction.ASC) Pageable pageable,
-            @RequestParam("postId") Long postId){
-        try {
+    public ResponseEntity<Page<CommentResponseDto>> viewComment(@PageableDefault(size=10, direction = Sort.Direction.ASC) Pageable pageable,
+                                                                @RequestParam("postId") Long postId ) {
+        try { // 로그인 한 사용자일때
             Long memberId = SecurityUtil.getCurrentMemberId();
-            System.out.println("memberId = " + memberId);
             return ResponseEntity.ok(commentService.viewCommentLogin(postId, pageable));
         }
-        catch (RuntimeException e){
+        catch (RuntimeException e){ // 로그인 안한 사용자일때
             return ResponseEntity.ok(commentService.viewCommentLogout(postId, pageable));
         }
     }
 
+    @Operation(summary = "게시물의 댓글수 조회")
+    @GetMapping("/comment/count")
+    public ResponseEntity<Long> countComment(@RequestParam("postId") Long postId){
+        return ResponseEntity.ok(commentService.countComment(postId));
+    }
+
+    // ------------------------------↓ 로그인 필수 ↓------------------------------------- //
+
     @Operation(summary = "댓글 작성")
     @PostMapping("/auth/comment")
     public ResponseEntity createComment(@RequestParam("postId") Long postId,
-                                       @RequestBody CommentDto commentDto){
+                                        @RequestBody CommentDto commentDto){
         return ResponseEntity.ok(commentService.createComment(postId, commentDto));
-    }
-
-    @Operation(summary = "게시물의 댓글수 조회")
-    @GetMapping("/auth/comment")
-    public ResponseEntity<Long> countComment(@RequestParam("postId") Long postId){
-        return ResponseEntity.ok(commentService.countComment(postId));
     }
 
     @Operation(summary = "댓글 수정")
