@@ -33,6 +33,7 @@ public class CommentService {
     public String createComment(Long postId, CommentDto commentDto) {
         // 1. 게시물 검색(프록시)
         Post post = postRepository.getReferenceById(postId);
+        post.addComment();
 
         // 2. 작성자 검색(프록시)
         Member member = memberRepository.getReferenceById(SecurityUtil.getCurrentMemberId());
