@@ -78,6 +78,18 @@ public class PostController {
         return ResponseEntity.ok(postService.getAllPostsBySearch(category, content, tag, pageable));
     }
 
+    @Operation(summary = "주간 인기 태그 5개")
+    @GetMapping("/post/tag")
+    public ResponseEntity<List<String>> hotTag(){
+        return ResponseEntity.ok(postService.hotTag());
+    }
+
+    @Operation(summary = "주간 인기 게시물 5개")
+    @GetMapping("/post/hot")
+    public ResponseEntity<List<PostListDto>> hotPost(){
+        return ResponseEntity.ok(postService.hotPost());
+    }
+
     // Post 조회하는 컨트롤러. (+Paging)
     // postType, postCategory, postStatus 에 따른 조회가능
     // RequestParam 을 DTO 로 받도록 Refactoring

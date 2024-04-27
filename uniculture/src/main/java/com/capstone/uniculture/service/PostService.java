@@ -13,6 +13,7 @@ import com.capstone.uniculture.entity.Post.*;
 import com.capstone.uniculture.repository.MemberRepository;
 import com.capstone.uniculture.repository.PostLikeRepository;
 import com.capstone.uniculture.repository.PostRepository;
+import com.capstone.uniculture.repository.PostTagRepository;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostTagRepository postTagRepository;
     private final PostTagService postTagService;
 
 
@@ -71,6 +73,18 @@ public class PostService {
         }
 
         return "게시물 생성 성공";
+    }
+
+    // 주간 인기 태그
+
+    public List<String> hotTag(){
+        return postTagRepository.findMostUsedPostTagLastWeek();
+    }
+
+    // 주간 좋아요 많은 게시물순
+    public List<PostListDto> hotPost(){
+        List<Post> mostLikedPostLastWeek = postRepository.findMostLikedPostLastWeek();
+        return mostLikedPostLastWeek.stream().map(PostListDto::fromEntity).toList();
     }
 
     // 게시물 업데이트

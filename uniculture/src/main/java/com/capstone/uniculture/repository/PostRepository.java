@@ -17,6 +17,12 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificationExecutor<Post> {
 
+    @Query(value = "SELECT p.* FROM post p JOIN post_like pl ON p.id = pl.post_id " +
+            "WHERE pl.created_date >= DATEADD(DAY, -7, CURRENT_DATE) " +
+            "GROUP BY p.id " +
+            "ORDER BY COUNT(*) DESC LIMIT 5", nativeQuery = true)
+    List<Post> findMostLikedPostLastWeek();
+
     @Query("SELECT COUNT(p) FROM Post p WHERE p.member = :member")
     Integer countByMember(@Param("member") Member member);
 
