@@ -371,4 +371,16 @@ public class MemberService implements UserDetailsService {
         // 2. Member의 profileURL에 생성
         findMember(memberId).setProfileUrl(test); return "성공";
     }
+
+    public String findMyLanguage(Long memberId) {
+        String country = findMember(memberId).getCountry();
+        return switch (country) {
+            case "Korea" -> "KO";
+            case "Japan" -> "JA";
+            case "China" -> "ZH";
+            default -> "EN";
+        };
+
+
+    }
 }
