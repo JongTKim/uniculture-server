@@ -118,8 +118,8 @@ public class FriendshipController {
 
     @Operation(summary = "친구추천", description = "친구 추천을 받을때 사용합니다")
     @GetMapping("/auth/friend/recommend")
-    public ResponseEntity<List<RecommendFriendResponseDto>> recommendFriendsList(@PageableDefault(size=10, direction = Sort.Direction.DESC) Pageable pageable){
-        return ResponseEntity.ok(friendService.recommendFriends(pageable));
+    public ResponseEntity<List<RecommendFriendResponseDto>> recommendFriendsList(){
+        return ResponseEntity.ok(friendService.recommendFriend());
     }
 
 
@@ -136,6 +136,11 @@ public class FriendshipController {
         ){
         FriendSearchDto searchData = FriendSearchDto.createSearchData(cl,wl,hb,mina,maxa,ge);
         return ResponseEntity.ok(friendService.getMyFriendBySearch2(hb,cl,wl,mina,maxa,ge,pageable));
+    }
+
+    @GetMapping("/auth/friend/check")
+    public void checkRecommend(){
+        friendService.checkCache();
     }
 
     @Operation(summary = "전체 멤버중 필터 검색")
