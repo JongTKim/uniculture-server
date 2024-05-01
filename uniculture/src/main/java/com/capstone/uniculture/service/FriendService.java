@@ -390,4 +390,15 @@ public class FriendService {
             throw new RuntimeException("친구 추천 서버 오류입니다");
         }
     }
+
+    public void openProfile(Long targetId) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Member fromMember = memberRepository.getReferenceById(memberId);
+        Member toMember = memberRepository.getReferenceById(targetId);
+
+        FriendRecommend friendRecommend = friendRecommendRepository.findById(new FriendRecommendPK(fromMember, toMember)).get();
+        friendRecommend.changeStatus(true);
+    }
+
 }

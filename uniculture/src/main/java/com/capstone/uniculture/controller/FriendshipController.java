@@ -9,6 +9,7 @@ import com.capstone.uniculture.service.FriendService;
 import com.deepl.api.Usage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.models.annotations.OpenAPI30;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -122,6 +123,12 @@ public class FriendshipController {
         return ResponseEntity.ok(friendService.recommendFriend());
     }
 
+    @Operation(summary = "친구추천 카드 오픈")
+    @PostMapping("/auth/friend/open")
+    public ResponseEntity<String> openProfile(@RequestBody FriendDto friendDto){
+        friendService.openProfile(friendDto.getTargetId());
+        return ResponseEntity.ok("성공");
+    }
 
     @Operation(summary = "내 친구 검색")
     @GetMapping("/auth/friend/search")
@@ -138,7 +145,6 @@ public class FriendshipController {
         return ResponseEntity.ok(friendService.getMyFriendBySearch2(hb,cl,wl,mina,maxa,ge,pageable));
     }
 
-    @GetMapping("/auth/friend/check")
     public void checkRecommend(){
         friendService.checkCache();
     }

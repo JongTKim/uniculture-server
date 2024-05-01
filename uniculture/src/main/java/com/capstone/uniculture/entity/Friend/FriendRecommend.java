@@ -23,4 +23,8 @@ public class FriendRecommend extends BaseEntity {
         this.friendRecommendPK = new FriendRecommendPK(fromMember, toMember);
         this.isOpen = false;
     }
+
+    public void changeStatus(Boolean isOpen){
+        this.isOpen = isOpen;
+    }
 }
