@@ -65,6 +65,7 @@ public class ChatController {
     messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message1);  //roomId로 메시지 전송
     System.out.println("보낼쪽의 아이디는? = " + message2.getReceiver());
     messagingTemplate.convertAndSend("/sub/chat/user/" + message2.getReceiver(), message2);  //roomId로 메시지 전송
+    messagingTemplate.convertAndSend("/sub/chat/user/" + writerId, message2);  //roomId로 메시지 전송
   }
 
   @EventListener(SessionConnectEvent.class)
