@@ -329,7 +329,7 @@ public class FriendService {
         // 2. 내 취미정보 찾아놓기(추후, 취미 비교를 위함)
         List<String> myHobby = myHobbyRepository.findAllByMemberId(memberId);
 
-        // 2. 내 친구를 제외한 모든 멤버의 정보중 10명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
+        // 2. 내 친구를 제외한 모든 멤버의 정보중 20명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
         List<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId);
 
         System.out.println("memberList = " + memberList.size());
@@ -345,7 +345,7 @@ public class FriendService {
 
         // 5. 추천받은 아이디로 멤버 상세 객체 만들어서 반환
 
-        List<Long> longs = responseDto.getData().getSortedIdList().stream().filter(id -> !Objects.equals(id, memberId)).toList();
+        List<Long> longs = responseDto.getData().getSortedIdList().stream().filter(id -> !Objects.equals(id, memberId)).limit(10).toList();
 
         List<FriendRecommend> friendRecommends = longs.stream().map(id -> {
             Member toMember = memberRepository.getReferenceById(id);
