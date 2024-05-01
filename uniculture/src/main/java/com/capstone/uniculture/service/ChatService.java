@@ -142,7 +142,12 @@ public class ChatService {
 
     // 5. 유저 id 로 응답해줄 DTO
     chatMessageDTO.setSender(member.getNickname());
-    chatMessageDTO.setReceiver(chatRoom.getMember1().getId());
+    if(chatRoom.getMember1().getId() == writerId){
+      chatMessageDTO.setReceiver(chatRoom.getMember2().getId());
+    }
+    else{
+      chatMessageDTO.setReceiver(chatRoom.getMember1().getId());
+    }
     chatMessageDTO.setCreatedDate(LocalDateTime.now());
 
     List<Object> lists = new ArrayList<>();

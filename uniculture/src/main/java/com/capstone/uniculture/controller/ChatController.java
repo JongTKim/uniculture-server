@@ -61,7 +61,9 @@ public class ChatController {
 
     // ChatMessageDTO message2 = chatService.sendMessage2(writerId, message);//데이터베이스 먼저 저장
 
+    System.out.println("보낼방의 아이디는? = " + roomId);
     messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message1);  //roomId로 메시지 전송
+    System.out.println("보낼쪽의 아이디는? = " + message2.getReceiver());
     messagingTemplate.convertAndSend("/sub/chat/user/" + message2.getReceiver(), message2);  //roomId로 메시지 전송
   }
 
