@@ -59,7 +59,7 @@ public class CommentController {
     @Operation(summary = "댓글 수정")
     @PatchMapping("/auth/comment")
     public ResponseEntity updateComment(@RequestParam("commentId") Long commentId,
-                                        @RequestParam CommentDto commentDto){
+                                        @RequestBody CommentDto commentDto){
         return ResponseEntity.ok(commentService.updateComment(commentId,commentDto));
     }
 
