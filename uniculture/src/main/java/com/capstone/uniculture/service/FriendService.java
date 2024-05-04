@@ -344,8 +344,8 @@ public class FriendService {
                 .build());
 
         // 5. 추천받은 아이디로 멤버 상세 객체 만들어서 반환
-
-        List<Long> longs = responseDto.getData().getSortedIdList().stream().filter(id -> !Objects.equals(id, memberId)).limit(10).toList();
+        List<Long> longs = responseDto.getData().getSortedIdList().stream()
+                .filter(id -> !Objects.equals(id, memberId)).limit(10).toList();
 
         List<FriendRecommend> friendRecommends = longs.stream().map(id -> {
             Member toMember = memberRepository.getReferenceById(id);
@@ -356,11 +356,10 @@ public class FriendService {
 
         friendRecommendRepository.saveAll(friendRecommends);
 
-        return responseDto.getData().getSortedIdList().stream()
-                .filter(id -> !Objects.equals(id, memberId))
+        return longs.stream()
                 .map(id -> {
-                    Member member = findMember(id);
-                    List<RecommendHobby> hobbies = new ArrayList<>();
+                    Member member = findMember(id); // query
+                    List<RecommendHobby> hobbies = new ArrayList<>(); //
                     member.getMyHobbyList().forEach(p -> {
                         hobbies.add(new RecommendHobby(p.getHobbyName(), myHobby.contains(p.getHobbyName())));
                     });
