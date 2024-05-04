@@ -9,6 +9,7 @@ import com.capstone.uniculture.entity.Message.ChatRoomMembership;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -58,6 +59,9 @@ public class Member extends BaseEntity {
     private String country;
 
     private String mainPurpose;
+
+    @ColumnDefault("3")
+    private Integer remainCount;
 
     // CascadeType.ALL => 모든 연관관계들은 Member 가 변경되면 다같이 변경된다
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)

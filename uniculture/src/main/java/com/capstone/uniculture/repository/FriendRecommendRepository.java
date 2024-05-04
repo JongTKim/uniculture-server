@@ -16,4 +16,7 @@ public interface FriendRecommendRepository extends JpaRepository<FriendRecommend
             "WHERE fr.created_date >= DATEADD(DAY, -1, CURRENT_DATE) " +
             "AND fr.from_id = :memberId ", nativeQuery = true)
     List<FriendRecommend> findAlreadyRecommend(@Param("memberId") Long memberId);
+
+    void deleteAllByFriendRecommendPK_FromMemberId(Long memberId);
+
 }

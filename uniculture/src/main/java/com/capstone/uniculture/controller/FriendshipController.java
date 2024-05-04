@@ -123,6 +123,20 @@ public class FriendshipController {
         return ResponseEntity.ok(friendService.recommendFriend());
     }
 
+    @Operation(summary = "친구추천 새로고침", description = "다른 친구 추천을 받아보고싶을때 사용합니다. 일 횟수제한 3")
+    @GetMapping("/auth/friend/recommend/reload")
+    public ResponseEntity<List<RecommendFriendResponseDto>> reRecommendFriendsList(){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        if(friendService.recommendCountCheck(memberId)){
+            return ResponseEntity.ok(friendService.recommendFriends(memberId));
+        }
+        else{
+            throw new IllegalArgumentException("가능한 횟수가 없습니다");
+        }
+
+    }
+
     @Operation(summary = "친구추천 카드 오픈")
     @PostMapping("/auth/friend/open")
     public ResponseEntity<String> openProfile(@RequestBody FriendDto friendDto){

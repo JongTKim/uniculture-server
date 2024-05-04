@@ -324,7 +324,20 @@ public class FriendService {
         }
     }
 
+    public boolean recommendCountCheck(Long memberId){
+        Member member = findMember(memberId);
+        if(member.getRemainCount() == 0){
+            return false;
+        }
+        else{
+            member.setRemainCount(member.getRemainCount()-1);
+            return true;
+        }
+    }
     public List<RecommendFriendResponseDto> recommendFriends(Long memberId) {
+
+        // 1. 일단 친구추천 테이블의 모든 데이터를 삭제하자
+        friendRecommendRepository.deleteAllByFriendRecommendPK_FromMemberId(memberId);
 
         // 2. 내 취미정보 찾아놓기(추후, 취미 비교를 위함)
         List<String> myHobby = myHobbyRepository.findAllByMemberId(memberId);
