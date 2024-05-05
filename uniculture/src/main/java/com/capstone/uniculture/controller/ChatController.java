@@ -5,6 +5,7 @@ import com.capstone.uniculture.dto.Message.MessageResponseDto;
 import com.capstone.uniculture.entity.Message.ChatMessage;
 import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.service.ChatService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -54,8 +55,17 @@ public class ChatController {
                       SimpMessageHeaderAccessor accessor) {
 
     Long writerId = sessions.get(accessor.getSessionId());
-    ChatMessageDTO message2 = chatService.sendMessage(writerId, message);//데이터베이스 먼저 저장
-    messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message2);  //roomId로 메시지 전송
+    List<Object> objects = chatService.sendMessage2(writerId, message);
+    MessageResponseDto message1 = (MessageResponseDto) objects.get(0);
+    ChatMessageDTO message2 = (ChatMessageDTO) objects.get(1);
+
+    // ChatMessageDTO message2 = chatService.sendMessage2(writerId, message);//데이터베이스 먼저 저장
+
+    System.out.println("보낼방의 아이디는? = " + roomId);
+    messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message1);  //roomId로 메시지 전송
+    System.out.println("보낼쪽의 아이디는? = " + message2.getReceiver());
+    messagingTemplate.convertAndSend("/sub/chat/user/" + message2.getReceiver(), message2);  //roomId로 메시지 전송
+    messagingTemplate.convertAndSend("/sub/chat/user/" + writerId, message2);  //roomId로 메시지 전송
   }
 
   @EventListener(SessionConnectEvent.class)
@@ -80,6 +90,7 @@ public class ChatController {
    * 로직 : ChatMessageRepository 에서 roomId를 가지고 전체조회,
    * Front 에서는 DTO 의 chatMessageId 번호를 가지고 정렬하면 편할듯함
    */
+  @Operation(summary = "채팅방 내용 가져오기")
   @GetMapping("/api/auth/chat/{roomId}")
   public ResponseEntity<List<MessageResponseDto>> getChatHistory(@PathVariable Long roomId){
     return ResponseEntity.ok(chatService.findMessageHistory(roomId));
@@ -89,7 +100,7 @@ public class ChatController {
    * 입장시 입장 안내문 WebSocket
    * 입장시 "~사용자가 입장하였습니다" 전송
    */
-  @MessageMapping("/auth/chat/{roomId}/enter")
+  @MessageMapping("/api/auth/chat/{roomId}/enter")
   public void chatRoomEnter(WebSocketSession session,
                             @DestinationVariable Long roomId){
     Long userId = (Long) session.getAttributes().get("userId");

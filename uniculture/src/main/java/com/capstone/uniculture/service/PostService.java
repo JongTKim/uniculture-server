@@ -13,6 +13,7 @@ import com.capstone.uniculture.entity.Post.*;
 import com.capstone.uniculture.repository.MemberRepository;
 import com.capstone.uniculture.repository.PostLikeRepository;
 import com.capstone.uniculture.repository.PostRepository;
+import com.capstone.uniculture.repository.PostTagRepository;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostTagRepository postTagRepository;
     private final PostTagService postTagService;
 
 
@@ -59,15 +61,30 @@ public class PostService {
         // 3. 멤버 설정
         post.setMember(member);
 
-        // 4. 태그 설정
-        List<PostTag> postTags = postAddDto.getTag()
-                .stream().map(tag -> new PostTag(post, tag)).toList();
-
-        // 5. Repository 에 저장(Post, PostTag 각각)
+        // 4. 게시물 생성을 한후에 id 값을 부여받아서 PostTag 를 저장해야함
         postRepository.save(post);
-        postTagService.createByList(postTags);
+
+        // 5. 태그 설정(태그가 없는경우도 있으니 NULL 체크 필요)
+        List<String> tags = postAddDto.getTag();
+
+        if(tags != null) {
+            List<PostTag> postTags = tags.stream().map(tag -> new PostTag(post, tag)).toList();
+            postTagService.createByList(postTags);
+        }
 
         return "게시물 생성 성공";
+    }
+
+    // 주간 인기 태그
+
+    public List<String> hotTag(){
+        return postTagRepository.findMostUsedPostTagLastWeek();
+    }
+
+    // 주간 좋아요 많은 게시물순
+    public List<PostListDto> hotPost(){
+        List<Post> mostLikedPostLastWeek = postRepository.findMostLikedPostLastWeek();
+        return mostLikedPostLastWeek.stream().map(PostListDto::fromEntity).toList();
     }
 
     // 게시물 업데이트
@@ -81,11 +98,14 @@ public class PostService {
             throw new RuntimeException("자신의 게시물이 아닙니다.");
         }
 
-        // 3. 태그 설정
-        List<PostTag> postTags = postUpdateDto.getTag()
-                .stream().map(tag -> new PostTag(post, tag)).toList();
+        // 3. 태그 설정(원래 있던 태그를 지우고 새 태그를 삽입)
         postTagService.deleteAllById(post.getId());
-        postTagService.createByList(postTags);
+
+        List<String> tag = postUpdateDto.getTag();
+        if(tag != null){
+            List<PostTag> postTags = tag.stream().map(tags -> new PostTag(post,tags)).toList();
+            postTagService.createByList(postTags);
+        }
 
         // 4. 수정하기
         post.update(postUpdateDto);

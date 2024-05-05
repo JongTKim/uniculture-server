@@ -69,7 +69,7 @@ public class ChatRoomService {
       for (ChatRoom chatRoom : chatRoomList2) {
           System.out.println("chatRoom = " + chatRoom.getId());
           ChatRoomDTO build = ChatRoomDTO.builder().id(chatRoom.getId())
-                  .username(chatRoom.getMember2().getNickname())
+                  .username(chatRoom.getMember1().getNickname())
                   .latestMessage(chatRoom.getLatestMessage())
                   .latestMessageTime(chatRoom.getLatestMessageTime())
                   .build();
@@ -83,6 +83,10 @@ public class ChatRoomService {
   public ChatRoomIdResponseDto createChatRoomWithMember(Long memberId1, Long memberId2) {
 
       // 1. 생성될 멤버 2명찾기
+      Member member = memberRepository.findById(memberId1).get();
+
+      Member referenceById = memberRepository.getReferenceById(memberId1);
+
       Member member1 = findMemberReference(memberId1);
       Member member2 = findMemberReference(memberId2);
 

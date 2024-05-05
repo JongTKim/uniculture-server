@@ -6,14 +6,9 @@ import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendResponseDto;
 import com.capstone.uniculture.dto.Recommend.ToFlaskRequestDto;
-import com.capstone.uniculture.entity.Friend.FriendRequest;
-import com.capstone.uniculture.entity.Friend.Friendship;
+import com.capstone.uniculture.entity.Friend.*;
 import com.capstone.uniculture.entity.Member.*;
-import com.capstone.uniculture.entity.Friend.RequestStatus;
-import com.capstone.uniculture.repository.FriendRequestRepository;
-import com.capstone.uniculture.repository.FriendshipRepository;
-import com.capstone.uniculture.repository.MemberRepository;
-import com.capstone.uniculture.repository.MyHobbyRepository;
+import com.capstone.uniculture.repository.*;
 import com.deepl.api.Usage;
 import com.sun.jdi.request.InvalidRequestStateException;
 import jakarta.persistence.EntityManager;
@@ -48,6 +43,7 @@ public class FriendService {
     private final FriendRequestRepository friendRequestRepository;
     private final MyHobbyRepository myHobbyRepository;
     private final FriendshipRepository friendshipRepository;
+    private final FriendRecommendRepository friendRecommendRepository;
     private final EntityManager entityManager;
 
     private Member findMember(Long id) {
@@ -303,16 +299,53 @@ public class FriendService {
     }
 
 
-    public List<RecommendFriendResponseDto> recommendFriends(Pageable pageable) {
+    public void checkCache(){
+        Long memberId1 = SecurityUtil.getCurrentMemberId();
+        if(friendRecommendRepository.findAlreadyRecommend(memberId1) != null){
+            System.out.println("와 존재하네요");
+        }
+        else{
+            System.out.println("친구추천 기록이 없어요 ㅠㅠ ");
+        }
+    }
 
-        // 1. 내 정보 찾기
+    public List<RecommendFriendResponseDto> recommendFriend(){
+
         Long memberId = SecurityUtil.getCurrentMemberId();
+
+        List<FriendRecommend> idList = friendRecommendRepository.findAlreadyRecommend(memberId);
+
+        if(idList != null && !idList.isEmpty()){ // 캐시에서 가져올수있으면 가져오기
+            return idList.stream().map(friendRecommend ->
+                    RecommendFriendResponseDto.fromMember(friendRecommend.getFriendRecommendPK().getToMember(), friendRecommend.getIsOpen())).toList();
+        }
+        else{ // 플라스크 실행시켜야됨
+            return recommendFriends(memberId);
+        }
+    }
+
+    public boolean recommendCountCheck(Long memberId){
+        Member member = findMember(memberId);
+        if(member.getRemainCount() == 0){
+            return false;
+        }
+        else{
+            member.setRemainCount(member.getRemainCount()-1);
+            return true;
+        }
+    }
+    public List<RecommendFriendResponseDto> recommendFriends(Long memberId) {
+
+        // 1. 일단 친구추천 테이블의 모든 데이터를 삭제하자
+        friendRecommendRepository.deleteAllByFriendRecommendPK_FromMemberId(memberId);
 
         // 2. 내 취미정보 찾아놓기(추후, 취미 비교를 위함)
         List<String> myHobby = myHobbyRepository.findAllByMemberId(memberId);
 
-        // 2. 내 친구를 제외한 모든 멤버의 정보 가져오기 -> 목적, 취미, 언어는 Proxy 상태
-        List<Member> memberList = memberRepository.findNonFriendMembers(memberId);
+        // 2. 내 친구를 제외한 모든 멤버의 정보중 20명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
+        List<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId);
+
+        System.out.println("memberList = " + memberList.size());
 
         // 3. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
         List<ProfileRecommendRequestDto> recommendRequestItems = memberList.stream().map(ProfileRecommendRequestDto::fromEntity).toList();
@@ -324,16 +357,26 @@ public class FriendService {
                 .build());
 
         // 5. 추천받은 아이디로 멤버 상세 객체 만들어서 반환
+        List<Long> longs = responseDto.getData().getSortedIdList().stream()
+                .filter(id -> !Objects.equals(id, memberId)).limit(10).toList();
 
-        return responseDto.getData().getSortedIdList().stream()
-                .filter(id -> !Objects.equals(id, memberId))
+        List<FriendRecommend> friendRecommends = longs.stream().map(id -> {
+            Member toMember = memberRepository.getReferenceById(id);
+            Member fromMember = memberRepository.getReferenceById(memberId);
+            FriendRecommend friendRecommend = new FriendRecommend(fromMember, toMember);
+            return friendRecommend;
+        }).toList();
+
+        friendRecommendRepository.saveAll(friendRecommends);
+
+        return longs.stream()
                 .map(id -> {
-                    Member member = findMember(id);
-                    List<RecommendHobby> hobbies = new ArrayList<>();
+                    Member member = findMember(id); // query
+                    List<RecommendHobby> hobbies = new ArrayList<>(); //
                     member.getMyHobbyList().forEach(p -> {
                         hobbies.add(new RecommendHobby(p.getHobbyName(), myHobby.contains(p.getHobbyName())));
                     });
-                    RecommendFriendResponseDto recommendFriendResponseDto = RecommendFriendResponseDto.fromMember(member);
+                    RecommendFriendResponseDto recommendFriendResponseDto = RecommendFriendResponseDto.fromMember(member, false);
                     recommendFriendResponseDto.setHobbies(hobbies);
                     return recommendFriendResponseDto;
                 }).toList();
@@ -359,4 +402,15 @@ public class FriendService {
             throw new RuntimeException("친구 추천 서버 오류입니다");
         }
     }
+
+    public void openProfile(Long targetId) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Member fromMember = memberRepository.getReferenceById(memberId);
+        Member toMember = memberRepository.getReferenceById(targetId);
+
+        FriendRecommend friendRecommend = friendRecommendRepository.findById(new FriendRecommendPK(fromMember, toMember)).get();
+        friendRecommend.changeStatus(true);
+    }
+
 }

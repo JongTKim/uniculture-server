@@ -8,16 +8,21 @@ import com.capstone.uniculture.entity.Post.Post;
 import com.capstone.uniculture.entity.Message.ChatRoomMembership;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @Table(name = "member")
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@BatchSize(size = 10)
 public class Member extends BaseEntity {
 
     @Id
@@ -55,6 +60,9 @@ public class Member extends BaseEntity {
 
     private String mainPurpose;
 
+    @ColumnDefault("3")
+    private Integer remainCount;
+
     // CascadeType.ALL => 모든 연관관계들은 Member 가 변경되면 다같이 변경된다
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Purpose> purpose = new ArrayList<>();
@@ -63,12 +71,15 @@ public class Member extends BaseEntity {
     private List<Post> post = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @BatchSize(size = 10)
     private List<MyHobby> myHobbyList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @BatchSize(size = 10)
     private List<MyLanguage> myLanguages = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @BatchSize(size = 10)
     private List<WantLanguage> wantLanguages = new ArrayList<>();
 
     // 친구관계 中 신청리스트
@@ -83,7 +94,6 @@ public class Member extends BaseEntity {
     private List<ChatRoomMembership> memberships = new ArrayList<>();
 
 
-
     // --------------- 생성자 ---------------
 
     /*public Member(){
@@ -91,7 +101,6 @@ public class Member extends BaseEntity {
     }*/
 
     // --------------- 연관관계 편의 메소드 ---------------
-
 
 
     // --------------- 비즈니스 편의 메소드 ---------------
@@ -110,7 +119,7 @@ public class Member extends BaseEntity {
     }
 
     // 친구신청한 사람 목록을 가져오는 편의 메소드
-    public List<Member> getRequestMembers(){
+    public List<Member> getRequestMembers() {
         return receivedRequests.stream()
                 .map(receivedRequest -> receivedRequest.getSender())
                 .collect(Collectors.toList());

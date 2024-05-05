@@ -3,10 +3,9 @@ package com.capstone.uniculture.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
-@Entity
-@Getter
-@NoArgsConstructor
+@Entity @Getter @NoArgsConstructor
 public class MyHobby {
 
     @Id

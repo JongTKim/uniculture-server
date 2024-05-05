@@ -1,27 +1,34 @@
 package com.capstone.uniculture.service;
 
+import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Translate.TranslationResponseDto;
 import com.capstone.uniculture.dto.Translate.TranslationServerResponseDto;
+import com.capstone.uniculture.repository.MemberRepository;
 import com.deepl.api.DeepLException;
 import com.deepl.api.TextResult;
 import com.deepl.api.Translator;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 @Service
+@Transactional
 public class TranslateService {
 
     @Value("${deepl.api.key}")
     private String deeplApiKey;
-
     private final RestTemplate restTemplate;
+    private final MemberService memberService;
 
-
-    public TranslateService(RestTemplateBuilder restTemplate) {
+    @Autowired
+    public TranslateService(RestTemplateBuilder restTemplate, MemberService memberService) {
         this.restTemplate = restTemplate.build();
+        this.memberService = memberService;
     }
 
     public String translateText2(String text, String targetLanguage) {
@@ -44,6 +51,12 @@ public class TranslateService {
 
     public TranslationResponseDto translateText(String text, String targetLanguage) {
 
+        if(targetLanguage == null){ // 만약 번역기를 사용하는게 아니고 게시물 번역, 채팅번역이라서 Target 언어가 안왔다면
+            targetLanguage = memberService.findMyLanguage(SecurityUtil.getCurrentMemberId());
+        }
+
+        System.out.println("targetLanguage = " + targetLanguage);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -63,7 +76,4 @@ public class TranslateService {
         }
     }
 
-    private String buildRequestBody(String text) {
-        return "{\"text\": [\"" + text + "\"]}";
-    }
 }

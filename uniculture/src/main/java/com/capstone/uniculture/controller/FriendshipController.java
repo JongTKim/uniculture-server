@@ -9,6 +9,7 @@ import com.capstone.uniculture.service.FriendService;
 import com.deepl.api.Usage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.models.annotations.OpenAPI30;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -118,10 +119,30 @@ public class FriendshipController {
 
     @Operation(summary = "친구추천", description = "친구 추천을 받을때 사용합니다")
     @GetMapping("/auth/friend/recommend")
-    public ResponseEntity<List<RecommendFriendResponseDto>> recommendFriendsList(@PageableDefault(size=10, direction = Sort.Direction.DESC) Pageable pageable){
-        return ResponseEntity.ok(friendService.recommendFriends(pageable));
+    public ResponseEntity<List<RecommendFriendResponseDto>> recommendFriendsList(){
+        return ResponseEntity.ok(friendService.recommendFriend());
     }
 
+    @Operation(summary = "친구추천 새로고침", description = "다른 친구 추천을 받아보고싶을때 사용합니다. 일 횟수제한 3")
+    @GetMapping("/auth/friend/recommend/reload")
+    public ResponseEntity<List<RecommendFriendResponseDto>> reRecommendFriendsList(){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        if(friendService.recommendCountCheck(memberId)){
+            return ResponseEntity.ok(friendService.recommendFriends(memberId));
+        }
+        else{
+            throw new IllegalArgumentException("가능한 횟수가 없습니다");
+        }
+
+    }
+
+    @Operation(summary = "친구추천 카드 오픈")
+    @PostMapping("/auth/friend/open")
+    public ResponseEntity<String> openProfile(@RequestBody FriendDto friendDto){
+        friendService.openProfile(friendDto.getTargetId());
+        return ResponseEntity.ok("성공");
+    }
 
     @Operation(summary = "내 친구 검색")
     @GetMapping("/auth/friend/search")
@@ -136,6 +157,10 @@ public class FriendshipController {
         ){
         FriendSearchDto searchData = FriendSearchDto.createSearchData(cl,wl,hb,mina,maxa,ge);
         return ResponseEntity.ok(friendService.getMyFriendBySearch2(hb,cl,wl,mina,maxa,ge,pageable));
+    }
+
+    public void checkRecommend(){
+        friendService.checkCache();
     }
 
     @Operation(summary = "전체 멤버중 필터 검색")

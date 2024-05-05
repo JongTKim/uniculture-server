@@ -26,6 +26,8 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
     @Query("SELECT m FROM Member m WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :myId)")
     List<Member> findNonFriendMembers(@Param("myId") Long myId);
 
-    @Query("SELECT m FROM Member m JOIN fetch m.myHobbyList")
-    List<Member> findAll2();
+    @Query(value = "select m.* from member m " +
+            "where m.id not in (select f.to_member_id from friendship f where f.from_member_id = :myId) " +
+            "order by rand() limit 20", nativeQuery = true)
+    List<Member> findNonFriendMemberEdit(@Param("myId") Long myId);
 }

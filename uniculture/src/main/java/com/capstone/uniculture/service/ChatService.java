@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -113,7 +115,46 @@ public class ChatService {
 
     // 4. Entity -> DTO 변환하여 Return
     chatMessageDTO.setSender(member.getNickname());
+    chatMessageDTO.setReceiver(chatRoom.getMember1().getId());
     return chatMessageDTO;
+  }
+
+  public List<Object> sendMessage2(Long writerId, ChatMessageDTO chatMessageDTO) {
+    // 1. 채팅이 저장될 채팅방, 보내는 멤버 찾기
+    ChatRoom chatRoom = findChatRoom(chatMessageDTO.getRoomId());
+
+    System.out.println("저장할 사람 아이디는? = " + writerId);
+    Member member = findMember(writerId);
+
+    // 2. DTO -> Entity 변환하여, ChatMessage 객체 생성
+    // 시간은 생성될때 JPA Auditing 에 의해 자동으로 생성된다
+    ChatMessage chatMessage = ChatMessageDTO.toChatMessage(chatMessageDTO);
+    chatMessage.setChatRoom(chatRoom);
+    chatMessage.setMember(member);
+
+    // 3. chatMessageRepository 에 ChatMessage 객체 저장
+    chatMessageRepository.save(chatMessage);    //데이터베이스에 저장
+
+    chatRoom.addMessage(chatMessage); // update 쿼리 나가야함
+
+    // 4. 채팅방 id 로 응답해줄 DTO
+    MessageResponseDto messageResponseDto = MessageResponseDto.fromEntity(chatMessage);
+
+    // 5. 유저 id 로 응답해줄 DTO
+    chatMessageDTO.setSender(member.getNickname());
+    if(chatRoom.getMember1().getId() == writerId){
+      chatMessageDTO.setReceiver(chatRoom.getMember2().getId());
+    }
+    else{
+      chatMessageDTO.setReceiver(chatRoom.getMember1().getId());
+    }
+    chatMessageDTO.setCreatedDate(LocalDateTime.now());
+
+    List<Object> lists = new ArrayList<>();
+    lists.add(messageResponseDto);
+    lists.add(chatMessageDTO);
+
+    return lists;
   }
 
   //채팅방에서 키워드로 메시지 찾기

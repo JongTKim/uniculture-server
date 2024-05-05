@@ -1,5 +1,6 @@
 package com.capstone.uniculture.entity.Post;
 
+import com.capstone.uniculture.entity.BaseEntity;
 import com.capstone.uniculture.entity.Member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
         {@UniqueConstraint(
                 columnNames={"member_id","post_id"})}
 )
-public class PostLike {
+public class PostLike extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

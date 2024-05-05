@@ -10,19 +10,22 @@ import java.time.LocalDateTime;
 @ToString
 @Getter
 @Setter
-@Builder
 public class ChatMessageDTO {
   private MessageType type;
-  private Long roomId;
-  private String sender;
-  private String message;
+  private Long roomId; // 채팅방 id
+  private String sender; // 발송자 이름(채팅방 이름)
+  private Long receiver; // 상대 id
+  private String message; // 메시지
+  private LocalDateTime createdDate; // 시간
 
   @Builder
-  public ChatMessageDTO(MessageType type, Long roomId, String sender, String message) {
+  public ChatMessageDTO(MessageType type, Long roomId, String sender, Long receiver, String message, LocalDateTime createdDate) {
     this.type = type;
     this.roomId = roomId;
     this.sender = sender;
+    this.receiver = receiver;
     this.message = message;
+    this.createdDate = createdDate;
   }
 
   // DTO -> Entity

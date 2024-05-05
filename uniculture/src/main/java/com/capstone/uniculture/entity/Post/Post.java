@@ -36,7 +36,7 @@ public class Post extends BaseEntity {
 
     private int likeCount;
 
-    // 관리 잘해야함 주의
+    // 관리 잘해야함 주의 - 동시성문제
     private int commentCount;
 
     private int viewCount;
@@ -46,8 +46,8 @@ public class Post extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    /*@OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<Comment> comments = new ArrayList<>();*/
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Photo> photos = new ArrayList<>();
@@ -73,8 +73,8 @@ public class Post extends BaseEntity {
 
     // 연관관계 메소드
 
-    public void addComment(Comment comment){
-        comment.setPost(this);
+    public void addComment(){
+        //comment.setPost(this);
         this.commentCount += 1;
     }
 

@@ -1,9 +1,20 @@
 package com.capstone.uniculture.repository;
 
+import com.capstone.uniculture.entity.Post.Post;
 import com.capstone.uniculture.entity.Post.PostTag;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
 public interface PostTagRepository extends JpaRepository<PostTag, Long> {
 
+    @Query(value = "SELECT pt.hashtag FROM post_tag pt " +
+            "WHERE pt.created_date >= DATEADD(DAY, -7, CURRENT_DATE) " +
+            "GROUP BY pt.hashtag " +
+            "ORDER BY COUNT(*) DESC LIMIT 5", nativeQuery = true)
+    List<String> findMostUsedPostTagLastWeek();
+
     void deleteAllByPostId(Long postId);
+
 }
