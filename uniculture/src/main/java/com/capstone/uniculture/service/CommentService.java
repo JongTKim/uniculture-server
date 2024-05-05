@@ -4,10 +4,13 @@ import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Comment.CommentDto;
 import com.capstone.uniculture.dto.Comment.CommentResponseDto;
 import com.capstone.uniculture.entity.Member.Member;
+import com.capstone.uniculture.entity.Notification.Notification;
+import com.capstone.uniculture.entity.Notification.NotificationType;
 import com.capstone.uniculture.entity.Post.Comment;
 import com.capstone.uniculture.entity.Post.Post;
 import com.capstone.uniculture.repository.CommentRepository;
 import com.capstone.uniculture.repository.MemberRepository;
+import com.capstone.uniculture.repository.NotificationRepository;
 import com.capstone.uniculture.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,27 +31,47 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public String createComment(Long postId, CommentDto commentDto) {
         // 1. 게시물 검색(프록시)
-        Post post = postRepository.getReferenceById(postId);
+        Post post = postRepository.findById(postId).get();
 
         // 2. 작성자 검색(프록시)
-        Member member = memberRepository.getReferenceById(SecurityUtil.getCurrentMemberId());
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId()).get();
 
         // 3. Dto -> Entity, 연관관계 매핑
         Comment comment = CommentDto.toComment(commentDto);
 
         // 4. 대댓글 이라면 부모를 설정해줘야함
         if (commentDto.getParentId() != null) {
-            Comment parentComment = commentRepository.getReferenceById(commentDto.getParentId());
+            Comment parentComment = commentRepository.findById(commentDto.getParentId()).get();
             comment.setParent(parentComment); // 부모 설정
+
+            Notification noti1 = Notification.builder()
+                    .notificationType(NotificationType.COMMENT)
+                    .member(parentComment.getMember())
+                    .isCheck(Boolean.FALSE)
+                    .content(member.getNickname() + "님이 나의 댓글에 답글을 달았습니다")
+                    .relatedNum(post.getId())
+                    .build();
+            notificationRepository.save(noti1);
         }
+
+        Notification noti2 = Notification.builder()
+                .notificationType(NotificationType.COMMENT)
+                .member(post.getMember())
+                .isCheck(Boolean.FALSE)
+                .content(member.getNickname() + "님이 나의 게시글에 댓글을 달았습니다")
+                .relatedNum(post.getId())
+                .build();
+        notificationRepository.save(noti2);
 
         // 5. 그 외 정보들 완성
         comment.setPost(post); // 게시물 설정
         comment.setMember(member); // 멤버 설정
+
 
         // 6. 댓글 저장
         commentRepository.save(comment);
