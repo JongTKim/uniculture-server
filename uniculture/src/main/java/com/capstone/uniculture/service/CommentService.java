@@ -36,9 +36,8 @@ public class CommentService {
     @Transactional
     public String createComment(Long postId, CommentDto commentDto) {
         // 1. 게시물 검색(프록시)
-        Post post = postRepository.getReferenceById(postId);
-        post.addComment();
         Post post = postRepository.findById(postId).get();
+        post.addComment();
 
         // 2. 작성자 검색(프록시)
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId()).get();
@@ -48,13 +47,10 @@ public class CommentService {
 
         // 4. 대댓글 이라면 부모를 설정해줘야함. 그 후 그외 정보들을 완성시킴
         if (commentDto.getParentId() != null) {
-            Comment parentComment = commentRepository.getReferenceById(commentDto.getParentId());
             // ** 4-1. 부모는 부모를 가지고있으면 안된다 (대댓글은 한 층까지만 허용, 대대댓글은 불가)
             // -> 보류, 사유 : 부모를 가지고 오려면 쿼리가 한번더 날아가야하는데 클라이언트에서 임의로 조작하지 않을경우 이 경우가 될수없음
-            comment.setting(parentComment, post, member);
             Comment parentComment = commentRepository.findById(commentDto.getParentId()).get();
-            comment.setParent(parentComment); // 부모 설정
-
+            comment.setting(parentComment, post, member);
             Notification noti1 = Notification.builder()
                     .notificationType(NotificationType.COMMENT)
                     .member(parentComment.getMember())
@@ -77,11 +73,6 @@ public class CommentService {
                 .build();
         notificationRepository.save(noti2);
 
-        // 5. 그 외 정보들 완성
-        comment.setPost(post); // 게시물 설정
-        comment.setMember(member); // 멤버 설정
-
-        // 5. 댓글 저장
 
         // 6. 댓글 저장
         commentRepository.save(comment);
