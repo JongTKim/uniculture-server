@@ -135,7 +135,7 @@ public class FriendshipController {
     public ResponseEntity<List<RecommendFriendResponseDto>> reRecommendFriendsList(){
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        if(friendService.recommendCountCheck(memberId) != 0L){
+        if(friendService.recommendCountDown(memberId)){
             return ResponseEntity.ok(friendService.recommendFriends(memberId));
         }
         else{

@@ -3,6 +3,7 @@ package com.capstone.uniculture.repository;
 import com.capstone.uniculture.entity.Member.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,4 +37,8 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
 
     @Query("SELECT m.remainCount FROM Member m WHERE m.id = :memberId")
     Long countRemainCount(@Param("memberId") Long memberId);
+
+    @Modifying
+    @Query("UPDATE Member m SET m.remainCount = m.remainCount - 1 WHERE m.id = :memberId")
+    void decrementRemainCount(@Param("memberId") Long memberId);
 }

@@ -342,6 +342,16 @@ public class FriendService {
         return memberRepository.countRemainCount(memberId);
     }
 
+    public Boolean recommendCountDown(Long memberId){
+        if(recommendCountCheck(memberId) != 0){
+            memberRepository.decrementRemainCount(memberId);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
     public List<RecommendFriendResponseDto> recommendFriends(Long memberId) {
 
         // 1. 일단 친구추천 테이블의 모든 데이터를 삭제하자
