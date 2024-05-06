@@ -1,5 +1,6 @@
 package com.capstone.uniculture.service;
 
+import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Message.ChatMessageDTO;
 import com.capstone.uniculture.dto.Message.MessageResponseDto;
 import com.capstone.uniculture.entity.Member.Member;
@@ -109,6 +110,8 @@ public class ChatService {
     chatMessage.setChatRoom(chatRoom);
     chatMessage.setMember(member);
 
+
+
     // 3. chatMessageRepository 에 ChatMessage 객체 저장
     chatMessageRepository.save(chatMessage);    //데이터베이스에 저장
     chatRoom.addMessage(chatMessage);
@@ -131,6 +134,9 @@ public class ChatService {
     ChatMessage chatMessage = ChatMessageDTO.toChatMessage(chatMessageDTO);
     chatMessage.setChatRoom(chatRoom);
     chatMessage.setMember(member);
+
+    if(chatRoom.getMember1().getId() == writerId) chatMessage.setToMember(chatRoom.getMember2());
+    else chatMessage.setToMember(chatRoom.getMember1());
 
     // 3. chatMessageRepository 에 ChatMessage 객체 저장
     chatMessageRepository.save(chatMessage);    //데이터베이스에 저장

@@ -35,6 +35,11 @@ public class ChatMessage extends BaseEntity {
   // 멤버쪽에서는 채팅 메시지를 전부 알필요는 없으므로, 단방향 관계로 정의
   private Member member;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "to_member_id")
+  // 멤버쪽에서는 채팅 메시지를 전부 알필요는 없으므로, 단방향 관계로 정의
+  private Member toMember;
+
   private String message;
 
   @ColumnDefault("false")
