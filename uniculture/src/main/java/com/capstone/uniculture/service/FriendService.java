@@ -12,6 +12,8 @@ import com.capstone.uniculture.dto.Recommend.ProfileRecommendResponseDto;
 import com.capstone.uniculture.dto.Recommend.ToFlaskRequestDto;
 import com.capstone.uniculture.entity.Friend.*;
 import com.capstone.uniculture.entity.Member.*;
+import com.capstone.uniculture.entity.Notification.Notification;
+import com.capstone.uniculture.entity.Notification.NotificationType;
 import com.capstone.uniculture.repository.*;
 import com.deepl.api.Usage;
 import com.sun.jdi.request.InvalidRequestStateException;
@@ -45,6 +47,7 @@ public class FriendService {
 
     private final MemberRepository memberRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final NotificationRepository notificationRepository;
     private final MyHobbyRepository myHobbyRepository;
     private final FriendshipRepository friendshipRepository;
     private final FriendRecommendRepository friendRecommendRepository;
@@ -76,8 +79,18 @@ public class FriendService {
         }
 
         // 2. 두 사람(신청자, 상대)의 정보 획득
-        Member sender = findMember(id);
-        Member receiver = findMember(toId);
+        Member sender = memberRepository.getReferenceById(id);
+        Member receiver = memberRepository.getReferenceById(toId);
+
+
+        Notification notification = Notification.builder()
+                .notificationType(NotificationType.FRIEND)
+                .member(receiver)
+                .isCheck(Boolean.FALSE)
+                .content(sender.getNickname() + "님이 나에게 친구 신청을 보냈습니다!")
+                .relatedNum(id)
+                .build();
+        notificationRepository.save(notification);
 
         // 3. 친구신청 해주기
         FriendRequest friendRequest = new FriendRequest(sender, receiver, RequestStatus.PENDING);

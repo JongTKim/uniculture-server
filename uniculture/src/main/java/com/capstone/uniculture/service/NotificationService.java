@@ -3,6 +3,8 @@ package com.capstone.uniculture.service;
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Notification.NotificationResponseDto;
 import com.capstone.uniculture.entity.Notification.Notification;
+import com.capstone.uniculture.entity.Notification.NotificationType;
+import com.capstone.uniculture.repository.MemberRepository;
 import com.capstone.uniculture.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,17 +14,28 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final MemberRepository memberRepository;
 
     public List<NotificationResponseDto> getNotificationList() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         List<Notification> notifications = notificationRepository.findAllByUserId(memberId);
-        return notifications.stream().map(NotificationResponseDto::fromNotification).toList();
+        return notifications.stream().map(notification ->
+                NotificationResponseDto.builder()
+                        .id(notification.getId())
+                        .notificationType(notification.getNotificationType())
+                        .content(notification.getContent())
+                        .relatedNum(notification.getNotificationType() == NotificationType.COMMENT
+                                ? notification.getRelatedNum() : memberRepository.findNicknameById(notification.getRelatedNum()))
+                        .build()
+                ).toList();
     }
 
 

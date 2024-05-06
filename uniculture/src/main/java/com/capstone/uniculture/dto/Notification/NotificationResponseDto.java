@@ -12,15 +12,13 @@ public class NotificationResponseDto {
 
     private Long id;
     private NotificationType notificationType;
-    private String nickname;
     private String content;
-    private Long relatedNum;
+    private Object relatedNum;
 
     @Builder
-    public NotificationResponseDto(Long id, NotificationType notificationType, String nickname, String content, Long relatedNum) {
+    public NotificationResponseDto(Long id, NotificationType notificationType, String content, Object relatedNum) {
         this.id = id;
         this.notificationType = notificationType;
-        this.nickname = nickname;
         this.content = content;
         this.relatedNum = relatedNum;
     }
@@ -29,7 +27,6 @@ public class NotificationResponseDto {
         return NotificationResponseDto.builder()
                 .id(notification.getId())
                 .notificationType(notification.getNotificationType())
-                .nickname(notification.getMember().getNickname())
                 .content(notification.getContent())
                 .relatedNum(notification.getRelatedNum())
                 .build();
