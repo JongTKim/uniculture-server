@@ -96,6 +96,12 @@ public class ChatController {
     return ResponseEntity.ok(chatService.findMessageHistory(roomId));
   }
 
+  @Operation(summary = "안읽은 채팅 개수 가져오기")
+  @GetMapping("/api/auth/chat/count")
+  public ResponseEntity<Long> getChatCount(){
+    return ResponseEntity.ok(chatService.unreadMessageCount());
+  }
+
   /**
    * 입장시 입장 안내문 WebSocket
    * 입장시 "~사용자가 입장하였습니다" 전송

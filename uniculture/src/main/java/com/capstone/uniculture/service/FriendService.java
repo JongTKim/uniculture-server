@@ -1,7 +1,11 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Friend.*;
+import com.capstone.uniculture.dto.Friend.RecommendFriendResponseDto;
+import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
+import com.capstone.uniculture.dto.Friend.FriendResponseDto;
+import com.capstone.uniculture.dto.Friend.RecommendHobby;
+
 import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendResponseDto;

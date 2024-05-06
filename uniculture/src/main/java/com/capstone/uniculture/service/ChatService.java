@@ -168,4 +168,9 @@ public class ChatService {
     return null;
   }
 
+  public Long unreadMessageCount() {
+    Long memberId = SecurityUtil.getCurrentMemberId();
+    return chatMessageRepository.countChatMessageByMember_Id(memberId);
+  }
+
 }
