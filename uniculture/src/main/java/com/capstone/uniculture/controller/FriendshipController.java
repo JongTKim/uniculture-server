@@ -123,12 +123,19 @@ public class FriendshipController {
         return ResponseEntity.ok(friendService.recommendFriend());
     }
 
+    @Operation(summary = "친구추천 남은횟수", description = "매일 12시에 3회로 초기화")
+    @GetMapping("/auth/friend/recommend/count")
+    public ResponseEntity<Long> recommendCount(){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        return ResponseEntity.ok(friendService.recommendCountCheck(memberId));
+    }
+
     @Operation(summary = "친구추천 새로고침", description = "다른 친구 추천을 받아보고싶을때 사용합니다. 일 횟수제한 3")
     @GetMapping("/auth/friend/recommend/reload")
     public ResponseEntity<List<RecommendFriendResponseDto>> reRecommendFriendsList(){
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        if(friendService.recommendCountCheck(memberId)){
+        if(friendService.recommendCountCheck(memberId) != 0L){
             return ResponseEntity.ok(friendService.recommendFriends(memberId));
         }
         else{

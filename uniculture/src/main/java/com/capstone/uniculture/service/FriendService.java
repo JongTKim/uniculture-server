@@ -1,10 +1,7 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.SecurityUtil;
-import com.capstone.uniculture.dto.Friend.RecommendFriendResponseDto;
-import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
-import com.capstone.uniculture.dto.Friend.FriendResponseDto;
-import com.capstone.uniculture.dto.Friend.RecommendHobby;
+import com.capstone.uniculture.dto.Friend.*;
 
 import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
@@ -341,16 +338,10 @@ public class FriendService {
         }
     }
 
-    public boolean recommendCountCheck(Long memberId){
-        Member member = findMember(memberId);
-        if(member.getRemainCount() == 0){
-            return false;
-        }
-        else{
-            member.setRemainCount(member.getRemainCount()-1);
-            return true;
-        }
+    public Long recommendCountCheck(Long memberId){
+        return memberRepository.countRemainCount(memberId);
     }
+
     public List<RecommendFriendResponseDto> recommendFriends(Long memberId) {
 
         // 1. 일단 친구추천 테이블의 모든 데이터를 삭제하자
