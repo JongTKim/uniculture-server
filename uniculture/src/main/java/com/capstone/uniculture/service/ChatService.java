@@ -48,10 +48,15 @@ public class ChatService {
   public List<MessageResponseDto> findMessageHistory(Long roomId){
     // 1. 채팅방 아이디를 가지고 전체 메시지를 불러온다 -> 데이터양이 많아져 성능저하시 추후 NoSQL 변경 가능성
     List<ChatMessage> messages = chatMessageRepository.findByChatRoom_Id(roomId);
+    Long memberId = SecurityUtil.getCurrentMemberId();
 
-    return messages.stream()
+    List<MessageResponseDto> collect = messages.stream()
             .map(MessageResponseDto::fromEntity)
             .collect(Collectors.toList());
+
+    chatMessageRepository.readChatMessage(roomId,memberId);
+
+    return collect;
   }
 
   // 입장시 채팅방에 참여자를 추가해주고, 입장 안내를 날려주는 메소드
