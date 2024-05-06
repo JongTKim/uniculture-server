@@ -5,6 +5,7 @@ import com.capstone.uniculture.dto.Message.*;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Message.ChatRoom;
 import com.capstone.uniculture.entity.Message.ChatRoomMembership;
+import com.capstone.uniculture.repository.ChatMessageRepository;
 import com.capstone.uniculture.repository.ChatRoomMembershipRepository;
 import com.capstone.uniculture.repository.ChatRoomRepository;
 import com.capstone.uniculture.repository.MemberRepository;
@@ -26,6 +27,7 @@ public class ChatRoomService {
   private final MemberRepository memberRepository;
   private final ChatRoomRepository chatRoomRepository;
   private final ChatRoomMembershipRepository chatRoomMembershipRepository;
+  private final ChatMessageRepository chatMessageRepository;
 
 
   // Member 검색 메소드
@@ -60,6 +62,7 @@ public class ChatRoomService {
                   .username(chatRoom.getMember2().getNickname())
                   .latestMessage(chatRoom.getLatestMessage())
                   .latestMessageTime(chatRoom.getLatestMessageTime())
+                  .unreadCount(chatMessageRepository.countUnreadMessage(chatRoom.getId(), userId))
                   .build();
           chatRoomDTOList.add(build);
       }
@@ -72,6 +75,7 @@ public class ChatRoomService {
                   .username(chatRoom.getMember1().getNickname())
                   .latestMessage(chatRoom.getLatestMessage())
                   .latestMessageTime(chatRoom.getLatestMessageTime())
+                  .unreadCount(chatMessageRepository.countUnreadMessage(chatRoom.getId(), userId))
                   .build();
           chatRoomDTOList.add(build);
       }
