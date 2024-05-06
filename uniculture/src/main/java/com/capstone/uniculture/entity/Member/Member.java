@@ -10,19 +10,18 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
-@Getter
-@Setter
+@Getter @Setter
 @Table(name = "member")
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor @AllArgsConstructor
 @Builder
-@BatchSize(size = 10)
+@DynamicInsert @BatchSize(size = 10)
 public class Member extends BaseEntity {
 
     @Id

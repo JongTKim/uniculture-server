@@ -7,14 +7,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 
 @Entity
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @Table(indexes = {
         @Index(columnList = "chatRoom_id")
 })
+@DynamicInsert
 public class ChatMessage extends BaseEntity {
 
   @Id
@@ -34,6 +36,9 @@ public class ChatMessage extends BaseEntity {
   private Member member;
 
   private String message;
+
+  @ColumnDefault("false")
+  private Boolean isRead;
 
   @Builder
   public ChatMessage(Long id, MessageType type, ChatRoom chatRoom, Member member, String message) {
