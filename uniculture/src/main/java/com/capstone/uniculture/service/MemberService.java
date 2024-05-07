@@ -327,7 +327,13 @@ public class MemberService implements UserDetailsService {
         // 여기서 비밀번호를 조회하고 인증된 객체를 Authentication 에 넣어줌
         Authentication authentication = managerBuilder.getObject().authenticate(authenticationToken);
         // 인증 객체를 가지고 토큰 생성
-        return tokenProvider.generateTokenDto(authentication);
+        TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+
+        String nickname = memberRepository.findNicknameById(Long.valueOf(authentication.getName()));
+
+        tokenDto.setUsername(nickname);
+
+        return tokenDto;
     }
 
     // 로그아웃
