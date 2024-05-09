@@ -3,6 +3,7 @@ package com.capstone.uniculture.controller;
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Post.Request.PostAddDto;
 import com.capstone.uniculture.dto.Post.Request.PostListRequestDto;
+import com.capstone.uniculture.dto.Post.Request.PostStatusDto;
 import com.capstone.uniculture.dto.Post.Request.PostUpdateDto;
 import com.capstone.uniculture.dto.Post.Response.PostDetailDto;
 import com.capstone.uniculture.dto.Post.Response.PostListDto;
@@ -124,6 +125,12 @@ public class PostController {
         return ResponseEntity.ok(postService.getMyFriendPosts(pageable));
     }
 
+    @Operation(summary = "게시글 상태변경")
+    @PostMapping("/auth/post/{postId}/status")
+    public ResponseEntity changeStatus(@PathVariable("postId") Long postId,
+                                       @RequestBody PostStatusDto postStatusDto){
+        return ResponseEntity.ok(postService.changeStatus(postId, postStatusDto));
+    }
 
     @Operation(summary = "게시글 좋아요")
     @PostMapping("/auth/post/{postId}/like")

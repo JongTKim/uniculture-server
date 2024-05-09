@@ -3,6 +3,7 @@ package com.capstone.uniculture.service;
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Post.Request.PostAddDto;
 import com.capstone.uniculture.dto.Post.Request.PostListRequestDto;
+import com.capstone.uniculture.dto.Post.Request.PostStatusDto;
 import com.capstone.uniculture.dto.Post.Request.PostUpdateDto;
 import com.capstone.uniculture.dto.Post.Response.PostDetailDto;
 import com.capstone.uniculture.dto.Post.Response.PostListDto;
@@ -280,5 +281,10 @@ public class PostService {
                 .toList();
 
         return new PageImpl<>(list,pageable,posts.getTotalElements());
+    }
+
+    public String changeStatus(Long postId, PostStatusDto postStatusDto) {
+        postRepository.changeStatus(postId,postStatusDto.getStatus());
+        return "상태 변경 성공";
     }
 }
