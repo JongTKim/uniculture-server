@@ -41,4 +41,14 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
     @Modifying
     @Query("UPDATE Member m SET m.remainCount = m.remainCount - 1 WHERE m.id = :memberId")
     void decrementRemainCount(@Param("memberId") Long memberId);
+
+    @Modifying
+    @Query("UPDATE Member m SET m.mainPurpose = :purpose WHERE m.id = :memberId")
+    void updateMemberPurpose(@Param("purpose") String purpose, @Param("memberId") Long memberId);
+
+    @Modifying
+    @Query("UPDATE Member m SET m.introduce = :introduce, m.mainPurpose = :mainPurpose WHERE m.id = :memberId")
+    void updateMemberInfo(@Param("introduce") String introduce,
+                               @Param("mainPurpose") String mainPurpose,
+                               @Param("memberId") Long memberId);
 }

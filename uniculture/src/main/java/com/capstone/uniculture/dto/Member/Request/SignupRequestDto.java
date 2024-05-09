@@ -20,6 +20,7 @@ public class SignupRequestDto {
     private String email;
     private String password;
     private String nickname;
+    private String country;
     private Gender gender;
     private Integer age;
     private Integer year;
@@ -32,6 +33,7 @@ public class SignupRequestDto {
                 .password(passwordEncoder.encode(password))
                 .nickname(nickname)
                 .authority(Authority.ROLE_USER)
+                .country(country)
                 .gender(gender)
                 .age(age)
                 .born(LocalDate.of(year,month,day))

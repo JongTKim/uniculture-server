@@ -22,7 +22,7 @@ public class MyHobbyService {
     }
 
     public void createByList(List<MyHobby> myHobbyList){
-        myHobbyList.stream().forEach(myHobby -> myHobbyRepository.save(myHobby));
+        myHobbyRepository.saveAll(myHobbyList);
     }
 
     public void delete(MyHobby myHobby){
@@ -30,7 +30,7 @@ public class MyHobbyService {
     }
 
     public void deleteByList(List<MyHobby> myHobbyList){
-        myHobbyList.stream().forEach(myHobby -> myHobbyRepository.delete(myHobby));
+        myHobbyRepository.deleteAll(myHobbyList);
     }
 
 }

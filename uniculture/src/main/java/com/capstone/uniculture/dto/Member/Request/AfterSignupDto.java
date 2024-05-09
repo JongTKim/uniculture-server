@@ -18,7 +18,6 @@ public class AfterSignupDto {
     private Long id;
     private List<String> purpose;
     private String mainPurpose;
-    private String country;
     private List<String> myHobbyList; // 취미
     private Map<String, Integer> canLanguages; // 언어
     private Map<String, Integer> wantLanguage; // 배우고 싶은 언어

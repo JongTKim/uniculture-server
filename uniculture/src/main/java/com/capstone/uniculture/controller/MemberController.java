@@ -10,6 +10,7 @@ import com.capstone.uniculture.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -98,9 +99,12 @@ public class MemberController {
     // 회원 수정 中 개인정보 수정
     @Operation(summary = "내 개인정보 수정")
     @PatchMapping("/auth/member/editInformation")
-    public ResponseEntity editInformation(@RequestBody UpdateMemberDto updateMemberDto) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(memberService.UpdateUserInformation(memberId, updateMemberDto));
+    public ResponseEntity<String> editInformation(@RequestBody UpdateMemberDto updateMemberDto) {
+        try {
+            return ResponseEntity.ok(memberService.UpdateUserInformation(updateMemberDto));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     // 회원 삭제

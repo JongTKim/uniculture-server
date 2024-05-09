@@ -1,6 +1,7 @@
 package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.S3UploadUtil;
+import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Member.Request.AfterSignupDto;
 import com.capstone.uniculture.dto.Member.Request.SignupRequestDto;
 import com.capstone.uniculture.dto.Member.Request.UpdateMemberDto;
@@ -13,6 +14,7 @@ import com.capstone.uniculture.entity.Member.*;
 import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,6 +49,8 @@ public class MemberService implements UserDetailsService {
     private final FriendshipRepository friendshipRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final MyHobbyRepository myHobbyRepository;
+    private final MyLanguageRepository myLanguageRepository;
+    private final WantLanguageRepository wantLanguageRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
@@ -165,7 +169,7 @@ public class MemberService implements UserDetailsService {
 
 
     public String AfterSignup(AfterSignupDto afterSignupDto){
-        Member member = findMember(afterSignupDto.getId());
+        Member member = memberRepository.getReferenceById(afterSignupDto.getId());
 
         List<Purpose> newPurpose = afterSignupDto.getPurpose()
                 .stream().map(purpose -> new Purpose(member, purpose)).toList();
@@ -187,40 +191,28 @@ public class MemberService implements UserDetailsService {
         myLanguageService.createByList(newMyLanguage);
         myHobbyService.createByList(newMyHobby);
 
-        member.setCountry(afterSignupDto.getCountry());
-        member.setMainPurpose(afterSignupDto.getMainPurpose());
+        memberRepository.updateMemberPurpose(afterSignupDto.getMainPurpose(), afterSignupDto.getId());
         return "성공";
     }
 
     // 회원 수정 中 프로필 수정 초기화면
     public UpdateProfileDto EditUserProfile(Long id){
+
         Member member = findMember(id);
+
         return new UpdateProfileDto(member);
     }
 
 
-    public List<List<MyHobby>> test2(Long id){
-        List<Member> members = memberRepository.findAll();
-        return members.stream().map(Member::getMyHobbyList).toList(); // 양방향일때
-    } // => 이때는 N+1 문제를 해결하기 위해 설정한 BatchSize 값이 적용되어 in 절을 사용해 쿼리문 1개로 Hobby 를 가저옴
-
     // 회원 수정 中 프로필 수정
-    public String UpdateUserProfile(Long id, UpdateProfileDto updateProfileDto) throws IOException {
-        Member member = findMember(id);
+    public String UpdateUserProfile(Long memberId, UpdateProfileDto updateProfileDto) throws IOException {
+
+        Member member = memberRepository.getReferenceById(memberId);
+
         // 1. 원래 내용 삭제
-
-        List<MyHobby> myHobbyList = member.getMyHobbyList();
-        List<MyLanguage> myLanguages = member.getMyLanguages();
-        List<WantLanguage> wantLanguages = member.getWantLanguages();
-
-        myHobbyList.forEach(myHobbyService::delete);
-        myLanguages.forEach(myLanguageService::delete);
-        wantLanguages.forEach(wantLanguageService::delete);
-
-        myHobbyList.clear();
-        myLanguages.clear();
-        wantLanguages.clear();
-
+        myHobbyRepository.deleteAllByMemberId(memberId);
+        myLanguageRepository.deleteAllByMemberId(memberId);
+        wantLanguageRepository.deleteAllByMemberId(memberId);
 
         // 2. 새로운 내용 투입
         if(updateProfileDto.getMyHobbyList() != null && !updateProfileDto.getMyHobbyList().isEmpty()) {
@@ -243,6 +235,12 @@ public class MemberService implements UserDetailsService {
                     .collect(Collectors.toList());
             wantLanguageService.createByList(newWantLanguage);
         }
+        if(updateProfileDto.getPurpose() != null && !updateProfileDto.getPurpose().isEmpty()){
+            List<Purpose> purposes = updateProfileDto.getPurpose()
+                    .stream().map(purpose -> new Purpose(member, purpose))
+                    .toList();
+            purposeService.createByList(purposes);
+        }
 
         /*
         // 3. 프사 설정
@@ -261,7 +259,7 @@ public class MemberService implements UserDetailsService {
         */
 
         // 4. 소개 설정
-        member.setIntroduce(updateProfileDto.getIntroduce());
+        memberRepository.updateMemberInfo(updateProfileDto.getIntroduce(), updateProfileDto.getMainPurpose(), memberId);
 
         return "수정 성공";
     }
@@ -273,14 +271,16 @@ public class MemberService implements UserDetailsService {
     }
 
     // 회원 수정 中 개인정보 수정
-    public ResponseEntity UpdateUserInformation(Long id, UpdateMemberDto updateMemberDto){
+    public String UpdateUserInformation(UpdateMemberDto updateMemberDto) throws BadRequestException {
         // 0. 멤버찾기
-        Member member = findMember(id);
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        Member member = findMember(memberId);
+
         // 1. 비밀번호 수정사항이 있는지 확인
         if(updateMemberDto.getExPassword() != null && updateMemberDto.getNewPassword() != null){
             // 1-1. 비밀번호 교체 로직 실행. 만약 예전 비밀번호가 틀렸으면 400 예외발생
             if (this.checkPassword(member.getId(), updateMemberDto.getExPassword())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("현재 비밀번호가 일치하지 않습니다");
+                throw new BadRequestException("현재 비밀번호가 일치하지 않습니다");
             }
             // 1-2. 비밀번호 맞을시 교체 로직
             member.setPassword(passwordEncoder.encode(updateMemberDto.getNewPassword()));
@@ -295,7 +295,7 @@ public class MemberService implements UserDetailsService {
         member.setGender(updateMemberDto.getGender());
         member.setBorn(LocalDate.of(updateMemberDto.getYear(), updateMemberDto.getMonth(), updateMemberDto.getDay()));
 
-        return ResponseEntity.ok("수정 성공");
+        return "수정 성공";
     }
 
     // 회원 삭제
