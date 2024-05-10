@@ -107,4 +107,13 @@ public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificati
     @Query("UPDATE Post p SET p.postStatus= :postStatus WHERE p.id = :postId")
     void changeStatus(@Param("postId") Long postId, @Param("postStatus") PostStatus postStatus);
 
+    @Query(value = "SELECT COUNT(*) FROM post p " +
+            "WHERE p.content LIKE %:contentKeyword% " +
+            "AND p.id IN (SELECT post_id FROM post_tag pt WHERE pt.hashtag IN :hashtags)", nativeQuery = true)
+    Long countPostsByContentAndHashtags(@Param("contentKeyword") String contentKeyword, @Param("hashtags") List<String> hashtags);
+
+    @Query(value = "SELECT COUNT(*) FROM post p " +
+            "WHERE p.content LIKE %:contentKeyword% ", nativeQuery = true)
+    Long countPostsByContent(@Param("contentKeyword") String contentKeyword);
+
 }

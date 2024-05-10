@@ -51,4 +51,20 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
     void updateMemberInfo(@Param("introduce") String introduce,
                                @Param("mainPurpose") String mainPurpose,
                                @Param("memberId") Long memberId);
+
+    @Query("SELECT COUNT(m) FROM Member m WHERE m.nickname LIKE %:nickname%")
+    Long countMemberByNickname(@Param("nickname") String nickname);
+
+    @Query(value = "select count(*) from member m " +
+            "where m.id not in (select to_member_id from friendship where from_member_id = :memberId)" +
+            "and m.id not in (:memberId) " +
+            "and m.nickname LIKE %:nickname% ", nativeQuery = true)
+    Long countMemberByNotMyFriend(@Param("memberId") Long memberId, @Param("nickname") String nickname);
+
+    @Query(value = "select count(*) from member m where m.id " +
+            "in (select to_member_id from friendship where from_member_id = :memberId)" +
+            "and m.nickname LIKE %:nickname% ", nativeQuery = true)
+    Long countMemberByMyFriend(@Param("memberId") Long memberId, @Param("nickname") String nickname);
+
+
 }
