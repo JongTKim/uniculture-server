@@ -29,4 +29,9 @@ public class NotificationController {
     public ResponseEntity<String> checkNotification(@PathVariable("id") Long notificationId){
         return ResponseEntity.ok(notificationService.checkNotification(notificationId));
     }
+
+    @PostMapping("/all")
+    public ResponseEntity<String> checkAllNotification(){
+        return ResponseEntity.ok(notificationService.checkAllNotification());
+    }
 }

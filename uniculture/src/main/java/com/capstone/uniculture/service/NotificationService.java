@@ -58,4 +58,12 @@ public class NotificationService {
 
         return "알림 읽기에 성공했습니다";
     }
+
+    public String checkAllNotification() {
+
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        notificationRepository.updateAllNotification(memberId);
+
+        return "알림 전부 읽기에 성공했습니다";
+    }
 }

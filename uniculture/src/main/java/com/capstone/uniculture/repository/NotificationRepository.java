@@ -2,6 +2,7 @@ package com.capstone.uniculture.repository;
 
 import com.capstone.uniculture.entity.Notification.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -16,4 +17,9 @@ public interface NotificationRepository extends JpaRepository<Notification,Long>
 
     @Query("SELECT n FROM Notification n JOIN FETCH n.member WHERE n.member.id = :userId AND n.isCheck = false")
     List<Notification> findAllByUserId(Long userId);
+
+    @Modifying
+    @Query("UPDATE Notification n SET n.isCheck = true WHERE n.member.id = :memberId")
+    void updateAllNotification(Long memberId);
+
 }
