@@ -1,6 +1,7 @@
 package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
+import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
 import com.capstone.uniculture.dto.Member.Request.AfterSignupDto;
 import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
 import com.capstone.uniculture.dto.Member.Request.UpdateMemberDto;
@@ -11,6 +12,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,9 +52,13 @@ public class MemberController {
 
             Member findMember = memberService.findMemberByNickname(nickname);
 
-            if (findMember.getId() == memberId) { // 자기 프로필을 조회하는경우
+            System.out.println("findMemberId = " + findMember.getId());
+
+            if (findMember.getId().equals(memberId)) { // 자기 프로필을 조회하는경우
+                System.out.println("나 실행됨");
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(memberService.findUser(memberId));
             } else {
+                System.out.println("상대 실행됨");
                 return ResponseEntity.ok(memberService.findOtherLogin(findMember.getId(), memberId));
             }
         } catch (RuntimeException e) {
@@ -58,6 +67,15 @@ public class MemberController {
             return ResponseEntity.ok(memberService.findOtherLogout(nickname));
         }
     }
+
+    @Operation(summary = "멤버 검색")
+    @GetMapping("/member/search")
+    public ResponseEntity<Page<DetailFriendResponseDto>> searchMember(
+            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam String nickname){
+        return ResponseEntity.ok(memberService.searchMember(nickname,pageable));
+    }
+
 
     // 회원 수정 中 프로필 수정 초기화면
     @Operation(summary = "내 프로필 수정 초기화면", description = "프로필 수정 페이지에 접속하면 현재 프로필을 보여줍니다.")
@@ -113,6 +131,15 @@ public class MemberController {
     public ResponseEntity deleteUser() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.deleteUser(memberId));
+    }
+
+    @GetMapping("/member1")
+    public ResponseEntity member1() throws InterruptedException {
+        return ResponseEntity.ok(memberService.update1());
+    }
+    @GetMapping("/member2")
+    public ResponseEntity member2() throws InterruptedException {
+        return ResponseEntity.ok(memberService.update2());
     }
 
 

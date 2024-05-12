@@ -2,6 +2,7 @@ package com.capstone.uniculture.service;
 
 import com.capstone.uniculture.config.S3UploadUtil;
 import com.capstone.uniculture.config.SecurityUtil;
+import com.capstone.uniculture.dto.Friend.DetailFriendResponseDto;
 import com.capstone.uniculture.dto.Member.Request.AfterSignupDto;
 import com.capstone.uniculture.dto.Member.Request.SignupRequestDto;
 import com.capstone.uniculture.dto.Member.Request.UpdateMemberDto;
@@ -15,6 +16,9 @@ import com.capstone.uniculture.jwt.TokenProvider;
 import com.capstone.uniculture.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -142,6 +146,19 @@ public class MemberService implements UserDetailsService {
                 .friendnum(friendNum)
                 .friendstatus(friendStatus)
                 .build();
+    }
+
+    public Page<DetailFriendResponseDto> searchMember(String nickname, Pageable pageable){
+
+        Page<Member> members = null;
+        try{
+            Long memberId = SecurityUtil.getCurrentMemberId();
+            members = memberRepository.findAllByNicknameNotMyFriend(memberId, nickname, pageable);
+        }catch(RuntimeException e){ // 로그인 상태 아님
+            members = memberRepository.findAllByNickname(nickname, pageable);
+        }
+        List<DetailFriendResponseDto> list = members.stream().map(DetailFriendResponseDto::fromMember).toList();
+        return new PageImpl<>(list, pageable, members.getTotalElements());
     }
 
     // 타인 조회 - 로그아웃 상태일때
@@ -386,7 +403,18 @@ public class MemberService implements UserDetailsService {
             case "China" -> "ZH";
             default -> "EN";
         };
+    }
 
-
+    public String update1() throws InterruptedException {
+        memberRepository.decrementRemainCount(1L);
+        Thread.sleep(10000);
+        memberRepository.decrementRemainCount(2L);
+        return "성공1";
+    }
+    public String update2() throws InterruptedException {
+        memberRepository.decrementRemainCount(2L);
+        Thread.sleep(10000);
+        memberRepository.decrementRemainCount(1L);
+        return "성공2";
     }
 }

@@ -111,10 +111,10 @@ public class FriendshipController {
     @GetMapping("/auth/friend/detail")
     public ResponseEntity<Page<DetailFriendResponseDto>> detailFriendsList(
             @PageableDefault(size=10, direction = Sort.Direction.DESC) Pageable pageable,
-            @RequestParam(required = false) String name)
+            @RequestParam(required = false) String nickname)
     {
         Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(friendService.listOfFriends2(name, memberId, pageable));
+        return ResponseEntity.ok(friendService.listOfFriends2(nickname, memberId, pageable));
     }
 
     @Operation(summary = "친구추천", description = "친구 추천을 받을때 사용합니다")

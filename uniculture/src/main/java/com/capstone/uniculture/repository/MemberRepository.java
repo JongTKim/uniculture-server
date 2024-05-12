@@ -1,6 +1,8 @@
 package com.capstone.uniculture.repository;
 
 import com.capstone.uniculture.entity.Member.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -67,4 +69,13 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
     Long countMemberByMyFriend(@Param("memberId") Long memberId, @Param("nickname") String nickname);
 
 
+    @Query("SELECT m FROM Member m WHERE m.nickname LIKE CONCAT('%', :nickname, '%')")
+    Page<Member> findAllByNickname(String nickname, Pageable pageable);
+
+
+    @Query("SELECT m FROM Member m " +
+            "WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :memberId) " +
+            "AND m.id != :memberId " +
+            "AND m.nickname LIKE CONCAT('%', :nickname, '%')")
+    Page<Member> findAllByNicknameNotMyFriend(Long memberId, String nickname, Pageable pageable);
 }
