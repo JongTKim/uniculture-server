@@ -28,12 +28,13 @@ public class RecommendFriendResponseDto {
     private Map<String,Integer> canLanguages;
     private Map<String,Integer> wantLanguages;
     private List<RecommendHobby> hobbies;
+    private Long similarity;
     private Boolean isOpen;
 
     @Builder
     public RecommendFriendResponseDto(Long id, String nickname, String introduce, Integer age, Gender gender,
                                       Map<String, Integer> canLanguages, Map<String, Integer> wantLanguages,
-                                      Boolean isOpen) {
+                                      Long similarity, Boolean isOpen) {
         this.id = id;
         this.nickname = nickname;
         this.introduce = introduce;
@@ -41,11 +42,12 @@ public class RecommendFriendResponseDto {
         this.gender = gender;
         this.canLanguages = canLanguages;
         this.wantLanguages = wantLanguages;
+        this.similarity = similarity;
         this.isOpen = isOpen;
     }
 
 
-    public static RecommendFriendResponseDto fromMember(Member member, Boolean isOpen){
+    public static RecommendFriendResponseDto fromMember(Member member, Boolean isOpen, Long similarity){
         return RecommendFriendResponseDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
@@ -54,6 +56,7 @@ public class RecommendFriendResponseDto {
                 .gender(member.getGender())
                 .canLanguages(member.getMyLanguages().stream().collect(Collectors.toMap(MyLanguage::getLanguage, MyLanguage::getLevel)))
                 .wantLanguages(member.getWantLanguages().stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
+                .similarity(similarity)
                 .isOpen(isOpen)
                 .build();
     }

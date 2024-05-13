@@ -19,9 +19,13 @@ public class FriendRecommend extends BaseEntity {
     @Column(nullable = false)
     private Boolean isOpen = false;
 
-    public FriendRecommend(Member fromMember, Member toMember) {
+    @Column(nullable = false)
+    private Long similarity;
+
+    public FriendRecommend(Member fromMember, Member toMember, Long similarity) {
         this.friendRecommendPK = new FriendRecommendPK(fromMember, toMember);
         this.isOpen = false;
+        this.similarity = similarity;
     }
 
     public void changeStatus(Boolean isOpen){

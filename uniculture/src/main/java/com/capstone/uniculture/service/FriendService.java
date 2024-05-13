@@ -31,10 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -331,7 +328,7 @@ public class FriendService {
 
         if(idList != null && !idList.isEmpty()){ // 캐시에서 가져올수있으면 가져오기
             return idList.stream().map(friendRecommend ->
-                    RecommendFriendResponseDto.fromMember(friendRecommend.getFriendRecommendPK().getToMember(), friendRecommend.getIsOpen())).toList();
+                RecommendFriendResponseDto.fromMember(friendRecommend.getFriendRecommendPK().getToMember(), friendRecommend.getIsOpen(), friendRecommend.getSimilarity())).toList();
         }
         else{ // 플라스크 실행시켜야됨
             return recommendFriends(memberId);
@@ -375,26 +372,28 @@ public class FriendService {
                 .build());
 
         // 5. 추천받은 아이디로 멤버 상세 객체 만들어서 반환
-        List<Long> longs = responseDto.getData().getSortedIdList().stream()
-                .filter(id -> !Objects.equals(id, memberId)).limit(10).toList();
 
-        List<FriendRecommend> friendRecommends = longs.stream().map(id -> {
-            Member toMember = memberRepository.getReferenceById(id);
+
+        Set<Map.Entry<Long, Long>> entrySet = responseDto.getData().getSortedIdList().entrySet();
+
+        List<FriendRecommend> friendRecommends = entrySet.stream().map(set -> {
+            Member toMember = memberRepository.getReferenceById(set.getKey());
             Member fromMember = memberRepository.getReferenceById(memberId);
-            FriendRecommend friendRecommend = new FriendRecommend(fromMember, toMember);
+            FriendRecommend friendRecommend = new FriendRecommend(fromMember, toMember, set.getValue());
             return friendRecommend;
         }).toList();
 
         friendRecommendRepository.saveAll(friendRecommends);
 
-        return longs.stream()
-                .map(id -> {
-                    Member member = findMember(id); // query
+        return entrySet.stream()
+                .map(entry ->
+                {
+                    Member member = findMember(entry.getKey());
                     List<RecommendHobby> hobbies = new ArrayList<>(); //
                     member.getMyHobbyList().forEach(p -> {
                         hobbies.add(new RecommendHobby(p.getHobbyName(), myHobby.contains(p.getHobbyName())));
                     });
-                    RecommendFriendResponseDto recommendFriendResponseDto = RecommendFriendResponseDto.fromMember(member, false);
+                    RecommendFriendResponseDto recommendFriendResponseDto = RecommendFriendResponseDto.fromMember(member, false, entry.getValue());
                     recommendFriendResponseDto.setHobbies(hobbies);
                     return recommendFriendResponseDto;
                 }).toList();
