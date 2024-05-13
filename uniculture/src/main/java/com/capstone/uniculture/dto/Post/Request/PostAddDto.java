@@ -21,6 +21,7 @@ public class PostAddDto {
     private PostType posttype;
     private PostCategory postCategory;
     private List<String> tag;
+    private Long imageNum;
 
     public Post toPost(){
         return Post.builder()

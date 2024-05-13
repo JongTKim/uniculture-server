@@ -1,5 +1,6 @@
 package com.capstone.uniculture.service;
 
+import com.capstone.uniculture.config.S3UploadUtil;
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Post.Request.PostAddDto;
 import com.capstone.uniculture.dto.Post.Request.PostListRequestDto;
@@ -11,10 +12,7 @@ import com.capstone.uniculture.dto.Post.Response.PostSearchDto;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Post.*;
 
-import com.capstone.uniculture.repository.MemberRepository;
-import com.capstone.uniculture.repository.PostLikeRepository;
-import com.capstone.uniculture.repository.PostRepository;
-import com.capstone.uniculture.repository.PostTagRepository;
+import com.capstone.uniculture.repository.*;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,7 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +39,8 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final PostTagRepository postTagRepository;
     private final PostTagService postTagService;
+    private final PhotoRepository photoRepository;
+    private final S3UploadUtil s3UploadUtil;
 
 
     private Member findMember(Long id) {
@@ -52,7 +54,7 @@ public class PostService {
     }
 
     // 게시물 생성
-    public String createPost(PostAddDto postAddDto) {
+    public String createPost(PostAddDto postAddDto, List<MultipartFile> imgs) {
         // 1. 게시물 작성하는 Member 찾기
         Member member = findMember(SecurityUtil.getCurrentMemberId());
 
@@ -73,6 +75,20 @@ public class PostService {
             postTagService.createByList(postTags);
         }
 
+        if(imgs != null && !imgs.isEmpty()) {
+            List<String> test = imgs.stream().map(img -> {
+                try {
+                    return s3UploadUtil.upload(img, "test");
+                } catch (IOException e) {
+                    System.out.println("e = " + e);
+                }
+                return null;
+            }).toList();
+            List<Photo> photos = test.stream().map(s -> new Photo(s, post)).toList();
+            post.setImageUrl(test.get(postAddDto.getImageNum().intValue() - 1));
+            photoRepository.saveAll(photos);
+        }
+
         return "게시물 생성 성공";
     }
 
@@ -89,14 +105,31 @@ public class PostService {
     }
 
     // 게시물 업데이트
-    public String updatePost(Long postId, PostUpdateDto postUpdateDto){
-        // 1. 수정할 게시물 찾기.
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("찾는 게시물이 없습니다."));
+    public String updatePost(Long postId, PostUpdateDto postUpdateDto, List<MultipartFile> imgs){
 
-        // 2. 수정할 게시물이 자기것이 맞는지 확인하기
-        if(post.getMember().getId() != SecurityUtil.getCurrentMemberId()){
-            throw new RuntimeException("자신의 게시물이 아닙니다.");
+        // 1. 수정할 게시물 찾기.
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("찾는 게시물이 없습니다."));
+
+        // 2. 기존의 사진 가져와서 삭제후 새 사진 삽입
+        List<Photo> allByPostId = photoRepository.findAllByPostId(post.getId());
+
+        allByPostId.forEach(photo -> {
+            s3UploadUtil.delete(photo.getPath()); // 버킷 삭제
+            photoRepository.delete(photo); // DB 삭제
+        });
+
+        if(imgs != null && !imgs.isEmpty()) {
+            List<String> test = imgs.stream().map(img -> {
+                try {
+                    return s3UploadUtil.upload(img, "test");
+                } catch (IOException e) {
+                    System.out.println("e = " + e);
+                }
+                return null;
+            }).toList();
+            List<Photo> photos = test.stream().map(s -> new Photo(s, post)).toList();
+            post.setImageUrl(test.get(postUpdateDto.getImageNum().intValue() - 1));
+            photoRepository.saveAll(photos);
         }
 
         // 3. 태그 설정(원래 있던 태그를 지우고 새 태그를 삽입)

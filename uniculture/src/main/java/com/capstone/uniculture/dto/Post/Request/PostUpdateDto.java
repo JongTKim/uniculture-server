@@ -29,5 +29,7 @@ public class PostUpdateDto {
     @Schema(title = "게시글 모집완료 여부(스터디에서만 사용)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private PostStatus postStatus;
 
+    private Long imageNum;
+
     private List<String> tag;
 }

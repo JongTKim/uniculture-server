@@ -107,7 +107,7 @@ public class MemberController {
         return ResponseEntity.ok(memberService.EditUserInformation(memberId));
     }
 
-    @Operation(summary = "(미완 - 사용X) 프로필 이미지 번경")
+    @Operation(summary = "프로필 이미지 번경")
     @PatchMapping(path = {"/auth/member/editProfileImage"}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity editProfileImage(@RequestPart MultipartFile profileImg) throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();

@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class PostListDto {
 
     private Long postId;
+    private String imageUrl;
     private String title;
     private String content;
     private Integer viewCount;
@@ -28,7 +29,8 @@ public class PostListDto {
     @Builder
     public PostListDto(Long postId, String title, String content, PostStatus postStatus,
                        Integer viewCount, Integer commentCount, Integer likeCount,
-                       String writerName, LocalDateTime createDate, LocalDateTime modifiedDate) {
+                       String writerName, LocalDateTime createDate, LocalDateTime modifiedDate,
+                       String imageUrl) {
         this.postId = postId;
         this.title = title;
         this.content = content;
@@ -39,12 +41,14 @@ public class PostListDto {
         this.writerName = writerName;
         this.createDate = createDate;
         this.modifiedDate = modifiedDate;
+        this.imageUrl = imageUrl;
     }
 
     public static PostListDto fromEntity(Post post){
         return PostListDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
+                .imageUrl(post.getImageUrl())
                 .content(post.getContent())
                 .postStatus(post.getPostStatus())
                 .viewCount(post.getViewCount())

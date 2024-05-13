@@ -35,10 +35,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,7 +50,6 @@ public class MemberService implements UserDetailsService {
 
     private final AuthenticationManagerBuilder managerBuilder;
     private final MemberRepository memberRepository;
-    private final FileRepository fileRepository;
     private final PostRepository postRepository;
     private final FriendshipRepository friendshipRepository;
     private final FriendRequestRepository friendRequestRepository;
@@ -100,6 +101,7 @@ public class MemberService implements UserDetailsService {
                 .nickname(member.getNickname())
                 .introduce(member.getIntroduce())
                 .receiverequestnum(friendRequestNum)
+                .profileurl(member.getProfileUrl())
                 .age(member.getAge())
                 .gender(member.getGender())
                 .postnum(postNum)
@@ -141,6 +143,7 @@ public class MemberService implements UserDetailsService {
                 .gender(member.getGender())
                 .postnum(postNum)
                 .canlanguages(member.getMyLanguages().stream().collect(Collectors.toMap(MyLanguage::getLanguage, MyLanguage::getLevel)))
+                .profileurl(member.getProfileUrl())
                 .wantlanguages(member.getWantLanguages().stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
                 .hobbies(member.getMyHobbyList().stream().map(myHobby -> myHobby.getHobbyName()).collect(Collectors.toList()))
                 .friendnum(friendNum)
@@ -273,7 +276,7 @@ public class MemberService implements UserDetailsService {
 
             member.setProfileUrl(updateProfileDto.getProfileUrl());
         }
-        */
+         */
 
         // 4. 소개 설정
         memberRepository.updateMemberInfo(updateProfileDto.getIntroduce(), updateProfileDto.getMainPurpose(), memberId);
@@ -392,7 +395,9 @@ public class MemberService implements UserDetailsService {
         String test = s3UploadUtil.upload(profileImg, "test");
 
         // 2. Member의 profileURL에 생성
-        findMember(memberId).setProfileUrl(test); return "성공";
+        findMember(memberId).setProfileUrl(test);
+
+        return "성공";
     }
 
     public String findMyLanguage(Long memberId) {

@@ -17,9 +17,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Tag(name="게시물", description = "게시물(Post) 관련 API 입니다.")
@@ -96,18 +99,20 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 작성")
-    @PostMapping("/auth/post")
-    public ResponseEntity addBoard(@RequestBody PostAddDto postAddDto){
-        return ResponseEntity.ok(postService.createPost(postAddDto));
+    @PostMapping(path = {"/auth/post"}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity addBoard(@RequestPart PostAddDto postAddDto,
+                                   @RequestPart(required = false) List<MultipartFile> imgs){
+        return ResponseEntity.ok(postService.createPost(postAddDto, imgs));
     }
 
 
     @Operation(summary = "게시글 수정")
-    @PatchMapping("/auth/post/{postId}")
+    @PatchMapping(path = {"/auth/post/{postId}"}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity updateBoard(
             @PathVariable("postId") Long postId,
-            @RequestBody PostUpdateDto postUpdateDto){
-        return ResponseEntity.ok(postService.updatePost(postId,postUpdateDto));
+            @RequestPart PostUpdateDto postUpdateDto,
+            @RequestPart(required = false) List<MultipartFile> imgs){
+        return ResponseEntity.ok(postService.updatePost(postId,postUpdateDto, imgs));
     }
 
     @Operation(summary = "게시글 삭제")
