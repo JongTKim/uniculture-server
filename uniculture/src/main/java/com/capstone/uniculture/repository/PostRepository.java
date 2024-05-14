@@ -13,16 +13,26 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificationExecutor<Post> {
 
+    /*
     @Query(value = "SELECT p.* FROM post p JOIN post_like pl ON p.id = pl.post_id " +
             "WHERE pl.created_date >= DATEADD(DAY, -7, CURRENT_DATE) " +
             "GROUP BY p.id " +
             "ORDER BY COUNT(*) DESC LIMIT 5", nativeQuery = true)
-    List<Post> findMostLikedPostLastWeek();
+    List<Post> findMostLikedPostLastWeek();*/
+
+    @Query("SELECT p FROM Post p JOIN p.postLikes pl " +
+            "WHERE pl.createdDate >= :oneWeekAgo " +
+            "GROUP BY p.id " +
+            "ORDER BY COUNT(pl) DESC")
+    Page<Post> findMostLikedPostLastWeek(@Param("oneWeekAgo") LocalDateTime oneWeekAgo, Pageable pageable);
+
 
     @Query("SELECT COUNT(p) FROM Post p WHERE p.member = :member")
     Integer countByMember(@Param("member") Member member);
@@ -107,13 +117,29 @@ public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificati
     @Query("UPDATE Post p SET p.postStatus= :postStatus WHERE p.id = :postId")
     void changeStatus(@Param("postId") Long postId, @Param("postStatus") PostStatus postStatus);
 
+    /*
     @Query(value = "SELECT COUNT(*) FROM post p " +
             "WHERE p.content LIKE %:contentKeyword% " +
             "AND p.id IN (SELECT post_id FROM post_tag pt WHERE pt.hashtag IN :hashtags)", nativeQuery = true)
     Long countPostsByContentAndHashtags(@Param("contentKeyword") String contentKeyword, @Param("hashtags") List<String> hashtags);
 
-    @Query(value = "SELECT COUNT(*) FROM post p " +
+     @Query(value = "SELECT COUNT(*) FROM post p " +
             "WHERE p.content LIKE %:contentKeyword% ", nativeQuery = true)
     Long countPostsByContent(@Param("contentKeyword") String contentKeyword);
+
+     */
+
+    @Query("SELECT COUNT(p) FROM Post p " +
+            "JOIN p.postTags pt " +
+            "WHERE p.content LIKE CONCAT('%', :contentKeyword, '%') " +
+            "AND pt.hashtag IN :hashtags")
+    Long countPostsByContentAndHashtags(@Param("contentKeyword") String contentKeyword, @Param("hashtags") List<String> hashtags);
+
+    @Query("SELECT COUNT(p) FROM Post p " +
+            "WHERE p.content LIKE CONCAT('%', :contentKeyword, '%')")
+    Long countPostsByContent(@Param("contentKeyword") String contentKeyword);
+
+
+
 
 }

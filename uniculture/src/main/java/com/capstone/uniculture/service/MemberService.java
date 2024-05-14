@@ -98,6 +98,7 @@ public class MemberService implements UserDetailsService {
         // 3. 리턴해줄 DTO 생성. 이 과정에서 컬렉션 필드에서는 프록시 -> 실객체 의 변환이 일어남
         return ProfileResponseDto.builder()
                 .id(member.getId())
+                .profileurl(member.getProfileUrl())
                 .nickname(member.getNickname())
                 .introduce(member.getIntroduce())
                 .receiverequestnum(friendRequestNum)
@@ -138,6 +139,7 @@ public class MemberService implements UserDetailsService {
         return ProfileResponseDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
+                .profileurl(member.getProfileUrl())
                 .introduce(member.getIntroduce())
                 .age(member.getAge())
                 .gender(member.getGender())

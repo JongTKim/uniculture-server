@@ -29,10 +29,17 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
     @Query("SELECT m FROM Member m WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :myId)")
     List<Member> findNonFriendMembers(@Param("myId") Long myId);
 
+    @Query("SELECT m FROM Member m " +
+            "WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :myId) " +
+            "ORDER BY FUNCTION('RAND')")
+    Page<Member> findNonFriendMemberEdit(@Param("myId") Long myId, Pageable pageable);
+
+    /*
     @Query(value = "select m.* from member m " +
             "where m.id not in (select f.to_member_id from friendship f where f.from_member_id = :myId) " +
             "order by rand() limit 20", nativeQuery = true)
     List<Member> findNonFriendMemberEdit(@Param("myId") Long myId);
+     */
 
     @Query("SELECT m.nickname FROM Member m WHERE m.id = :memberId")
     String findNicknameById(@Param("memberId") Long memberId);
@@ -57,6 +64,8 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
     @Query("SELECT COUNT(m) FROM Member m WHERE m.nickname LIKE %:nickname%")
     Long countMemberByNickname(@Param("nickname") String nickname);
 
+
+    /*
     @Query(value = "select count(*) from member m " +
             "where m.id not in (select to_member_id from friendship where from_member_id = :memberId)" +
             "and m.id not in (:memberId) " +
@@ -67,6 +76,20 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
             "in (select to_member_id from friendship where from_member_id = :memberId)" +
             "and m.nickname LIKE %:nickname% ", nativeQuery = true)
     Long countMemberByMyFriend(@Param("memberId") Long memberId, @Param("nickname") String nickname);
+
+     */
+
+    @Query("SELECT COUNT(m) FROM Member m " +
+            "WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :memberId) " +
+            "AND m.id != :memberId " +
+            "AND m.nickname LIKE CONCAT('%', :nickname, '%')")
+    Long countMemberByNotMyFriend(@Param("memberId") Long memberId, @Param("nickname") String nickname);
+
+    @Query("SELECT COUNT(m) FROM Member m " +
+            "WHERE m.id IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :memberId) " +
+            "AND m.nickname LIKE CONCAT('%', :nickname, '%')")
+    Long countMemberByMyFriend(@Param("memberId") Long memberId, @Param("nickname") String nickname);
+
 
 
     @Query("SELECT m FROM Member m WHERE m.nickname LIKE CONCAT('%', :nickname, '%')")

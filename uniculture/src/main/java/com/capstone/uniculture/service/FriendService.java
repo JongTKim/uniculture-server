@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.SharedSessionContract;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpEntity;
@@ -31,6 +32,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -312,7 +315,7 @@ public class FriendService {
 
     public void checkCache(){
         Long memberId1 = SecurityUtil.getCurrentMemberId();
-        if(friendRecommendRepository.findAlreadyRecommend(memberId1) != null){
+        if(friendRecommendRepository.findAlreadyRecommend(LocalDateTime.now().minusDays(1),memberId1) != null){
             System.out.println("와 존재하네요");
         }
         else{
@@ -324,7 +327,7 @@ public class FriendService {
 
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        List<FriendRecommend> idList = friendRecommendRepository.findAlreadyRecommend(memberId);
+        List<FriendRecommend> idList = friendRecommendRepository.findAlreadyRecommend(LocalDateTime.now().minusDays(1), memberId);
 
         if(idList != null && !idList.isEmpty()){ // 캐시에서 가져올수있으면 가져오기
             return idList.stream().map(friendRecommend ->
@@ -358,12 +361,13 @@ public class FriendService {
         List<String> myHobby = myHobbyRepository.findAllByMemberId(memberId);
 
         // 2. 내 친구를 제외한 모든 멤버의 정보중 20명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
-        List<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId);
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId, pageable);
 
-        System.out.println("memberList = " + memberList.size());
+        System.out.println("memberList = " + memberList);
 
         // 3. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
-        List<ProfileRecommendRequestDto> recommendRequestItems = memberList.stream().map(ProfileRecommendRequestDto::fromEntity).toList();
+        List<ProfileRecommendRequestDto> recommendRequestItems = memberList.getContent().stream().map(ProfileRecommendRequestDto::fromEntity).toList();
 
         // 4. Flask로 보내서 받아오기
         ProfileRecommendResponseDto responseDto = sendRequestToFlask(ToFlaskRequestDto.builder()
