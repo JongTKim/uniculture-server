@@ -17,6 +17,7 @@ import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,17 +57,17 @@ public class PostService {
     }
 
     // 게시물 생성
-    public String createPost(PostAddDto postAddDto, List<MultipartFile> imgs) {
+    public String createPost(PostAddDto postAddDto) {
         // 1. 게시물 작성하는 Member 찾기
         Member member = findMember(SecurityUtil.getCurrentMemberId());
 
-        // 2. 빌더 패턴을 사용하여 게시물 객체 생성
+        // 2. DTO -> Entity
         Post post = postAddDto.toPost();
 
         // 3. 멤버 설정
         post.setMember(member);
 
-        // 4. 게시물 생성을 한후에 id 값을 부여받아서 PostTag 를 저장해야함
+        // 4. 게시물 생성을 한후에 id 값을 부여받은후 PostTag 를 저장해야함
         postRepository.save(post);
 
         // 5. 태그 설정(태그가 없는경우도 있으니 NULL 체크 필요)
@@ -75,18 +78,9 @@ public class PostService {
             postTagService.createByList(postTags);
         }
 
-        if(imgs != null && !imgs.isEmpty()) {
-            List<String> test = imgs.stream().map(img -> {
-                try {
-                    return s3UploadUtil.upload(img, "test");
-                } catch (IOException e) {
-                    System.out.println("e = " + e);
-                }
-                return null;
-            }).toList();
-            List<Photo> photos = test.stream().map(s -> new Photo(s, post)).toList();
-            post.setImageUrl(test.get(postAddDto.getImageNum().intValue() - 1));
-            photoRepository.saveAll(photos);
+        // 6. 이미지 S3 저장로직
+        if(postAddDto.getImgUrl() != null){
+            post.setImageUrl(postAddDto.getImgUrl());
         }
 
         return "게시물 생성 성공";
@@ -95,13 +89,17 @@ public class PostService {
     // 주간 인기 태그
 
     public List<String> hotTag(){
-        return postTagRepository.findMostUsedPostTagLastWeek();
+        Pageable pageable = PageRequest.of(0, 5);
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        return postTagRepository.findMostUsedPostTagLastWeek(oneWeekAgo,pageable).getContent();
     }
 
     // 주간 좋아요 많은 게시물순
     public List<PostListDto> hotPost(){
-        List<Post> mostLikedPostLastWeek = postRepository.findMostLikedPostLastWeek();
-        return mostLikedPostLastWeek.stream().map(PostListDto::fromEntity).toList();
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        Pageable pageable = PageRequest.of(0, 5); // 0번째 페이지부터 5개의 결과를 가져옴
+        Page<Post> mostLikedPostLastWeek = postRepository.findMostLikedPostLastWeek(oneWeekAgo,pageable);
+        return mostLikedPostLastWeek.getContent().stream().map(PostListDto::fromEntity).toList();
     }
 
     // 게시물 업데이트
@@ -119,14 +117,7 @@ public class PostService {
         });
 
         if(imgs != null && !imgs.isEmpty()) {
-            List<String> test = imgs.stream().map(img -> {
-                try {
-                    return s3UploadUtil.upload(img, "test");
-                } catch (IOException e) {
-                    System.out.println("e = " + e);
-                }
-                return null;
-            }).toList();
+            List<String> test = imgs.stream().map(img -> s3UploadUtil.upload(img, "test")).toList();
             List<Photo> photos = test.stream().map(s -> new Photo(s, post)).toList();
             post.setImageUrl(test.get(postUpdateDto.getImageNum().intValue() - 1));
             photoRepository.saveAll(photos);

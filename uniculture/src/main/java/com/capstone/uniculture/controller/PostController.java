@@ -99,10 +99,9 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 작성")
-    @PostMapping(path = {"/auth/post"}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity addBoard(@RequestPart PostAddDto postAddDto,
-                                   @RequestPart(required = false) List<MultipartFile> imgs){
-        return ResponseEntity.ok(postService.createPost(postAddDto, imgs));
+    @PostMapping("/auth/post")
+    public ResponseEntity addBoard(@RequestPart PostAddDto postAddDto){
+        return ResponseEntity.ok(postService.createPost(postAddDto));
     }
 
 
