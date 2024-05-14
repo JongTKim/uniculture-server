@@ -24,11 +24,14 @@ public class S3UploadUtil {
     public String bucket;  // S3 버킷
 
     // S3 파일 업로드
-    public String upload(MultipartFile multipartFile, String dirName) throws IOException {
+    public String upload(MultipartFile multipartFile, String dirName) {
         // MultipartFile -> File
-        File convertFile = convert(multipartFile)
-                .orElseThrow(() -> new IllegalArgumentException("file convert error")); // 파일을 변환할 수 없으면 에러
-
+        File convertFile = null; // 파일을 변환할 수 없으면 에러
+        try {
+            convertFile = convert(multipartFile).orElseThrow(() -> new IllegalArgumentException("file convert error"));
+        } catch (IOException e) {
+            System.out.println("업로드 에러 발생");
+        }
         // S3에 저장할 파일명
         String fileName = dirName + "/" + UUID.randomUUID() + "_" + convertFile.getName();
 
