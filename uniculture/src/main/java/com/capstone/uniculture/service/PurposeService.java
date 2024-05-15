@@ -18,4 +18,6 @@ public class PurposeService {
     public void createByList(List<Purpose> purposeList){
         purposeRepository.saveAll(purposeList);
     }
+
+    public void deleteAllByMemberId(Long memberId){ purposeRepository.deleteAllByMemberId(memberId);}
 }
