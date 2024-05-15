@@ -1,14 +1,11 @@
 package com.capstone.uniculture.dto.Recommend;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
-@Setter
-@Builder
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class ToFlaskRequestDto {
     private Long id;
     private List<ProfileRecommendRequestDto> profiles;

@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -22,6 +21,6 @@ public class ProfileRecommendResponseDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public class dataObject {
-        private Map<Long, Long> sortedIdList;
+        private Map<Long, Long> sortedList;
     }
 }

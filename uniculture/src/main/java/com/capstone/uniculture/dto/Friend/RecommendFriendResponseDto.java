@@ -4,23 +4,19 @@ import com.capstone.uniculture.entity.Member.Gender;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.entity.Member.MyLanguage;
 import com.capstone.uniculture.entity.Member.WantLanguage;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.SecondaryRow;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class RecommendFriendResponseDto {
 
     private Long id;
-    // private String profileUrl;
+    private String profileUrl;
     private String nickname;
     private Integer age;
     private Gender gender;
@@ -28,23 +24,11 @@ public class RecommendFriendResponseDto {
     private Map<String,Integer> canLanguages;
     private Map<String,Integer> wantLanguages;
     private List<RecommendHobby> hobbies;
+
+    // 상세 친구 조회와 비교에서 추가된 내용
     private Long similarity;
     private Boolean isOpen;
 
-    @Builder
-    public RecommendFriendResponseDto(Long id, String nickname, String introduce, Integer age, Gender gender,
-                                      Map<String, Integer> canLanguages, Map<String, Integer> wantLanguages,
-                                      Long similarity, Boolean isOpen) {
-        this.id = id;
-        this.nickname = nickname;
-        this.introduce = introduce;
-        this.age = age;
-        this.gender = gender;
-        this.canLanguages = canLanguages;
-        this.wantLanguages = wantLanguages;
-        this.similarity = similarity;
-        this.isOpen = isOpen;
-    }
 
 
     public static RecommendFriendResponseDto fromMember(Member member, Boolean isOpen, Long similarity){
