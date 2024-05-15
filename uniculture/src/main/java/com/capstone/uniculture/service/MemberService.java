@@ -160,7 +160,7 @@ public class MemberService implements UserDetailsService {
             Long memberId = SecurityUtil.getCurrentMemberId();
             members = memberRepository.findAllByNicknameNotMyFriend(memberId, nickname, pageable);
         }catch(RuntimeException e){ // 로그인 상태 아님
-            members = memberRepository.findAllByNickname(nickname, pageable);
+            //members = memberRepository.findAllByNickname(nickname, pageable);
         }
         List<DetailFriendResponseDto> list = members.stream().map(DetailFriendResponseDto::fromMember).toList();
         return new PageImpl<>(list, pageable, members.getTotalElements());
@@ -235,6 +235,8 @@ public class MemberService implements UserDetailsService {
         myHobbyRepository.deleteAllByMemberId(memberId);
         myLanguageRepository.deleteAllByMemberId(memberId);
         wantLanguageRepository.deleteAllByMemberId(memberId);
+        purposeService.deleteAllByMemberId(memberId);
+
 
         // 2. 새로운 내용 투입
         if(updateProfileDto.getMyHobbyList() != null && !updateProfileDto.getMyHobbyList().isEmpty()) {

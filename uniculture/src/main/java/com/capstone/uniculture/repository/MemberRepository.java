@@ -30,7 +30,8 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
     List<Member> findNonFriendMembers(@Param("myId") Long myId);
 
     @Query("SELECT m FROM Member m " +
-            "WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :myId) " +
+            "WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :myId)" +
+            "AND m.id != :myId " +
             "ORDER BY FUNCTION('RAND')")
     Page<Member> findNonFriendMemberEdit(@Param("myId") Long myId, Pageable pageable);
 
@@ -61,8 +62,9 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
                                @Param("mainPurpose") String mainPurpose,
                                @Param("memberId") Long memberId);
 
-    @Query("SELECT COUNT(m) FROM Member m WHERE m.nickname LIKE %:nickname%")
-    Long countMemberByNickname(@Param("nickname") String nickname);
+    @Query("SELECT COUNT(m) FROM Member m WHERE m.nickname LIKE %:nickname% " +
+            "AND (:memberId is null or m.id != :memberId)")
+    Long countMemberByNickname(@Param("memberId") Long memberId, @Param("nickname") String nickname);
 
 
     /*
@@ -80,12 +82,6 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
      */
 
     @Query("SELECT COUNT(m) FROM Member m " +
-            "WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :memberId) " +
-            "AND m.id != :memberId " +
-            "AND m.nickname LIKE CONCAT('%', :nickname, '%')")
-    Long countMemberByNotMyFriend(@Param("memberId") Long memberId, @Param("nickname") String nickname);
-
-    @Query("SELECT COUNT(m) FROM Member m " +
             "WHERE m.id IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :memberId) " +
             "AND m.nickname LIKE CONCAT('%', :nickname, '%')")
     Long countMemberByMyFriend(@Param("memberId") Long memberId, @Param("nickname") String nickname);
@@ -93,7 +89,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
 
 
     @Query("SELECT m FROM Member m WHERE m.nickname LIKE CONCAT('%', :nickname, '%')")
-    Page<Member> findAllByNickname(String nickname, Pageable pageable);
+    List<Member> findAllByNickname(String nickname, Pageable pageable);
 
 
     @Query("SELECT m FROM Member m " +

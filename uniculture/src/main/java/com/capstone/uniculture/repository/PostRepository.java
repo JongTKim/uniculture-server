@@ -131,13 +131,14 @@ public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificati
 
     @Query("SELECT COUNT(p) FROM Post p " +
             "JOIN p.postTags pt " +
-            "WHERE p.content LIKE CONCAT('%', :contentKeyword, '%') " +
-            "AND pt.hashtag IN :hashtags")
-    Long countPostsByContentAndHashtags(@Param("contentKeyword") String contentKeyword, @Param("hashtags") List<String> hashtags);
+            "WHERE p.postCategory = 'NORMAL' " +
+            "AND (:keyword is null or p.title LIKE %:keyword%) " +
+            "AND pt.hashtag IN :hashtags ")
+    Long countPosts(@Param("keyword") String keyword, @Param("hashtags") List<String> hashtags);
 
     @Query("SELECT COUNT(p) FROM Post p " +
-            "WHERE p.content LIKE CONCAT('%', :contentKeyword, '%')")
-    Long countPostsByContent(@Param("contentKeyword") String contentKeyword);
+            "WHERE p.postCategory = 'NORMAL' AND p.title LIKE %:keyword% ")
+    Long countPostsByContent(@Param("keyword") String keyword);
 
 
 
