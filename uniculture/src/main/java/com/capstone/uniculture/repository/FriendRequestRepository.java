@@ -25,11 +25,18 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
     /**
      * 보낸사람 ID 로 검색이 필요할 경우 => 자신이 보낸 요청들을 확인(Member 에는 받은 요청 필드만 존재하므로 보낸 요청 확인시 필요)
      */
-    @Query("SELECT fr FROM FriendRequest fr WHERE fr.sender.id = :senderId")
-    List<FriendRequest> findBySenderId(@Param("senderId") Long senderId);
+    @Query("SELECT fr.receiver FROM FriendRequest fr WHERE fr.sender.id = :senderId")
+    List<Member> findBySenderId(@Param("senderId") Long senderId);
 
-    @Query("SELECT fr FROM FriendRequest fr WHERE fr.receiver.id = :receiverId")
-    List<FriendRequest> findByReceiverId(@Param("receiverId") Long receiverId);
+    @Query("SELECT fr.sender FROM FriendRequest fr WHERE fr.receiver.id = :receiverId")
+    List<Member> findByReceiverId(@Param("receiverId") Long receiverId);
+
+    @Query("SELECT fr.receiver.id FROM FriendRequest fr WHERE fr.sender.id = :senderId")
+    List<Long> findReceiverIdBySenderId(@Param("senderId") Long senderId);
+
+    @Query("SELECT fr.sender.id FROM FriendRequest fr WHERE fr.receiver.id = :receiverId")
+    List<Long> findSenderIdByReceiverId(@Param("receiverId") Long receiverId);
+
 
     /**
      * MemberId 를 받아 받은 요청이 몇개인지 검색 => 프록시 객체 변환없이 조회가능

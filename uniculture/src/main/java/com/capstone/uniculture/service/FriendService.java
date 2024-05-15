@@ -3,7 +3,7 @@ package com.capstone.uniculture.service;
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Friend.*;
 
-import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
+import com.capstone.uniculture.dto.Member.Response.SimpleMemberProfileDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
 import com.capstone.uniculture.dto.Recommend.ProfileRecommendResponseDto;
 import com.capstone.uniculture.dto.Recommend.ToFlaskRequestDto;
@@ -12,13 +12,10 @@ import com.capstone.uniculture.entity.Member.*;
 import com.capstone.uniculture.entity.Notification.Notification;
 import com.capstone.uniculture.entity.Notification.NotificationType;
 import com.capstone.uniculture.repository.*;
-import com.deepl.api.Usage;
 import com.sun.jdi.request.InvalidRequestStateException;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.SharedSessionContract;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,15 +47,12 @@ public class FriendService {
     private final EntityManager entityManager;
 
     private Member findMember(Long id) {
-        return memberRepository.findById(id).orElseThrow(
-                ()->new IllegalArgumentException("찾는 사용자가 존재하지 않습니다."));
+        return memberRepository.findById(id).orElseThrow(()->new IllegalArgumentException("찾는 사용자가 존재하지 않습니다."));
     }
 
     private FriendRequest findFriendRequest(Long senderId, Long receiverId) {
-        FriendRequest friendRequest = friendRequestRepository.findBySenderIdAndReceiverId(senderId, receiverId)
-                .orElseThrow(() -> new IllegalArgumentException("찾는 친구 요청이 존재하지 않습니다")
-        );
-        return friendRequest;
+        return friendRequestRepository.findBySenderIdAndReceiverId(senderId, receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("찾는 친구 요청이 존재하지 않습니다"));
     }
 
     // 친구 요청 신청
@@ -142,43 +135,73 @@ public class FriendService {
         return "친구 거절 성공";
     }
 
-    // Stream 은 값이 Null 이더라도 빈 리스트를 반환해주어 NullPointerException 을 방지할수있다.
-    // 간단 친구 목록 조회 (프로필창에서 친구 눌러 조회할때)
-    public List<FriendResponseDto> listOfFriends(Long id){
-        return friendshipRepository.findAllByFromMember_Id(id)
-                .stream().map(FriendResponseDto::fromMember)
+    /**
+     * Function : 친구 목록을 간단한 형식으로 조회
+     * Parameter : (필수X) nickname - 닉네임 넣어서 검색할때 필요
+     */
+    public List<SimpleFriendResponseDto> findMyFriendInSimple(String nickname){
+        // 1. 내 아이디 찾기
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        // 2. 내 친구목록 가져오기
+        List<Member> myFriendList = friendshipRepository.findAllByFromMember_Id(memberId, nickname, null);
+
+        // 3. DTO로 변환해서 반환
+        return myFriendList.stream().map(SimpleFriendResponseDto::fromMember).collect(Collectors.toList());
+
+        /* 과거로직 (and (:nickname is null or p.toMember.nickname LIKE %:nickname%)) 이 문법을 몰랐을때
+        if(nickname != null && !nickname.isEmpty()){ friendshipRepository.findAllByFromMember_Id(id, nickname);}
+        else{ friendshipRepository.findAllToMemberByFromMember_Id(id, nickname, pageable);}
+         */
+
+    }
+
+    /**
+     * Function : 친구 목록 세부적인 형식으로 조회
+     * Parameter : (필수O) pageable (필수X) nickname - 닉네임 넣어서 검색할때 필요
+     */
+    public Page<DetailFriendResponseDto> findMyFriendInDetail(String nickname, Pageable pageable){
+
+        // 1. 내 아이디 찾기
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        // 2. 내 친구목록 가져오기
+        List<Member> friendList = friendshipRepository.findAllByFromMember_Id(memberId, nickname, pageable);
+
+        // 3. DTO로 변환
+        List<DetailFriendResponseDto> friendListDto = friendList.stream().map(DetailFriendResponseDto::fromMember).toList();
+
+        // 4. 페이징된 형태로 반환
+        return new PageImpl<>(friendListDto, pageable, friendListDto.size());
+    }
+
+    /**
+     * Function : 나에게 온 친구 요청 조회
+     */
+    public List<SimpleFriendResponseDto> findFriendRequestForMe(){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        return friendRequestRepository.findByReceiverId(memberId).stream().map(SimpleFriendResponseDto::fromMember).toList();
+        /* 과거의 안좋은 사례 -> 불필요한 오버헤드 낭비가 있음
+        // 과거의 쿼리문 : SELECT fr FROM FriendRequest fr JOIN FETCH fr.sender WHERE fr.receiver.id = :receiverId
+        return friendRequestRepository.findByReceiverId2(memberId)
+                .stream().map(friendRequest -> {
+                    return SimpleFriendResponseDto.fromMember(friendRequest.getSender());
+                })
                 .collect(Collectors.toList());
+                */
     }
 
 
-    // 친구 목록 상세조회
-    public Page<DetailFriendResponseDto> listOfFriends2(String name, Long id, Pageable pageable){
-
-        Page<Member> friendList = null;
-
-        if(name != null){ // 만약, 이름 검색조건이 입력되었다면
-            friendList = friendshipRepository.findFriendsByNickname(id, name, pageable);
-        }
-        else { // 아니면 내 친구 전체 상세조회
-            friendList = friendshipRepository.findAllByFromMember_Id_Paging(id, pageable);
-        }
-        List<DetailFriendResponseDto> list = friendList.stream().map(DetailFriendResponseDto::fromMember).toList();
-        return new PageImpl<>(list, pageable, friendList.getTotalElements());
-    }
-    // 나에게 온 친구 신청 목록 조회
-    public List<FriendResponseDto> listOfFriendRequest(Long id){
-        return friendRequestRepository.findByReceiverId(id)
-                .stream().map(friendRequest -> FriendResponseDto.fromMember(friendRequest.getSender()))
-                .collect(Collectors.toList());
+    /**
+     * Function : 내가 보낸 친구 요청 조회
+     */
+    public List<SimpleFriendResponseDto> findFriendRequestFromMe(Long id){
+        return friendRequestRepository.findBySenderId(id).stream().map(SimpleFriendResponseDto::fromMember).toList();
     }
 
-    // 내가 보낸 친구 신청목록 조회
-    public List<FriendResponseDto> listOfMyFriendRequest(Long id){
-        return friendRequestRepository.findBySenderId(id)
-                .stream().map(friendRequest -> FriendResponseDto.fromMember(friendRequest.getReceiver()))
-                .collect(Collectors.toList());
-    }
-
+    /**
+     * Function : 내 친구중 필터 검색 - Specific 사용. 추후 QueryDSL 로 리팩토링 필요
+     */
     public Page<DetailFriendResponseDto> getMyFriendBySearch2(String hobby, String myLanguage, String wantLanguage, Integer minAge, Integer maxAge, Gender gender, Pageable pageable) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
@@ -224,6 +247,9 @@ public class FriendService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
+    /**
+     * Function : 전체 멤버중 필터 검색 (미사용)
+     */
     public Page<DetailFriendResponseDto> getMyFriendBySearch4(String hobby, String myLanguage, String wantLanguage, Integer minAge, Integer maxAge, Gender gender, Pageable pageable) {
 
         Long memberId = SecurityUtil.getCurrentMemberId();
@@ -269,116 +295,55 @@ public class FriendService {
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
-    public List<DetailFriendResponseDto> searchMembers(String hobby, String myLanguage, String wantLanguage, Integer minAge, Integer maxAge, Gender gender, Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Member> criteriaQuery = criteriaBuilder.createQuery(Member.class);
-        Root<Member> memberRoot = criteriaQuery.from(Member.class);
 
-        List<Predicate> predicates = new ArrayList<>();
+    /**
+     * Function : 친구추천 전 하루전까지 추천된 데이터가 있는지 확인
+     */
+    public List<RecommendFriendResponseDto> beforeRecommendFriend(){
 
-        if (hobby != null) {
-            Join<Member, MyHobby> myHobbyJoin = memberRoot.join("myHobbyList", JoinType.INNER);
-            predicates.add(criteriaBuilder.equal(myHobbyJoin.get("hobbyName"), hobby));
-        }
-
-        if (myLanguage != null) {
-            Join<Member, MyLanguage> myLanguageJoin = memberRoot.join("myLanguages", JoinType.INNER);
-            predicates.add(criteriaBuilder.equal(myLanguageJoin.get("language"), myLanguage));
-        }
-
-        if (wantLanguage != null) {
-            Join<Member, WantLanguage> wantLanguageJoin = memberRoot.join("wantLanguages", JoinType.INNER);
-            predicates.add(criteriaBuilder.equal(wantLanguageJoin.get("language"), wantLanguage));
-        }
-
-        if (minAge != null && maxAge != null) {
-            predicates.add(criteriaBuilder.between(memberRoot.get("age"), minAge, maxAge));
-        }
-
-        if (gender != null) {
-            predicates.add(criteriaBuilder.equal(memberRoot.get("gender"), gender));
-        }
-
-        criteriaQuery.where(predicates.toArray(new Predicate[0]));
-
-        TypedQuery<Member> typedQuery = entityManager.createQuery(criteriaQuery);
-
-        // 페이징 적용
-        typedQuery.setFirstResult((pageable.getPageNumber() - 1) * pageable.getPageSize());
-        typedQuery.setMaxResults(pageable.getPageSize());
-
-        List<Member> members = typedQuery.getResultList();
-
-        return members.stream().map(DetailFriendResponseDto::fromMember).toList();
-    }
-
-
-    public void checkCache(){
-        Long memberId1 = SecurityUtil.getCurrentMemberId();
-        if(friendRecommendRepository.findAlreadyRecommend(LocalDateTime.now().minusDays(1),memberId1) != null){
-            System.out.println("와 존재하네요");
-        }
-        else{
-            System.out.println("친구추천 기록이 없어요 ㅠㅠ ");
-        }
-    }
-
-    public List<RecommendFriendResponseDto> recommendFriend(){
-
+        // 1. 유저 아이디 받아오기
         Long memberId = SecurityUtil.getCurrentMemberId();
 
+        // 2. 하루전까지 추천된 기록이 있나 확인한다. -> 1을 상수로 뺄 필요성
         List<FriendRecommend> idList = friendRecommendRepository.findAlreadyRecommend(LocalDateTime.now().minusDays(1), memberId);
 
+        // 3. 만약 추천된 기록이 있다면 그냥 그거 반환
         if(idList != null && !idList.isEmpty()){ // 캐시에서 가져올수있으면 가져오기
             return idList.stream().map(friendRecommend ->
                 RecommendFriendResponseDto.fromMember(friendRecommend.getFriendRecommendPK().getToMember(), friendRecommend.getIsOpen(), friendRecommend.getSimilarity())).toList();
         }
-        else{ // 플라스크 실행시켜야됨
-            return recommendFriends(memberId);
+        else{ // 4. 없으면 플라스크 서버에 요청해서 정보 받아와야함
+            return recommendFriend(memberId);
         }
     }
 
-    public Long recommendCountCheck(Long memberId){
-        return memberRepository.countRemainCount(memberId);
-    }
-
-    public Boolean recommendCountDown(Long memberId){
-        if(recommendCountCheck(memberId) != 0){
-            memberRepository.decrementRemainCount(memberId);
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
-    public List<RecommendFriendResponseDto> recommendFriends(Long memberId) {
+    /**
+     * Function : 친구추천 주요 로직
+     */
+    @Transactional
+    public List<RecommendFriendResponseDto> recommendFriend(Long memberId) {
 
         // 1. 일단 친구추천 테이블의 모든 데이터를 삭제하자
+        // -> 사유 : 계속 쌓일수있음, 나중에 스프링 배치로 하루지난 데이터 한번에 삭제가능성
         friendRecommendRepository.deleteAllByFriendRecommendPK_FromMemberId(memberId);
 
         // 2. 내 취미정보 찾아놓기(추후, 취미 비교를 위함)
         List<String> myHobby = myHobbyRepository.findAllByMemberId(memberId);
 
-        // 2. 내 친구를 제외한 모든 멤버의 정보중 20명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
-        Pageable pageable = PageRequest.of(0, 20);
-        Page<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId, pageable);
+        // 3. 내 친구와 나를 제외한 모든 멤버의 정보중 20명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
+        Page<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId, PageRequest.of(0, 20));
 
-        System.out.println("memberList = " + memberList);
-
-        // 3. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
+        // 4. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
         List<ProfileRecommendRequestDto> recommendRequestItems = memberList.getContent().stream().map(ProfileRecommendRequestDto::fromEntity).toList();
 
-        // 4. Flask로 보내서 받아오기
+        // 5. Flask 서버 요청 보내서 받아오기
         ProfileRecommendResponseDto responseDto = sendRequestToFlask(ToFlaskRequestDto.builder()
                 .id(memberId)
                 .profiles(recommendRequestItems)
                 .build());
 
-        // 5. 추천받은 아이디로 멤버 상세 객체 만들어서 반환
-
-
-        Set<Map.Entry<Long, Long>> entrySet = responseDto.getData().getSortedIdList().entrySet();
+        // 6. 추천받은 정보로 친구추천 테이블에 저장 -> 캐싱의 개념
+        Set<Map.Entry<Long, Long>> entrySet = responseDto.getData().getSortedList().entrySet();
 
         List<FriendRecommend> friendRecommends = entrySet.stream().map(set -> {
             Member toMember = memberRepository.getReferenceById(set.getKey());
@@ -389,22 +354,23 @@ public class FriendService {
 
         friendRecommendRepository.saveAll(friendRecommends);
 
+        // 7. 추천받은 내용 반환
         return entrySet.stream()
                 .map(entry ->
                 {
                     Member member = findMember(entry.getKey());
-                    List<RecommendHobby> hobbies = new ArrayList<>(); //
-                    member.getMyHobbyList().forEach(p -> {
-                        hobbies.add(new RecommendHobby(p.getHobbyName(), myHobby.contains(p.getHobbyName())));
-                    });
+                    List<RecommendHobby> hobbies = new ArrayList<>();
+                    member.getMyHobbyList().forEach(p -> {hobbies.add(new RecommendHobby(p.getHobbyName(), myHobby.contains(p.getHobbyName())));});
                     RecommendFriendResponseDto recommendFriendResponseDto = RecommendFriendResponseDto.fromMember(member, false, entry.getValue());
                     recommendFriendResponseDto.setHobbies(hobbies);
                     return recommendFriendResponseDto;
                 }).toList();
     }
 
+    /**
+     * Function : 플라스크에 요청 보내는 로직
+     */
     private ProfileRecommendResponseDto sendRequestToFlask(ToFlaskRequestDto requestDto) {
-
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/json");
@@ -424,14 +390,59 @@ public class FriendService {
         }
     }
 
+    /**
+     * Function : 친구 추천 남은 횟수를 반환해줍니다
+     */
+    public Long recommendCountCheck(){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        return memberRepository.countRemainCount(memberId);
+    }
+
+    /**
+     * Function : 친구 추천 횟수가 남았는지 확인하고 있으면 1 감소시킵니다. -> 위의 메소드와 통합 가능성
+     */
+    public Boolean recommendCountDown(Long memberId){
+        if(memberRepository.countRemainCount(memberId) != 0){
+            memberRepository.decrementRemainCount(memberId);
+            return true;
+        }
+        else return false;
+    }
+
+    /**
+     * Function : 카드오픈
+     */
     public void openProfile(Long targetId) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Member fromMember = memberRepository.getReferenceById(memberId);
         Member toMember = memberRepository.getReferenceById(targetId);
 
-        FriendRecommend friendRecommend = friendRecommendRepository.findById(new FriendRecommendPK(fromMember, toMember)).get();
+        FriendRecommend friendRecommend = friendRecommendRepository.findById(new FriendRecommendPK(fromMember, toMember))
+                .orElseThrow(() -> new IllegalStateException("추천 정보가 없어요"));
+
         friendRecommend.changeStatus(true);
     }
 
+    /**
+     * Function : 상대와 나의 친구상태 확인 - 여러명 확인할때
+     */
+    public List<SimpleMemberProfileDto> CheckStatus(List<Member> members, Long memberId){
+        // 2-1. 내 친구목록에 있는 ID 가져오기
+        List<Long> friendsId = friendshipRepository.findMyFriendsId(memberId);
+        // 2-2. 나한테 친구신청한 사람 ID 가져오기
+        List<Long> senderId = friendRequestRepository.findSenderIdByReceiverId(memberId);
+        // 2-3. 내가 친구신청한 사람 ID 가져오기
+        List<Long> receiverId = friendRequestRepository.findReceiverIdBySenderId(memberId);
+
+       return members.stream().map(member ->{
+            SimpleMemberProfileDto profileDto = SimpleMemberProfileDto.fromMember(member);
+            if(friendsId.contains(member.getId())) profileDto.changeStatue(1);
+            else if(senderId.contains(member.getId())) profileDto.changeStatue(4);
+            else if(receiverId.contains(member.getId())) profileDto.changeStatue(3);
+            else profileDto.changeStatue(2);
+           // 친구면 1, 나한테 친구 신청한 사람이면 4, 내가 친구 신청한 사람이면 3, 그외 2
+            return profileDto;
+        }).toList();
+    }
 }

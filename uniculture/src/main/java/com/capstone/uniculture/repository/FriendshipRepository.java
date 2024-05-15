@@ -17,15 +17,23 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long>, J
     @Query("SELECT COUNT(p) FROM Friendship p WHERE p.fromMember = :member")
     Integer countByMember(@Param("member") Member member);
 
+    /* 밑에 메소드와 통합
     @Query("SELECT DISTINCT p.toMember FROM Friendship p WHERE p.fromMember.id= :member_id")
     Page<Member> findAllByFromMember_Id_Paging(@Param("member_id") Long id, Pageable pageable);
+     */
+    @Query("SELECT DISTINCT p.toMember FROM Friendship p " +
+            "WHERE p.fromMember.id= :member_id and (:nickname is null or p.toMember.nickname LIKE %:nickname%) ")
+    List<Member> findAllByFromMember_Id(@Param("member_id") Long id, @Param("nickname") String nickname, Pageable pageable);
 
-    @Query("SELECT DISTINCT p.toMember FROM Friendship p WHERE p.fromMember.id= :member_id")
-    List<Member> findAllByFromMember_Id(@Param("member_id") Long id);
+    /**
+     * 내 친구들의 아이디 목록을 가져오는 쿼리
+     */
+    @Query("SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :member_id")
+    List<Long> findMyFriendsId(@Param("member_id") Long id);
+
+    List<Member> findAllToMemberByFromMember_Id(@Param("member_id") Long id);
 
 
-    @Query("SELECT DISTINCT f.toMember FROM Friendship f WHERE f.fromMember.id = :member_id AND f.toMember.nickname LIKE %:nickname%")
-    Page<Member> findFriendsByNickname(@Param("member_id") Long id, @Param("nickname") String nickname, Pageable pageable);
 
     /**
      * 최소 나이 ~ 최대 나이로 검색

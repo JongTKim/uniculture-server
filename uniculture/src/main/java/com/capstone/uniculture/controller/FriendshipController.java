@@ -2,14 +2,10 @@ package com.capstone.uniculture.controller;
 
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Friend.*;
-import com.capstone.uniculture.dto.Recommend.ProfileRecommendRequestDto;
 import com.capstone.uniculture.entity.Member.Gender;
-import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.service.FriendService;
-import com.deepl.api.Usage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.models.annotations.OpenAPI30;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -94,16 +90,16 @@ public class FriendshipController {
     }
 
     /**
-     * 친구 목록 조회 API
+     * 친구 목록 조회 API => 닉네임으로 검색가능
      * @request : X
      * @response : List<ResponseProfileDto>
      * 로직 : 현재 회원의 친구목록을 가져와서 각 친구마다 프로필로 만들어서 반환
      */
     @Operation(summary = "내 친구 목록 간단 조회", description = "프로필에서 간단하게 조회할때 사용합니다.")
     @GetMapping("/auth/friend")
-    public ResponseEntity<List<FriendResponseDto>> checkFriendsList(){
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(friendService.listOfFriends(memberId));
+    public ResponseEntity<List<SimpleFriendResponseDto>> checkFriendsList(@RequestParam(required = false) String nickname)
+    {
+        return ResponseEntity.ok(friendService.findMyFriendInSimple(nickname));
     }
 
 
@@ -113,21 +109,19 @@ public class FriendshipController {
             @PageableDefault(size=10, direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String nickname)
     {
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(friendService.listOfFriends2(nickname, memberId, pageable));
+        return ResponseEntity.ok(friendService.findMyFriendInDetail(nickname, pageable));
     }
 
     @Operation(summary = "친구추천", description = "친구 추천을 받을때 사용합니다")
     @GetMapping("/auth/friend/recommend")
     public ResponseEntity<List<RecommendFriendResponseDto>> recommendFriendsList(){
-        return ResponseEntity.ok(friendService.recommendFriend());
+        return ResponseEntity.ok(friendService.beforeRecommendFriend());
     }
 
     @Operation(summary = "친구추천 남은횟수", description = "매일 12시에 3회로 초기화")
     @GetMapping("/auth/friend/recommend/count")
     public ResponseEntity<Long> recommendCount(){
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(friendService.recommendCountCheck(memberId));
+        return ResponseEntity.ok(friendService.recommendCountCheck());
     }
 
     @Operation(summary = "친구추천 새로고침", description = "다른 친구 추천을 받아보고싶을때 사용합니다. 일 횟수제한 3")
@@ -136,7 +130,7 @@ public class FriendshipController {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         if(friendService.recommendCountDown(memberId)){
-            return ResponseEntity.ok(friendService.recommendFriends(memberId));
+            return ResponseEntity.ok(friendService.recommendFriend(memberId));
         }
         else{
             throw new IllegalArgumentException("가능한 횟수가 없습니다");
@@ -166,10 +160,6 @@ public class FriendshipController {
         return ResponseEntity.ok(friendService.getMyFriendBySearch2(hb,cl,wl,mina,maxa,ge,pageable));
     }
 
-    public void checkRecommend(){
-        friendService.checkCache();
-    }
-
     @Operation(summary = "전체 멤버중 필터 검색")
     @GetMapping("/auth/friend/search2")
     public ResponseEntity<Page<DetailFriendResponseDto>> friendSearch2(
@@ -191,9 +181,8 @@ public class FriendshipController {
      */
     @Operation(summary = "나한테 온 친구 요청 목록")
     @GetMapping("/auth/friend/checkRequest")
-    public ResponseEntity<List<FriendResponseDto>> checkRequestFriendsList(){
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(friendService.listOfFriendRequest(memberId));
+    public ResponseEntity<List<SimpleFriendResponseDto>> checkRequestFriendsList(){
+        return ResponseEntity.ok(friendService.findFriendRequestForMe());
     }
 
     /**
@@ -204,8 +193,8 @@ public class FriendshipController {
      */
     @Operation(summary = "내가 신청한 친구 신청 목록")
     @GetMapping("/auth/friend/checkMyRequest")
-    public ResponseEntity<List<FriendResponseDto>> checkMyRequestFriendsList(){
+    public ResponseEntity<List<SimpleFriendResponseDto>> checkMyRequestFriendsList(){
         Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(friendService.listOfMyFriendRequest(memberId));
+        return ResponseEntity.ok(friendService.findFriendRequestFromMe(memberId));
     }
 }
