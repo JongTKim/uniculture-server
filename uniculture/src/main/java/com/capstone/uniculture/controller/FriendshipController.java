@@ -149,6 +149,7 @@ public class FriendshipController {
     @GetMapping("/auth/friend/search")
     public ResponseEntity<Page<DetailFriendResponseDto>> friendSearch(
             @PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String name,
             @RequestParam(required = false) String cl, // 가능언어
             @RequestParam(required = false) String wl, // 원하는언어
             @RequestParam(required = false) String hb, // 취미
@@ -157,7 +158,7 @@ public class FriendshipController {
             @RequestParam(required = false) Gender ge // 성별
         ){
         FriendSearchDto searchData = FriendSearchDto.createSearchData(cl,wl,hb,mina,maxa,ge);
-        return ResponseEntity.ok(friendService.getMyFriendBySearch2(hb,cl,wl,mina,maxa,ge,pageable));
+        return ResponseEntity.ok(friendService.getMyFriendBySearch2(name, hb,cl,wl,mina,maxa,ge,pageable));
     }
 
     @Operation(summary = "전체 멤버중 필터 검색")

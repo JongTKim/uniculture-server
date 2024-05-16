@@ -202,13 +202,14 @@ public class FriendService {
     /**
      * Function : 내 친구중 필터 검색 - Specific 사용. 추후 QueryDSL 로 리팩토링 필요
      */
-    public Page<DetailFriendResponseDto> getMyFriendBySearch2(String hobby, String myLanguage, String wantLanguage, Integer minAge, Integer maxAge, Gender gender, Pageable pageable) {
+    public Page<DetailFriendResponseDto> getMyFriendBySearch2(String nickname, String hobby, String myLanguage, String wantLanguage, Integer minAge, Integer maxAge, Gender gender, Pageable pageable) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Specification<Friendship> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             predicates.add(criteriaBuilder.equal(root.get("fromMember").get("id"), memberId));
+
 
             Join<Friendship, Member> toMemberJoin = root.join("toMember", JoinType.INNER);
 
@@ -227,6 +228,9 @@ public class FriendService {
                 predicates.add(criteriaBuilder.equal(wantLanguageJoin.get("language"), wantLanguage));
             }
 
+            if(nickname != null){
+                predicates.add(criteriaBuilder.like(toMemberJoin.get("nickname"), "%" + nickname + "%"));
+            }
             if (minAge != null && maxAge != null) {
                 predicates.add(criteriaBuilder.between(toMemberJoin.get("age"), minAge, maxAge));
             }
