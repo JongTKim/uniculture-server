@@ -35,11 +35,12 @@ public class ChatRoomController {
    * @Request : CreateChatRoomDto (채팅방의 이름과 참여자 명단이 들어감. 추후 단톡방 구현을 위해)
    * @Response : ChatRoomIdResponseDto (새로 생선된 채팅방의 ID가 들어감)
    */
+  /*
   @PostMapping
   public ResponseEntity<ChatRoomIdResponseDto> createRoom(@RequestBody CreateChatRoomDTO createChatRoomDTO) {
     Long memberId = SecurityUtil.getCurrentMemberId();
     return ResponseEntity.ok(chatRoomService.createChatRoomWithMember(memberId,createChatRoomDTO.getMemberId()));
-  }
+  }*/
 
   @GetMapping("/duo")
   public ResponseEntity<ChatRoomIdResponseDto> createDuoRoom(@RequestParam Long toId){
