@@ -33,24 +33,22 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-
-    # gradle wrapper 파일에 실행 권한을 부여
-    # gradle wrapper = 개발자가 특정 버전의 Gradle을 미리 설치하지 않고도 Gradle 빌드를 실행할 수 있게 해주는 편리한 도구        
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    # Gradle 빌드 엑션을 이용해서 프로젝트 빌드
+        
+    - name: Install Gradle
+      run: |
+        sudo apt update
+        sudo apt install -y gradle
+        
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@v2.6.0
-      with:
-        arguments: build
+      run: |
+        gradle build
 
     # 빌드해서 생긴 JAR 파일을 깃허브 아티팩트로 업로드!!
     - name: Upload build artifact
       uses: actions/upload-artifact@v2
       with:
         name: unicultureServer
-        path: build/libs/unicultureServer-0.0.1-SNAPSHOT.jar
+        path: build/libs/
 
   # 배포 **
   deploy:
