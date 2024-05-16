@@ -14,6 +14,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name="댓글", description = "댓글(Comment) 관련 API 입니다.")
 @RestController
 @RequestMapping("/api")
@@ -30,8 +32,10 @@ public class CommentController {
      */
     @Operation(summary = "게시물의 댓글 조회")
     @GetMapping("/comment")
-    public ResponseEntity<Page<CommentResponseDto>> viewComment(@PageableDefault(size=10, direction = Sort.Direction.ASC) Pageable pageable,
-                                                                @RequestParam("postId") Long postId ) {
+    public ResponseEntity<Page<CommentResponseDto>> viewComment(
+            @PageableDefault(size=10, direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam("postId") Long postId )
+    {
         try { // 로그인 한 사용자일때
             Long memberId = SecurityUtil.getCurrentMemberId();
             return ResponseEntity.ok(commentService.viewCommentLogin(postId, pageable));
@@ -43,7 +47,7 @@ public class CommentController {
 
     @Operation(summary = "게시물의 댓글수 조회")
     @GetMapping("/comment/count")
-    public ResponseEntity<Long> countComment(@RequestParam("postId") Long postId){
+    public ResponseEntity<List<Long>> countComment(@RequestParam("postId") Long postId){
         return ResponseEntity.ok(commentService.countComment(postId));
     }
 

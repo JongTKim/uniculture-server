@@ -16,5 +16,8 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
 
     // 어떠한 게시글에 대댓글을 제외한 댓글만의 개수를 Count 한다.
     @Query("SELECT COUNT(*) FROM Comment c WHERE c.post.id = :postId AND c.parent.id IS NULL")
+    Long countCommentByPost_IdOnlyParent(Long postId);
+
+    @Query("SELECT COUNT(*) FROM Comment c WHERE c.post.id = :postId")
     Long countCommentByPost_Id(Long postId);
 }

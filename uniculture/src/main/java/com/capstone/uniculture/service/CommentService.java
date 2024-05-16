@@ -191,7 +191,10 @@ public class CommentService {
         return new PageImpl<>(result, pageable, comments.getTotalElements());
     }
 
-    public Long countComment(Long postId) {
-        return commentRepository.countCommentByPost_Id(postId);
+    public List<Long> countComment(Long postId) {
+        List<Long> lists = new ArrayList<>();
+        lists.add(commentRepository.countCommentByPost_IdOnlyParent(postId));
+        lists.add(commentRepository.countCommentByPost_Id(postId));
+        return lists;
     }
 }
