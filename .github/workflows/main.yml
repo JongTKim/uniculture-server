@@ -50,7 +50,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: unicultureServer
-        path: unicultureServer
+        path: build/libs/unicultureServer-0.0.1-SNAPSHOT.jar
 
   # 배포 **
   deploy:
@@ -63,7 +63,7 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: unicultureServer
-        path: unicultureServer
+        path: build/libs/
 
     # EC2에 배포
     # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
