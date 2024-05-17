@@ -32,37 +32,28 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    /*
     // 회원 조회(내 프로필 조회)
     @Operation(summary = "내 프로필 조회")
     @GetMapping("/auth/member/myPage")
     public ResponseEntity<ProfileResponseDto> myPage() throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.findUser(memberId));
-    }
+    }*/
 
     // 회원 조회(상대 프로필 조회) - 로그인, 비로그인 나눠서 데이터를 다르게 줘야한다!
-    @Operation(summary = "상대 프로필 조회")
+    @Operation(summary = "프로필 조회")
     @GetMapping("/member/otherPage/{nickname}")
     public ResponseEntity<ProfileResponseDto> otherPage(@PathVariable(name = "nickname") String nickname) throws IOException {
         try {
-
-            Long memberId = SecurityUtil.getCurrentMemberId();
-            // 여기서부터는 로그인된 사용자 사용
-            System.out.println("memberId = " + memberId);
-
+            Long memberId = SecurityUtil.getCurrentMemberId(); // 여기서부터는 로그인된 사용자 사용
             Member findMember = memberService.findMemberByNickname(nickname);
-
-            System.out.println("findMemberId = " + findMember.getId());
-
             if (findMember.getId().equals(memberId)) { // 자기 프로필을 조회하는경우
-                System.out.println("나 실행됨");
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(memberService.findUser(memberId));
             } else {
-                System.out.println("상대 실행됨");
                 return ResponseEntity.ok(memberService.findOtherLogin(findMember.getId(), memberId));
             }
         } catch (RuntimeException e) {
-            System.out.println("e = " + e.getMessage());
             // 여기서 부터는 로그인 되지않은 사용자 사용
             return ResponseEntity.ok(memberService.findOtherLogout(nickname));
         }

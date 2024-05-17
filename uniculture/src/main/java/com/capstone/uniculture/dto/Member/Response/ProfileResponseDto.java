@@ -18,6 +18,7 @@ public class ProfileResponseDto {
     private Long id;
     // 프로필 사진 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private String profileurl;
+    private String country;
     // 닉네임 (ME,LOGIN-OTHER,LOGOUT-OTHER)
     private String nickname;
     // 한줄소개 (ME,LOGIN-OTHER,LOGOUT-OTHER)
