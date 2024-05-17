@@ -27,4 +27,6 @@ public class ChatRoomDTO {
 
   private Integer age;
 
+  private String country;
+
 }

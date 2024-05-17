@@ -1,5 +1,6 @@
 package com.capstone.uniculture.controller;
 
+import com.capstone.uniculture.config.S3UploadUtil;
 import com.capstone.uniculture.config.SecurityUtil;
 import com.capstone.uniculture.dto.Post.Request.PostAddDto;
 import com.capstone.uniculture.dto.Post.Request.PostListRequestDto;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,6 +33,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+    private final S3UploadUtil s3UploadUtil;
 
     @Operation(summary = "게시글 1개 상세조회")
     @GetMapping("/post/{postId}")
@@ -100,18 +103,17 @@ public class PostController {
 
     @Operation(summary = "게시글 작성")
     @PostMapping("/auth/post")
-    public ResponseEntity addBoard(@RequestPart PostAddDto postAddDto){
+    public ResponseEntity addBoard(@RequestBody PostAddDto postAddDto){
         return ResponseEntity.ok(postService.createPost(postAddDto));
     }
 
 
     @Operation(summary = "게시글 수정")
-    @PatchMapping(path = {"/auth/post/{postId}"}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PatchMapping("/auth/post/{postId}")
     public ResponseEntity updateBoard(
             @PathVariable("postId") Long postId,
-            @RequestPart PostUpdateDto postUpdateDto,
-            @RequestPart(required = false) List<MultipartFile> imgs){
-        return ResponseEntity.ok(postService.updatePost(postId,postUpdateDto, imgs));
+            @RequestBody PostUpdateDto postUpdateDto){
+        return ResponseEntity.ok(postService.updatePost(postId,postUpdateDto));
     }
 
     @Operation(summary = "게시글 삭제")
@@ -147,4 +149,18 @@ public class PostController {
     public ResponseEntity unlikePost(@PathVariable("postId") Long postId){
         return ResponseEntity.ok(postService.unlikePost(postId));
     }
+
+    @Operation(summary = "게시글 이미지 작성")
+    @PostMapping(path = {"/file"}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public String fileUpload(@RequestPart("files") MultipartFile multipartFile) throws IOException {
+        return s3UploadUtil.upload(multipartFile, "test");// test 폴더에 파일 생성
+    }
+
+    /*
+    @DeleteMapping(name = "S3 파일 삭제", value = "/file")
+    public String fileDelete(@RequestParam("path") String path) {
+        s3UploadUtil.delete(path);
+        return "success";
+    }
+     */
 }

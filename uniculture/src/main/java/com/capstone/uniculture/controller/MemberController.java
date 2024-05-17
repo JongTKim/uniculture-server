@@ -32,14 +32,13 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    /*
     // 회원 조회(내 프로필 조회)
     @Operation(summary = "내 프로필 조회")
     @GetMapping("/auth/member/myPage")
     public ResponseEntity<ProfileResponseDto> myPage() throws IOException {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.findUser(memberId));
-    }*/
+    }
 
     // 회원 조회(상대 프로필 조회) - 로그인, 비로그인 나눠서 데이터를 다르게 줘야한다!
     @Operation(summary = "프로필 조회")
@@ -58,15 +57,6 @@ public class MemberController {
             return ResponseEntity.ok(memberService.findOtherLogout(nickname));
         }
     }
-
-    @Operation(summary = "멤버 검색")
-    @GetMapping("/member/search")
-    public ResponseEntity<Page<DetailFriendResponseDto>> searchMember(
-            @PageableDefault(size=10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
-            @RequestParam String nickname){
-        return ResponseEntity.ok(memberService.searchMember(nickname,pageable));
-    }
-
 
     // 회원 수정 中 프로필 수정 초기화면
     @Operation(summary = "내 프로필 수정 초기화면", description = "프로필 수정 페이지에 접속하면 현재 프로필을 보여줍니다.")
@@ -122,15 +112,6 @@ public class MemberController {
     public ResponseEntity deleteUser() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return ResponseEntity.ok(memberService.deleteUser(memberId));
-    }
-
-    @GetMapping("/member1")
-    public ResponseEntity member1() throws InterruptedException {
-        return ResponseEntity.ok(memberService.update1());
-    }
-    @GetMapping("/member2")
-    public ResponseEntity member2() throws InterruptedException {
-        return ResponseEntity.ok(memberService.update2());
     }
 
 

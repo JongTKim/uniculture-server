@@ -7,6 +7,7 @@ import com.capstone.uniculture.dto.SearchCountDto;
 import com.capstone.uniculture.entity.Post.PostCategory;
 import com.capstone.uniculture.service.SearchService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,13 +18,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "통합검색", description = "통합검색(Search) 관련 API 입니다.")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class SearchController {
     private final SearchService searchService;
 
-    @Operation(summary = "총 검색 개수")
+    @Operation(summary = "총 검색 개수(게시물+친구+전체멤버)")
     @GetMapping("/search/count")
     public ResponseEntity<SearchCountDto> countSearch(
             @RequestParam(required = false) String content,

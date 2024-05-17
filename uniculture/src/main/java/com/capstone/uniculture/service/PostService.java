@@ -103,25 +103,10 @@ public class PostService {
     }
 
     // 게시물 업데이트
-    public String updatePost(Long postId, PostUpdateDto postUpdateDto, List<MultipartFile> imgs){
+    public String updatePost(Long postId, PostUpdateDto postUpdateDto){
 
         // 1. 수정할 게시물 찾기.
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("찾는 게시물이 없습니다."));
-
-        // 2. 기존의 사진 가져와서 삭제후 새 사진 삽입
-        List<Photo> allByPostId = photoRepository.findAllByPostId(post.getId());
-
-        allByPostId.forEach(photo -> {
-            s3UploadUtil.delete(photo.getPath()); // 버킷 삭제
-            photoRepository.delete(photo); // DB 삭제
-        });
-
-        if(imgs != null && !imgs.isEmpty()) {
-            List<String> test = imgs.stream().map(img -> s3UploadUtil.upload(img, "test")).toList();
-            List<Photo> photos = test.stream().map(s -> new Photo(s, post)).toList();
-            post.setImageUrl(test.get(postUpdateDto.getImageNum().intValue() - 1));
-            photoRepository.saveAll(photos);
-        }
 
         // 3. 태그 설정(원래 있던 태그를 지우고 새 태그를 삽입)
         postTagService.deleteAllById(post.getId());

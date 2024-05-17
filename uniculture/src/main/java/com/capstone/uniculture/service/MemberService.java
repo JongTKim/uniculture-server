@@ -155,19 +155,6 @@ public class MemberService implements UserDetailsService {
                 .build();
     }
 
-    public Page<DetailFriendResponseDto> searchMember(String nickname, Pageable pageable){
-
-        Page<Member> members = null;
-        try{
-            Long memberId = SecurityUtil.getCurrentMemberId();
-            members = memberRepository.findAllByNicknameNotMyFriend(memberId, nickname, pageable);
-        }catch(RuntimeException e){ // 로그인 상태 아님
-            //members = memberRepository.findAllByNickname(nickname, pageable);
-        }
-        List<DetailFriendResponseDto> list = members.stream().map(DetailFriendResponseDto::fromMember).toList();
-        return new PageImpl<>(list, pageable, members.getTotalElements());
-    }
-
     // 타인 조회 - 로그아웃 상태일때
     public ProfileResponseDto findOtherLogout(String nickname) throws IOException {
         // 1. ID를 기반으로 DB 에서 Member 객체 생성
@@ -179,6 +166,7 @@ public class MemberService implements UserDetailsService {
         return ProfileResponseDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
+                .profileurl(member.getProfileUrl())
                 .introduce(member.getIntroduce())
                 .country(member.getCountry())
                 .age(member.getAge())

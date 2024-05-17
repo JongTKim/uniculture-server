@@ -113,6 +113,29 @@ public class FriendService {
         return "친구 삭제 성공";
     }
 
+    public String updateFriendRequestStatus(Long senderId, String status) {
+        // 1. 친구 신청 받은사람(나)
+        Long receiverId = SecurityUtil.getCurrentMemberId();
+
+        // 2. 친구 요청 찾아주기
+        FriendRequest friendRequest = findFriendRequest(senderId,receiverId);
+
+        if(status.equals("accepted")){ // 수락일때
+            Member receiver = friendRequest.getReceiver();
+            Member sender = friendRequest.getSender();
+            // 2. 서로 친구관계를 맺어주고
+            sender.addFriend(receiver);
+            receiver.addFriend(sender);
+            // 3. 친구 요청은 삭제시킨다
+            friendRequestRepository.delete(friendRequest);
+            return "친구 수락 성공";
+        }
+        else{ // 거절일때
+            friendRequestRepository.delete(friendRequest);
+            return "친구 거절 성공";
+        }
+    }
+
     // 친구 요청 수락 - 신청한사람의 닉네임이 날아온다고 가정한다
     public String acceptFriendRequest(Long receiverId, Long senderId) {
         FriendRequest friendRequest = findFriendRequest(senderId,receiverId);

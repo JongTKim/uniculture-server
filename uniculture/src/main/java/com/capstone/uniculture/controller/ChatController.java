@@ -48,6 +48,7 @@ public class ChatController {
    * @Reponse : void(하지만, convertAndSend 로 사실상 Message 전송)
    * 로직 : ChatMessageRepository 에 받은 메시지 저장후, 이 채팅방을 구독한 전체에게 Send
    */
+  @Operation(summary = "채팅 전송")
   @MessageMapping("/chat/{roomId}")
   public void message(//WebSocketSession session,
                       @DestinationVariable Long roomId,
@@ -83,20 +84,8 @@ public class ChatController {
     System.out.println("세션 끊김");
     sessions.remove(event.getSessionId());
   }
-  /**
-   * 채팅방 내용 가져오기 API
-   * @Request : PathVariable(가져올 방의 번호)
-   * @Response : List<MessageResponseDto> (여러개의 메시지들의 컬렉션)
-   * 로직 : ChatMessageRepository 에서 roomId를 가지고 전체조회,
-   * Front 에서는 DTO 의 chatMessageId 번호를 가지고 정렬하면 편할듯함
-   */
-  @Operation(summary = "채팅방 내용 가져오기")
-  @GetMapping("/api/auth/chat/{roomId}")
-  public ResponseEntity<List<MessageResponseDto>> getChatHistory(@PathVariable Long roomId){
-    return ResponseEntity.ok(chatService.findMessageHistory(roomId));
-  }
 
-  @Operation(summary = "안읽은 채팅 개수 가져오기")
+  @Operation(summary = "내가 안읽은 채팅 개수 가져오기 - 현재는 알림에서만 사용")
   @GetMapping("/api/auth/chat/count")
   public ResponseEntity<Long> getChatCount(){
     return ResponseEntity.ok(chatService.unreadMessageCount());
