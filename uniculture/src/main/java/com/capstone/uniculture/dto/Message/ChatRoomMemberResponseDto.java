@@ -17,6 +17,7 @@ public class ChatRoomMemberResponseDto {
     private String name;
     private Integer age;
     private Gender gender;
+    private String profileImage;
 
     public static ChatRoomMemberResponseDto fromEntity(Member member){
         return ChatRoomMemberResponseDto.builder()
@@ -24,6 +25,7 @@ public class ChatRoomMemberResponseDto {
                 .name(member.getNickname())
                 .age(member.getAge())
                 .gender(member.getGender())
+                .profileImage(member.getProfileUrl())
                 .build();
     }
 }

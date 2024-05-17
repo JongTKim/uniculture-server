@@ -63,6 +63,9 @@ public class ChatRoomService {
                   .latestMessage(chatRoom.getLatestMessage())
                   .latestMessageTime(chatRoom.getLatestMessageTime())
                   .unreadCount(chatMessageRepository.countUnreadMessage(chatRoom.getId(), userId))
+                  .gender(chatRoom.getMember2().getGender())
+                  .age(chatRoom.getMember2().getAge())
+                  .profileImage(chatRoom.getMember2().getProfileUrl())
                   .build();
           chatRoomDTOList.add(build);
       }

@@ -31,7 +31,6 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
 
     @Query("SELECT m FROM Member m " +
             "WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :myId)" +
-            "AND m.id != :myId " +
             "ORDER BY FUNCTION('RAND')")
     Page<Member> findNonFriendMemberEdit(@Param("myId") Long myId, Pageable pageable);
 

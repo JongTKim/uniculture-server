@@ -1,5 +1,6 @@
 package com.capstone.uniculture.dto.Message;
 
+import com.capstone.uniculture.entity.Member.Gender;
 import com.capstone.uniculture.entity.Message.ChatRoom;
 import lombok.*;
 
@@ -19,5 +20,11 @@ public class ChatRoomDTO {
   private LocalDateTime latestMessageTime;
   // 안읽은 메시지의 개수
   private Long unreadCount;
+
+  private Gender gender;
+
+  private String profileImage;
+
+  private Integer age;
 
 }

@@ -334,8 +334,8 @@ public class FriendService {
         // 2. 내 취미정보 찾아놓기(추후, 취미 비교를 위함)
         List<String> myHobby = myHobbyRepository.findAllByMemberId(memberId);
 
-        // 3. 내 친구와 나를 제외한 모든 멤버의 정보중 20명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
-        Page<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId, PageRequest.of(0, 20));
+        // 3. 내 친구를 제외한 모든 멤버의 정보중 30명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
+        Page<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId, PageRequest.of(0, 30));
 
         // 4. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
         List<ProfileRecommendRequestDto> recommendRequestItems = memberList.getContent().stream().map(ProfileRecommendRequestDto::fromEntity).toList();
