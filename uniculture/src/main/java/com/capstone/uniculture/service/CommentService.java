@@ -51,27 +51,32 @@ public class CommentService {
             // -> 보류, 사유 : 부모를 가지고 오려면 쿼리가 한번더 날아가야하는데 클라이언트에서 임의로 조작하지 않을경우 이 경우가 될수없음
             Comment parentComment = commentRepository.findById(commentDto.getParentId()).get();
             comment.setting(parentComment, post, member);
-            Notification noti1 = Notification.builder()
-                    .notificationType(NotificationType.COMMENT)
-                    .member(parentComment.getMember())
-                    .isCheck(Boolean.FALSE)
-                    .content(member.getNickname() + "님이 나의 댓글에 답글을 달았습니다")
-                    .relatedNum(post.getId())
-                    .build();
-            notificationRepository.save(noti1);
+            if(!parentComment.getMember().getId().equals(member.getId())) {
+                Notification noti1 = Notification.builder()
+                        .notificationType(NotificationType.COMMENT)
+                        .member(parentComment.getMember())
+                        .isCheck(Boolean.FALSE)
+                        .content(member.getNickname() + "님이 나의 댓글에 답글을 달았습니다")
+                        .relatedNum(post.getId())
+                        .build();
+                notificationRepository.save(noti1);
+            }
         }
         else {
             comment.setting(null, post, member);
         }
 
-        Notification noti2 = Notification.builder()
-                .notificationType(NotificationType.COMMENT)
-                .member(post.getMember())
-                .isCheck(Boolean.FALSE)
-                .content(member.getNickname() + "님이 나의 게시글에 댓글을 달았습니다")
-                .relatedNum(post.getId())
-                .build();
-        notificationRepository.save(noti2);
+        // 내 게시물이면 달리면 안된다.
+        if(!post.getMember().getId().equals(member.getId())){
+            Notification noti2 = Notification.builder()
+                    .notificationType(NotificationType.COMMENT)
+                    .member(post.getMember())
+                    .isCheck(Boolean.FALSE)
+                    .content(member.getNickname() + "님이 나의 게시글에 댓글을 달았습니다")
+                    .relatedNum(post.getId())
+                    .build();
+            notificationRepository.save(noti2);
+        }
 
 
         // 6. 댓글 저장

@@ -357,11 +357,14 @@ public class FriendService {
         // 2. 내 취미정보 찾아놓기(추후, 취미 비교를 위함)
         List<String> myHobby = myHobbyRepository.findAllByMemberId(memberId);
 
-        // 3. 내 친구를 제외한 모든 멤버의 정보중 30명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
-        Page<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId, PageRequest.of(0, 30));
+        // 3. 내 친구를 제외한 모든 멤버의 정보중 29명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
+        List<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId, PageRequest.of(0, 29));
+
+        // 4. 나까지 집어넣기(나는 필수로 들어가야됨, 비교를 위해)
+        memberList.add(memberRepository.findById(memberId).get());
 
         // 4. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
-        List<ProfileRecommendRequestDto> recommendRequestItems = memberList.getContent().stream().map(ProfileRecommendRequestDto::fromEntity).toList();
+        List<ProfileRecommendRequestDto> recommendRequestItems = memberList.stream().map(ProfileRecommendRequestDto::fromEntity).toList();
 
         // 5. Flask 서버 요청 보내서 받아오기
         ProfileRecommendResponseDto responseDto = sendRequestToFlask(ToFlaskRequestDto.builder()

@@ -22,6 +22,10 @@ public class ChatRoom extends BaseEntity{
   private Long id;
   private String name;
   private String latestMessage;
+
+  @Enumerated(EnumType.STRING)
+  private MessageType messageType;
+
   private LocalDateTime latestMessageTime;
   // 마지막 메시지 시간이 필요함 -> modifiedDate 로 하면 name 이 바뀔때도 변하므로 안됨
 
@@ -51,6 +55,7 @@ public class ChatRoom extends BaseEntity{
     messages.add(message);
     setLatestMessage(message.getMessage());
     setLatestMessageTime(message.getCreatedDate()); // 만들어진 시간 활용
+    setMessageType(message.getType());
   }
 
   // 사용자 편의 메소드

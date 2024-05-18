@@ -61,6 +61,7 @@ public class ChatRoomService {
           ChatRoomDTO build = ChatRoomDTO.builder().id(chatRoom.getId())
                   .username(chatRoom.getMember2().getNickname())
                   .latestMessage(chatRoom.getLatestMessage())
+                  .messageType(chatRoom.getMessageType())
                   .latestMessageTime(chatRoom.getLatestMessageTime())
                   .unreadCount(chatMessageRepository.countUnreadMessage(chatRoom.getId(), userId))
                   .gender(chatRoom.getMember2().getGender())
@@ -78,8 +79,13 @@ public class ChatRoomService {
           ChatRoomDTO build = ChatRoomDTO.builder().id(chatRoom.getId())
                   .username(chatRoom.getMember1().getNickname())
                   .latestMessage(chatRoom.getLatestMessage())
+                  .messageType(chatRoom.getMessageType())
                   .latestMessageTime(chatRoom.getLatestMessageTime())
                   .unreadCount(chatMessageRepository.countUnreadMessage(chatRoom.getId(), userId))
+                  .gender(chatRoom.getMember2().getGender())
+                  .age(chatRoom.getMember2().getAge())
+                  .profileImage(chatRoom.getMember2().getProfileUrl())
+                  .country(chatRoom.getMember2().getCountry())
                   .build();
           chatRoomDTOList.add(build);
       }

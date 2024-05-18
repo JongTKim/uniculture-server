@@ -70,15 +70,17 @@ public class SearchService {
     // 내가 로그인 상태이면 친구 여부 계산, 로그아웃 상태이면 친구 여부는 모두 0
     public Page<SimpleMemberProfileDto> searchMember(String nickname, Pageable pageable) {
 
-        List<Member> members = memberRepository.findAllByNickname(nickname, pageable);
-
+        List<Member> members;
         List<SimpleMemberProfileDto> memberProfileDto;
+
         try {
             Long memberId = SecurityUtil.getCurrentMemberId();
             // 로그인 상태일경우
+            members = memberRepository.findAllByNicknameNotMine(memberId, nickname, pageable);
             memberProfileDto = friendService.CheckStatus(members, memberId);
         }catch(RuntimeException e){
             // 로그인 상태가 아닐경우
+            members = memberRepository.findAllByNickname(nickname, pageable);
             memberProfileDto = members.stream().map(SimpleMemberProfileDto::fromMember).toList();
         }
         return new PageImpl<>(memberProfileDto, pageable, members.size());

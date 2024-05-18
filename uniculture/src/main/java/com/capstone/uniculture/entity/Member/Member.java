@@ -32,6 +32,7 @@ public class Member extends BaseEntity {
     private String email;
 
     // 프사는 가입할때 받지 않을꺼임 -> 기본 프로필 사진 생성 필요
+    @Column(columnDefinition = "TEXT")
     private String profileUrl;
 
     @Column(nullable = false)

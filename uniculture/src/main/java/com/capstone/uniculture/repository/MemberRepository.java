@@ -29,10 +29,11 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
     @Query("SELECT m FROM Member m WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :myId)")
     List<Member> findNonFriendMembers(@Param("myId") Long myId);
 
+
     @Query("SELECT m FROM Member m " +
             "WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :myId)" +
-            "ORDER BY FUNCTION('RAND')")
-    Page<Member> findNonFriendMemberEdit(@Param("myId") Long myId, Pageable pageable);
+            "AND m.id != :myId ORDER BY FUNCTION('RAND')")
+    List<Member> findNonFriendMemberEdit(@Param("myId") Long myId, Pageable pageable);
 
     /*
     @Query(value = "select m.* from member m " +
@@ -89,6 +90,9 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
 
     @Query("SELECT m FROM Member m WHERE m.nickname LIKE CONCAT('%', :nickname, '%')")
     List<Member> findAllByNickname(String nickname, Pageable pageable);
+
+    @Query("SELECT m FROM Member m WHERE m.id != :memberId AND m.nickname LIKE CONCAT('%', :nickname, '%')")
+    List<Member> findAllByNicknameNotMine(Long memberId, String nickname, Pageable pageable);
 
 
     @Query("SELECT m FROM Member m " +
