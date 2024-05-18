@@ -387,7 +387,7 @@ public class MemberService implements UserDetailsService {
 
     public String UpdateImage(Long memberId, MultipartFile profileImg) throws IOException {
         // 1. 업로드 후 업로드 된 URL 주소를 받음
-        String test = s3UploadUtil.upload(profileImg, "test");
+        String test = s3UploadUtil.upload2(profileImg, "test");
 
         // 2. Member의 profileURL에 생성
         findMember(memberId).setProfileUrl(test);

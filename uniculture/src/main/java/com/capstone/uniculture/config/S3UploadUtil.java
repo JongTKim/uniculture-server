@@ -2,6 +2,7 @@ package com.capstone.uniculture.config;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,27 @@ public class S3UploadUtil {
         convertFile.delete();
 
         return uploadImageUrl;
+    }
+
+    public String upload2(MultipartFile multipartFile, String dirName) {
+        // S3에 저장할 파일명
+        String fileName = dirName + "/" + UUID.randomUUID() + "_" + multipartFile.getOriginalFilename();
+
+        try {
+            // S3에 파일 업로드
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(multipartFile.getSize());
+
+            // InputStream을 사용하여 S3에 업로드
+            amazonS3Client.putObject(new PutObjectRequest(bucket, fileName, multipartFile.getInputStream(), metadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+            String uploadImageUrl = amazonS3Client.getUrl(bucket, fileName).toString();
+
+            return uploadImageUrl;
+        } catch (IOException e) {
+            System.err.println("업로드 에러 발생: " + e.getMessage());
+            throw new RuntimeException("S3 upload error", e);
+        }
     }
 
     // S3 파일 삭제

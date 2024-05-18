@@ -153,7 +153,7 @@ public class PostController {
     @Operation(summary = "게시글 이미지 작성")
     @PostMapping(path = {"/file"}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public String fileUpload(@RequestPart("files") MultipartFile multipartFile) throws IOException {
-        return s3UploadUtil.upload(multipartFile, "test");// test 폴더에 파일 생성
+        return s3UploadUtil.upload2(multipartFile, "test");// test 폴더에 파일 생성
     }
 
     /*
