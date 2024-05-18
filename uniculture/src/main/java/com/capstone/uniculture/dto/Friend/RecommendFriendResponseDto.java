@@ -35,6 +35,7 @@ public class RecommendFriendResponseDto {
         return RecommendFriendResponseDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
+                .profileUrl(member.getProfileUrl())
                 .introduce(member.getIntroduce())
                 .age(member.getAge())
                 .gender(member.getGender())
