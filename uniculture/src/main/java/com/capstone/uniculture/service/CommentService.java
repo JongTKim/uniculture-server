@@ -150,26 +150,23 @@ public class CommentService {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 게시물이 존재하지 않습니다"));
 
         // 2. 댓글중에서만 Paging 실행
-        Page<Comment> comments = commentRepository.findCommentsByOnlyParent(postId, pageable);
+        List<Comment> comments = commentRepository.findCommentsByOnlyParent(postId, pageable);
 
-        List<CommentResponseDto> result = new ArrayList<>();
-        // Map<Long, CommentResponseDto> map = new HashMap<>();
-
-        // 3. 댓글과 대댓글로 DTO 구성하기(계층구조)
-        comments.getContent().forEach(comment -> {
+        List<CommentResponseDto> commentResponseDtos = comments.stream().map(comment -> {
             CommentResponseDto dto = CommentResponseDto.fromEntity(comment);
-            if (comment.getMember().getId() == memberId) dto.setIsMine(true);
-            if (post.getMember().getId() == comment.getMember().getId()) dto.setPostMine(true);
+            if (post.getMember().getId().equals(comment.getMember().getId())) dto.setPostMine(true);
+            if(comment.getMember().getId().equals(memberId)) dto.setIsMine(true);
+            List<CommentResponseDto> childDtos = comment.getChildren().stream().map(comment1 -> {
+                CommentResponseDto childDto = CommentResponseDto.fromEntity(comment1);
+                if (post.getMember().getId().equals(comment1.getMember().getId())) childDto.setPostMine(true);
+                if (comment1.getMember().getId() == memberId) childDto.setIsMine(true);
+                return childDto;
+            }).toList();
+            dto.setChildren(childDtos);
+            return dto;
+        }).toList();
 
-            comment.getChildren().forEach(comment1 -> {
-                CommentResponseDto chileDto = CommentResponseDto.fromEntity(comment1);
-                if (comment1.getMember().getId() == memberId) chileDto.setIsMine(true);
-                if (post.getMember().getId() == comment1.getMember().getId()) chileDto.setPostMine(true);
-                dto.getChildren().add(chileDto);
-            });
-            result.add(dto);
-        });
-        return new PageImpl<>(result, pageable, comments.getTotalElements());
+        return new PageImpl<>(commentResponseDtos, pageable, comments.size());
     }
 
     public Page<CommentResponseDto> viewCommentLogout(Long postId, Pageable pageable) {
@@ -177,23 +174,21 @@ public class CommentService {
         Post post = postRepository.findPostByIdFetch(postId).orElseThrow(
                 () -> new IllegalArgumentException("해당 게시물이 존재하지 않습니다"));
 
-        Page<Comment> comments = commentRepository.findCommentsByOnlyParent(postId, pageable);
+        List<Comment> comments = commentRepository.findCommentsByOnlyParent(postId, pageable);
 
-        List<CommentResponseDto> result = new ArrayList<>();
-        // Map<Long, CommentResponseDto> map = new HashMap<>();
-
-        comments.getContent().forEach(comment -> {
+        List<CommentResponseDto> commentResponseDtos = comments.stream().map(comment -> {
             CommentResponseDto dto = CommentResponseDto.fromEntity(comment);
-            if (post.getMember().getId() == comment.getMember().getId()) dto.setPostMine(true);
+            if (post.getMember().getId().equals(comment.getMember().getId())) dto.setPostMine(true);
+            List<CommentResponseDto> childDtos = comment.getChildren().stream().map(comment1 -> {
+                CommentResponseDto childDto = CommentResponseDto.fromEntity(comment1);
+                if (post.getMember().getId().equals(comment1.getMember().getId())) childDto.setPostMine(true);
+                return childDto;
+            }).toList();
+            dto.setChildren(childDtos);
+            return dto;
+        }).toList();
 
-            comment.getChildren().forEach(comment1 -> {
-                CommentResponseDto chileDto = CommentResponseDto.fromEntity(comment1);
-                if (post.getMember().getId() == comment1.getMember().getId()) chileDto.setPostMine(true);
-                dto.getChildren().add(chileDto);
-            });
-            result.add(dto);
-        });
-        return new PageImpl<>(result, pageable, comments.getTotalElements());
+        return new PageImpl<>(commentResponseDtos, pageable, comments.size());
     }
 
     public List<Long> countComment(Long postId) {

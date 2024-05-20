@@ -38,9 +38,11 @@ public class CommentController {
     {
         try { // 로그인 한 사용자일때
             Long memberId = SecurityUtil.getCurrentMemberId();
+            System.out.println("로그인 함");
             return ResponseEntity.ok(commentService.viewCommentLogin(postId, pageable));
         }
         catch (RuntimeException e){ // 로그인 안한 사용자일때
+            System.out.println("로그인 안함");
             return ResponseEntity.ok(commentService.viewCommentLogout(postId, pageable));
         }
     }

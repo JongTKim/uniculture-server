@@ -1,17 +1,15 @@
 package com.capstone.uniculture.dto.Comment;
 
 import com.capstone.uniculture.entity.Post.Comment;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter @Setter
-@NoArgsConstructor
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class CommentResponseDto {
 
     private Long id;
@@ -24,16 +22,9 @@ public class CommentResponseDto {
     private Boolean isDeleted = Boolean.FALSE;
     private List<CommentResponseDto> children = new ArrayList<>();
 
-    @Builder
-    public CommentResponseDto(Long id, String content, LocalDateTime createdDate, LocalDateTime modifiedDate, String commentWriterName, Boolean isDeleted) {
-        this.id = id;
-        this.content = content;
-        this.createdDate = createdDate;
-        this.modifiedDate = modifiedDate;
-        this.commentWriterName = commentWriterName;
-        this.isDeleted = isDeleted;
-    }
-
+    // -- 이미지 관련 --
+    private String profileurl;
+    private String country;
 
     public static CommentResponseDto fromEntity(Comment comment){
         return CommentResponseDto.builder()
@@ -43,6 +34,8 @@ public class CommentResponseDto {
                 .modifiedDate(comment.getModifiedDate())
                 .commentWriterName(comment.getMember().getNickname())
                 .isDeleted(comment.getIsDeleted())
+                .profileurl(comment.getMember().getProfileUrl())
+                .country(comment.getMember().getCountry())
                 .build();
     }
 }
