@@ -22,6 +22,7 @@ public class PostDetailDto {
     private List<String> tags;
     private Integer viewCount;
     private Integer likeCount;
+    private Integer commentCount;
     private String writerName;
     private PostType postType;
     private PostStatus postStatus;
@@ -34,6 +35,11 @@ public class PostDetailDto {
     // 내 게시물인지 -> 수정버튼을 나타내기 위해
     private Boolean isMine;
 
+    // -- 이미지 관련 --
+    private String imageurl;
+    private String profileurl;
+    private String country;
+
 
     public static PostDetailDto fromEntity(Post post){
         return PostDetailDto.builder()
@@ -45,9 +51,13 @@ public class PostDetailDto {
                 .tags(post.getPostTags().stream().map(PostTag::getHashtag).toList())
                 .createDate(post.getCreatedDate())
                 .modifiedDate(post.getModifiedDate())
+                .commentCount(post.getCommentCount())
                 .likeCount(post.getLikeCount())
                 .postType(post.getPosttype())
                 .postStatus(post.getPostStatus())
+                .imageurl(post.getImageUrl())
+                .profileurl(post.getMember().getProfileUrl())
+                .country(post.getMember().getCountry())
                 .build();
     }
 }

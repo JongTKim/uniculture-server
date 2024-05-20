@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 public class RecommendFriendResponseDto {
 
     private Long id;
-    private String profileUrl;
     private String nickname;
     private Integer age;
     private Gender gender;
@@ -29,13 +28,16 @@ public class RecommendFriendResponseDto {
     private Long similarity;
     private Boolean isOpen;
 
+    // -- 이미지 관련 --
+    private String profileurl;
+    private String country;
+
 
 
     public static RecommendFriendResponseDto fromMember(Member member, Boolean isOpen, Long similarity){
         return RecommendFriendResponseDto.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
-                .profileUrl(member.getProfileUrl())
                 .introduce(member.getIntroduce())
                 .age(member.getAge())
                 .gender(member.getGender())
@@ -43,6 +45,8 @@ public class RecommendFriendResponseDto {
                 .wantLanguages(member.getWantLanguages().stream().collect(Collectors.toMap(WantLanguage::getLanguage, WantLanguage::getLevel)))
                 .similarity(similarity)
                 .isOpen(isOpen)
+                .profileurl(member.getProfileUrl())
+                .country(member.getCountry())
                 .build();
     }
 

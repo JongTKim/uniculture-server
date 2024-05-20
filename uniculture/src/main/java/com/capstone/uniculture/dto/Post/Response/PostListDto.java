@@ -2,20 +2,15 @@ package com.capstone.uniculture.dto.Post.Response;
 
 import com.capstone.uniculture.entity.Post.Post;
 import com.capstone.uniculture.entity.Post.PostStatus;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class PostListDto {
 
     private Long postId;
-    private String imageUrl;
     private String title;
     private String content;
     private Integer viewCount;
@@ -26,29 +21,15 @@ public class PostListDto {
     private LocalDateTime createDate;
     private LocalDateTime modifiedDate;
 
-    @Builder
-    public PostListDto(Long postId, String title, String content, PostStatus postStatus,
-                       Integer viewCount, Integer commentCount, Integer likeCount,
-                       String writerName, LocalDateTime createDate, LocalDateTime modifiedDate,
-                       String imageUrl) {
-        this.postId = postId;
-        this.title = title;
-        this.content = content;
-        this.postStatus = postStatus;
-        this.viewCount = viewCount;
-        this.commentCount = commentCount;
-        this.likeCount = likeCount;
-        this.writerName = writerName;
-        this.createDate = createDate;
-        this.modifiedDate = modifiedDate;
-        this.imageUrl = imageUrl;
-    }
+    // -- 이미지 관련 --
+    private String imageurl;
+    private String profileurl;
+    private String country;
 
     public static PostListDto fromEntity(Post post){
         return PostListDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
-                .imageUrl(post.getImageUrl())
                 .content(post.getContent())
                 .postStatus(post.getPostStatus())
                 .viewCount(post.getViewCount())
@@ -57,6 +38,9 @@ public class PostListDto {
                 .writerName(post.getMember().getNickname())
                 .createDate(post.getCreatedDate())
                 .modifiedDate(post.getModifiedDate())
+                .imageurl(post.getImageUrl())
+                .profileurl(post.getMember().getProfileUrl())
+                .country(post.getMember().getCountry())
                 .build();
     }
 }

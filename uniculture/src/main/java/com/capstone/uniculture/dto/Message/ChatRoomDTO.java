@@ -25,11 +25,9 @@ public class ChatRoomDTO {
   private Long unreadCount;
 
   private Gender gender;
-
-  private String profileImage;
-
   private Integer age;
 
+  private String profileurl;
   private String country;
 
 }

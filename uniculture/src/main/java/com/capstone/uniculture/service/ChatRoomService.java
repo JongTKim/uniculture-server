@@ -66,7 +66,7 @@ public class ChatRoomService {
                   .unreadCount(chatMessageRepository.countUnreadMessage(chatRoom.getId(), userId))
                   .gender(chatRoom.getMember2().getGender())
                   .age(chatRoom.getMember2().getAge())
-                  .profileImage(chatRoom.getMember2().getProfileUrl())
+                  .profileurl(chatRoom.getMember2().getProfileUrl())
                   .country(chatRoom.getMember2().getCountry())
                   .build();
           chatRoomDTOList.add(build);
@@ -84,7 +84,7 @@ public class ChatRoomService {
                   .unreadCount(chatMessageRepository.countUnreadMessage(chatRoom.getId(), userId))
                   .gender(chatRoom.getMember2().getGender())
                   .age(chatRoom.getMember2().getAge())
-                  .profileImage(chatRoom.getMember2().getProfileUrl())
+                  .profileurl(chatRoom.getMember2().getProfileUrl())
                   .country(chatRoom.getMember2().getCountry())
                   .build();
           chatRoomDTOList.add(build);

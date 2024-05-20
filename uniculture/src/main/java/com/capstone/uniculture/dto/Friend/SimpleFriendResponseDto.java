@@ -16,18 +16,22 @@ import lombok.NoArgsConstructor;
 public class SimpleFriendResponseDto {
 
     private Long id;
-    private String profileUrl;
     private String nickname;
     private Integer age;
     private Gender gender;
 
+    // -- 이미지 관련 --
+    private String profileurl;
+    private String country;
+
     public static SimpleFriendResponseDto fromMember(Member member){
         return SimpleFriendResponseDto.builder()
                 .id(member.getId())
-                .profileUrl(member.getProfileUrl())
                 .nickname(member.getNickname())
                 .age(member.getAge())
                 .gender(member.getGender())
+                .profileurl(member.getProfileUrl())
+                .country(member.getCountry())
                 .build();
     }
 

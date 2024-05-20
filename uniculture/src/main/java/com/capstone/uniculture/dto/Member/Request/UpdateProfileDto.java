@@ -20,6 +20,7 @@ public class UpdateProfileDto {
     private Map<String, Integer> myLanguages; // 언어
     private Map<String, Integer> wantLanguage; // 배우고 싶은 언어
 
+
     public UpdateProfileDto(Member member) {
         this.profileurl = member.getProfileUrl();
         this.introduce = member.getIntroduce();

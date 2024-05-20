@@ -11,13 +11,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor @AllArgsConstructor @Builder
 public class SimpleMemberProfileDto {
     private Long id;
-    private String profileurl;
-    private String country;
     private String nickname;
     private Integer age;
     private Gender gender;
     private String introduce;
     private Integer friendstatus; // 기본값은 2이다
+
+    // -- 이미지 관련 --
+    private String profileurl;
+    private String country;
 
     public static SimpleMemberProfileDto fromMember(Member member){
         return SimpleMemberProfileDto.builder()
