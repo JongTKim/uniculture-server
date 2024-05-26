@@ -15,10 +15,7 @@ import com.capstone.uniculture.entity.Post.*;
 import com.capstone.uniculture.repository.*;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,15 +88,16 @@ public class PostService {
     public List<String> hotTag(){
         Pageable pageable = PageRequest.of(0, 5);
         LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
-        return postTagRepository.findMostUsedPostTagLastWeek(oneWeekAgo,pageable).getContent();
+        return postRepository.findMostUsedPostTagLastWeek(pageable).getContent();
     }
 
     // 주간 좋아요 많은 게시물순
-    public List<PostListDto> hotPost(){
-        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
-        Pageable pageable = PageRequest.of(0, 5); // 0번째 페이지부터 5개의 결과를 가져옴
-        Page<Post> mostLikedPostLastWeek = postRepository.findMostLikedPostLastWeek(oneWeekAgo,pageable);
-        return mostLikedPostLastWeek.getContent().stream().map(PostListDto::fromEntity).toList();
+    public Page<PostListDto> hotPost(Pageable pageable, PostCategory postCategory){
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted());
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1); // 상수니깐 static final 로 만들수 있다.
+        List<Post> mostLikedPostLastWeek = postRepository.findMostLikedPostLastWeek(postCategory, oneWeekAgo,unsortedPageable);
+        List<PostListDto> postList = mostLikedPostLastWeek.stream().map(PostListDto::fromEntity).toList();
+        return new PageImpl<>(postList, pageable, postList.size());
     }
 
     // 게시물 업데이트

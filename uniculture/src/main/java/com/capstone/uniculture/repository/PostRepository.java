@@ -28,14 +28,20 @@ public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificati
     List<Post> findMostLikedPostLastWeek();*/
 
     @Query("SELECT p FROM Post p JOIN p.postLikes pl " +
-            "WHERE pl.createdDate >= :oneWeekAgo " +
+            "WHERE pl.createdDate >= :oneWeekAgo AND p.postCategory = :postCategory "+
             "GROUP BY p.id " +
             "ORDER BY COUNT(pl) DESC")
-    Page<Post> findMostLikedPostLastWeek(@Param("oneWeekAgo") LocalDateTime oneWeekAgo, Pageable pageable);
+    List<Post> findMostLikedPostLastWeek(@Param("postCategory") PostCategory postCategory, @Param("oneWeekAgo") LocalDateTime oneWeekAgo, Pageable pageable);
 
 
     @Query("SELECT COUNT(p) FROM Post p WHERE p.member = :member")
     Integer countByMember(@Param("member") Member member);
+
+    @Query("SELECT pt.hashtag FROM Post p JOIN p.postTags pt ON p.id = pt.post.id " +
+            "WHERE p.postCategory = 'STUDY' " +
+            "GROUP BY pt.hashtag " +
+            "ORDER BY COUNT(*) DESC")
+    Page<String> findMostUsedPostTagLastWeek(Pageable pageable);
 
     /**
      * 삭제할때 본인이 작성한 글이 맞는지 확인하기위해 사용

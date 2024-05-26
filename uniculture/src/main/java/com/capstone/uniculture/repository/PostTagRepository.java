@@ -20,11 +20,6 @@ public interface PostTagRepository extends JpaRepository<PostTag, Long> {
             "ORDER BY COUNT(*) DESC LIMIT 5", nativeQuery = true)
     List<String> findMostUsedPostTagLastWeek();
     */
-    @Query("SELECT pt.hashtag FROM PostTag pt " +
-            "WHERE pt.createdDate >= :startDate " +
-            "GROUP BY pt.hashtag " +
-            "ORDER BY COUNT(*) DESC")
-    Page<String> findMostUsedPostTagLastWeek(@Param("startDate") LocalDateTime startDate, Pageable pageable);
 
 
     void deleteAllByPostId(Long postId);

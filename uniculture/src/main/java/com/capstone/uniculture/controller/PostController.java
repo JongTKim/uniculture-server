@@ -57,10 +57,12 @@ public class PostController {
         return ResponseEntity.ok(postService.hotTag());
     }
 
-    @Operation(summary = "주간 인기 게시물 5개")
+    @Operation(summary = "주간 인기 게시물")
     @GetMapping("/post/hot")
-    public ResponseEntity<List<PostListDto>> hotPost(){
-        return ResponseEntity.ok(postService.hotPost());
+    public ResponseEntity<Page<PostListDto>> hotPost(
+            @PageableDefault(size=5, page=0) Pageable pageable,
+            @RequestParam PostCategory ca){
+        return ResponseEntity.ok(postService.hotPost(pageable, ca));
     }
 
     // Post 조회하는 컨트롤러. (+Paging) postType, postCategory, postStatus 에 따른 조회가능
