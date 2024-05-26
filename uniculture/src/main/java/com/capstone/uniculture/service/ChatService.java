@@ -161,6 +161,7 @@ public class ChatService {
     }
     chatMessageDTO.setCreatedDate(LocalDateTime.now());
 
+    System.out.println("성공");
     List<Object> lists = new ArrayList<>();
     lists.add(messageResponseDto);
     lists.add(chatMessageDTO);

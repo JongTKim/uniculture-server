@@ -82,10 +82,10 @@ public class ChatRoomService {
                   .messageType(chatRoom.getMessageType())
                   .latestMessageTime(chatRoom.getLatestMessageTime())
                   .unreadCount(chatMessageRepository.countUnreadMessage(chatRoom.getId(), userId))
-                  .gender(chatRoom.getMember2().getGender())
-                  .age(chatRoom.getMember2().getAge())
-                  .profileurl(chatRoom.getMember2().getProfileUrl())
-                  .country(chatRoom.getMember2().getCountry())
+                  .gender(chatRoom.getMember1().getGender())
+                  .age(chatRoom.getMember1().getAge())
+                  .profileurl(chatRoom.getMember1().getProfileUrl())
+                  .country(chatRoom.getMember1().getCountry())
                   .build();
           chatRoomDTOList.add(build);
       }

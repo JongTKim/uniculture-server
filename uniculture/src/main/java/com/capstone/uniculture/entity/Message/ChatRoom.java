@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -14,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity @Getter @Setter
-@NoArgsConstructor
+@NoArgsConstructor @DynamicUpdate
 public class ChatRoom extends BaseEntity{
 
   @Id
