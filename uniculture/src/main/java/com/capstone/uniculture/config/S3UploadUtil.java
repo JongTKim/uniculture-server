@@ -5,13 +5,12 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,15 +50,26 @@ public class S3UploadUtil {
         String fileName = dirName + "/" + UUID.randomUUID() + "_" + multipartFile.getOriginalFilename();
 
         try {
-            // S3에 파일 업로드
+            // 이미지 다운스케일링
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            Thumbnails.of(multipartFile.getInputStream())
+                    .size(800, 800)
+                    .outputFormat("jpg")
+                    .toOutputStream(outputStream);
+
+            byte[] resizedImageBytes = outputStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(resizedImageBytes);
+
+            // 메타데이터 설정
             ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(multipartFile.getSize());
+            metadata.setContentLength(resizedImageBytes.length);
+            metadata.setContentType("image/jpeg");
 
-            // InputStream을 사용하여 S3에 업로드
-            amazonS3Client.putObject(new PutObjectRequest(bucket, fileName, multipartFile.getInputStream(), metadata)
+            // S3에 파일 업로드
+            amazonS3Client.putObject(new PutObjectRequest(bucket, fileName, inputStream, metadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
-            String uploadImageUrl = amazonS3Client.getUrl(bucket, fileName).toString();
 
+            String uploadImageUrl = amazonS3Client.getUrl(bucket, fileName).toString();
             return uploadImageUrl;
         } catch (IOException e) {
             System.err.println("업로드 에러 발생: " + e.getMessage());

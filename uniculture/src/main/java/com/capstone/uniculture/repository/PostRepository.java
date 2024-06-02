@@ -89,7 +89,7 @@ public interface PostRepository extends JpaRepository<Post,Long>, JpaSpecificati
      * 내 친구인 Member 의 게시물만 조회하는 메소드
      * Member 와는 관계가 1:1이기때문에 Fetch Join 해서 Paging 하더라도 문제가 발생하지 않음
      */
-    @Query("SELECT p FROM Post p JOIN FETCH p.member WHERE p.member IN (SELECT f.toMember FROM Friendship f WHERE f.fromMember.id = :myId)")
+    @Query("SELECT p FROM Post p JOIN FETCH p.member WHERE p.member IN (SELECT f.toMember FROM Friendship f WHERE f.fromMember.id = :myId) AND p.postCategory = 'NORMAL'")
     Page<Post> findPostsFromMyFriends(@Param("myId") Long myId, Pageable pageable);
 
     @Query(value = "SELECT p FROM Post p JOIN FETCH p.member WHERE p.title LIKE %:title%")

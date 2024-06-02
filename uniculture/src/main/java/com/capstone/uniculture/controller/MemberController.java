@@ -6,6 +6,7 @@ import com.capstone.uniculture.dto.Member.Request.AfterSignupDto;
 import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
 import com.capstone.uniculture.dto.Member.Request.UpdateMemberDto;
 import com.capstone.uniculture.dto.Member.Request.UpdateProfileDto;
+import com.capstone.uniculture.dto.Member.Response.SimpleMemberProfileDto;
 import com.capstone.uniculture.entity.Member.Member;
 import com.capstone.uniculture.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -106,6 +107,11 @@ public class MemberController {
         }
     }
 
+    @Operation(summary = "채팅 친구 추천")
+    @GetMapping("/auth/member/chatRecommend")
+    public ResponseEntity<SimpleMemberProfileDto> recommend(@RequestParam String language){
+        return ResponseEntity.ok(memberService.recommend(language));
+    }
     // 회원 삭제
     @Operation(summary = "회원 탈퇴")
     @DeleteMapping("/auth/member")

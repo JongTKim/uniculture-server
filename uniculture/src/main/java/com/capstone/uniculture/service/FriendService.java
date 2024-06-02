@@ -77,7 +77,7 @@ public class FriendService {
                 .notificationType(NotificationType.FRIEND)
                 .member(receiver)
                 .isCheck(Boolean.FALSE)
-                .content(sender.getNickname() + "님이 나에게 친구 신청을 보냈습니다!")
+                .content(sender.getNickname())
                 .relatedNum(id)
                 .build();
         notificationRepository.save(notification);
@@ -336,8 +336,11 @@ public class FriendService {
 
         // 3. 만약 추천된 기록이 있다면 그냥 그거 반환
         if(idList != null && !idList.isEmpty()){ // 캐시에서 가져올수있으면 가져오기
-            return idList.stream().map(friendRecommend ->
-                RecommendFriendResponseDto.fromMember(friendRecommend.getFriendRecommendPK().getToMember(), friendRecommend.getIsOpen(), friendRecommend.getSimilarity())).toList();
+            return idList
+                    .stream()
+                    .sorted(Comparator.comparing(FriendRecommend::getSimilarity).reversed())
+                    .map(friendRecommend -> RecommendFriendResponseDto.fromMember(friendRecommend.getFriendRecommendPK().getToMember(), friendRecommend.getIsOpen(), friendRecommend.getSimilarity()))
+                    .toList();
         }
         else{ // 4. 없으면 플라스크 서버에 요청해서 정보 받아와야함
             return recommendFriend(memberId);
@@ -358,10 +361,11 @@ public class FriendService {
         List<String> myHobby = myHobbyRepository.findAllByMemberId(memberId);
 
         // 3. 내 친구를 제외한 모든 멤버의 정보중 29명 가져오기 -> 목적, 취미, 언어는 Proxy 상태
-        List<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId, PageRequest.of(0, 29));
+        List<Member> memberList = memberRepository.findNonFriendMemberEdit(memberId, PageRequest.of(0, 15));
 
         // 4. 나까지 집어넣기(나는 필수로 들어가야됨, 비교를 위해)
         memberList.add(memberRepository.findById(memberId).get());
+        memberList.add(memberRepository.findById(1L).get());
 
         // 4. 모든 멤버를 돌면서 추천에 필요한 DTO 객체로 생성하기
         List<ProfileRecommendRequestDto> recommendRequestItems = memberList.stream().map(ProfileRecommendRequestDto::fromEntity).toList();

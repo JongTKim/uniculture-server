@@ -56,7 +56,7 @@ public class CommentService {
                         .notificationType(NotificationType.COMMENT)
                         .member(parentComment.getMember())
                         .isCheck(Boolean.FALSE)
-                        .content(member.getNickname() + "님이 나의 댓글에 답글을 달았습니다")
+                        .content(member.getNickname())
                         .relatedNum(post.getId())
                         .build();
                 notificationRepository.save(noti1);
@@ -69,10 +69,10 @@ public class CommentService {
         // 내 게시물이면 달리면 안된다.
         if(!post.getMember().getId().equals(member.getId())){
             Notification noti2 = Notification.builder()
-                    .notificationType(NotificationType.COMMENT)
+                    .notificationType(NotificationType.POST)
                     .member(post.getMember())
                     .isCheck(Boolean.FALSE)
-                    .content(member.getNickname() + "님이 나의 게시글에 댓글을 달았습니다")
+                    .content(member.getNickname())
                     .relatedNum(post.getId())
                     .build();
             notificationRepository.save(noti2);

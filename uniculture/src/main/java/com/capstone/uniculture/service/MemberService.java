@@ -10,6 +10,7 @@ import com.capstone.uniculture.dto.Member.Request.UpdateProfileDto;
 import com.capstone.uniculture.dto.Member.Request.LoginRequestDto;
 import com.capstone.uniculture.dto.Member.Response.ProfileResponseDto;
 import com.capstone.uniculture.dto.Member.Response.SignupResponseDto;
+import com.capstone.uniculture.dto.Member.Response.SimpleMemberProfileDto;
 import com.capstone.uniculture.dto.TokenDto;
 import com.capstone.uniculture.entity.Member.*;
 import com.capstone.uniculture.jwt.TokenProvider;
@@ -283,6 +284,12 @@ public class MemberService implements UserDetailsService {
     public UpdateMemberDto EditUserInformation(Long id) throws IOException {
         Member member = findMember(id);
         return new UpdateMemberDto(member);
+    }
+
+    public SimpleMemberProfileDto recommend(String language){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        Member recommend = memberRepository.recommend(memberId, language);
+        return SimpleMemberProfileDto.fromMember(recommend);
     }
 
     // 회원 수정 中 개인정보 수정

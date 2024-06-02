@@ -32,7 +32,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
 
     @Query("SELECT m FROM Member m " +
             "WHERE m.id NOT IN (SELECT f.toMember.id FROM Friendship f WHERE f.fromMember.id = :myId)" +
-            "AND m.id != :myId ORDER BY FUNCTION('RAND')")
+            "AND m.id != :myId AND m.id != 1L ORDER BY FUNCTION('RAND')")
     List<Member> findNonFriendMemberEdit(@Param("myId") Long myId, Pageable pageable);
 
     /*
@@ -93,6 +93,16 @@ public interface MemberRepository extends JpaRepository<Member,Long> , JpaSpecif
 
     @Query("SELECT m FROM Member m WHERE m.id != :memberId AND m.nickname LIKE CONCAT('%', :nickname, '%')")
     List<Member> findAllByNicknameNotMine(Long memberId, String nickname, Pageable pageable);
+
+
+    @Query(value = "SELECT m.* FROM member m " +
+            "WHERE m.id != :memberId " +
+            "AND m.id IN (SELECT c.member_id FROM my_language c WHERE c.language = :language) " +
+            "AND m.id NOT IN (SELECT r.member2_id FROM chat_room r WHERE r.member1_id = :memberId) " +
+            "AND m.id NOT IN (SELECT r.member1_id FROM chat_room r WHERE r.member2_id = :memberId) " +
+            "ORDER BY RAND() " +
+            "LIMIT 1", nativeQuery = true)
+    Member recommend(Long memberId, String language);
 
 
     @Query("SELECT m FROM Member m " +

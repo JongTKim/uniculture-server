@@ -32,8 +32,7 @@ public class NotificationService {
                         .id(notification.getId())
                         .notificationType(notification.getNotificationType())
                         .content(notification.getContent())
-                        .relatedNum(notification.getNotificationType() == NotificationType.COMMENT
-                                ? notification.getRelatedNum() : memberRepository.findNicknameById(notification.getRelatedNum()))
+                        .relatedNum(notification.getRelatedNum())
                         .build()
                 ).toList();
     }
